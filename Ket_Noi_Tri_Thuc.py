@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX — Ẩn hoàn toàn nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI Đa Giác Quan
+Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện
 """
 import streamlit as st
 import google.generativeai as genai
-from streamlit_mic_recorder import speech_to_text
-from gtts import gTTS
-from PIL import Image
-import io
 import random
 import re
 
@@ -43,15 +39,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS chuẩn hóa: Ẩn hoàn toàn nút GitHub, Edit, Menu Streamlit để giao diện chuyên nghiệp tuyệt đối
+# CSS chuẩn hóa: Tương thích tốt cả chế độ Sáng/Tối và bảo vệ 100% Icon Streamlit
 CSS = """
 <style>
-    /* Ẩn hoàn toàn nút GitHub, biểu tượng Edit, Menu 3 sọc và footer của Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stAppToolbar {display: none !important;}
-    
     .main .block-container { padding-top: 1.2rem; max-width: 95%; }
     
     /* Banner Header */
@@ -117,6 +107,7 @@ def lam_sach_id(s):
     return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
 
 def sap_xep_chuong(ds_chuong):
+    """Tự động sắp xếp Chương 1 -> Chương 10 theo đúng thứ tự số học"""
     def lay_so(ten):
         m = re.search(r'\d+', str(ten))
         return int(m.group(0)) if m else 999
@@ -128,6 +119,7 @@ def chuan_hoi(s):
 
 def so_sanh(nd, ds_dung):
     x = chuan_hoi(nd)
+    # Vá lỗi: Nếu học sinh để trống không nhập gì thì trả về False ngay
     if not x:
         return False
     for d in ds_dung:
@@ -136,6 +128,7 @@ def so_sanh(nd, ds_dung):
             continue
         if x == y:
             return True
+        # Chỉ cho phép khớp chuỗi con nếu người dùng nhập đủ dài (>= 2 ký tự)
         if len(x) >= 2 and (x in y or y in x):
             return True
         try:
@@ -162,21 +155,6 @@ def hien_thi_tien_do():
             st.sidebar.metric("Điểm trung bình", f"{diem_tb:.1f} / 10", f"Đã làm {so_bai} bài")
             st.sidebar.progress(min(td / tc, 1.0))
 
-def lam_sach_van_ban_doc(text):
-    s = str(text)
-    s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1 phần \2', s)
-    s = s.replace(r'\mathbb{Q}', 'Q').replace(r'\mathbb{Z}', 'Z').replace(r'\mathbb{N}', 'N').replace(r'\mathbb{R}', 'R')
-    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ').replace(r'\div', ' chia ')
-    s = s.replace('^2', ' bình phương ').replace('^3', ' lập phương ')
-    s = re.sub(r'[$*#_`~\\{}]', ' ', s)
-    s = re.sub(
-        r'[^\w\s,.?!:;()+\-*/=<>%àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]',
-        '',
-        s
-    )
-    s = re.sub(r'\s+', ' ', s).strip()
-    return s
-
 # ==================== HIỂN THỊ NỘI DUNG BÀI HỌC ====================
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     st.markdown(f"### 📖 {ten_bai}")
@@ -187,6 +165,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     bt_nc = data.get("bt_nang_cao", [])
     sid = lam_sach_id(f"{mon}_{lop}_{chuong}_{ten_bai}")
 
+    # Thẻ thống kê nhanh đầu bài
     c1, c2, c3 = st.columns(3)
     c1.metric("📝 Câu hỏi Trắc nghiệm", f"{len(ch_list)} câu")
     c2.metric("✏️ Bài tập Cơ bản", f"{len(bt_cb)} bài")
@@ -376,223 +355,110 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
                                 st.markdown(f"❌ **Câu {i}: Sai** — Bạn chọn: *{tl_thi[i]}* · Đáp án đúng: **{da_dung}**")
                             st.info(f"💡 Giải thích: {ch['gt']}")
 
-# ==================== HIỂN THỊ PHÒNG THÍ NGHIỆM ẢO (VIRTUAL LAB) ====================
-def hien_thi_phong_thí_nghiệm():
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎪 Phòng Thí Nghiệm & Thực Hành Ảo (Virtual Lab)</p>
-        <p class="hero-sub">Trải nghiệm các mô phỏng tương tác khoa học trực quan chuẩn PhET (Đại học Colorado, Mỹ)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    chon_mon_lab = st.selectbox(
-        "🔬 Chọn lĩnh vực thí nghiệm cần thực hành:", 
-        [
-            "⚡ Vật lý: Mạch điện xoay chiều / một chiều (Circuit Construction Kit)",
-            "💡 Vật lý: Định luật Phản xạ ánh sáng & Gương phẳng",
-            "⚖️ Toán học: Cân bằng phương trình & Đại lượng tỉ lệ",
-            "🧪 Hóa học: Nồng độ dung dịch & Pha chế dung dịch"
-        ]
-    )
-    
-    st.markdown("---")
-    
-    if "Mạch điện" in chon_mon_lab:
-        st.components.v1.iframe("https://phet.colorado.ch/sims/html/circuit-construction-kit-dc/latest/circuit-construction-kit-dc_vi.html", height=600, scrolling=True)
-    elif "Phản xạ ánh sáng" in chon_mon_lab:
-        st.components.v1.iframe("https://phet.colorado.ch/sims/html/bending-light/latest/bending-light_vi.html", height=600, scrolling=True)
-    elif "Cân bằng phương trình" in chon_mon_lab:
-        st.components.v1.iframe("https://phet.colorado.ch/sims/html/balancing-act/latest/balancing-act_vi.html", height=600, scrolling=True)
-    elif "Nồng độ dung dịch" in chon_mon_lab:
-        st.components.v1.iframe("https://phet.colorado.ch/sims/html/concentration/latest/concentration_vi.html", height=600, scrolling=True)
-        
-    st.info("💡 **Mẹo thực hành:** Học sinh có thể dùng chuột kéo thả các linh kiện, thay đổi thông số trực tiếp ngay trên khung thí nghiệm phía trên, sau đó đặt câu hỏi cho Gia sư AI ở khung chat bên dưới để hiểu sâu bản chất hiện tượng!")
-
-# ==================== GIAO DIỆN CHÍNH (SIDEBAR) ====================
+# ==================== GIAO DIỆN CHÍNH ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     st.caption("Hệ thống Ôn luyện & Kiểm tra THCS")
     st.divider()
-    
-    che_do = st.radio(
-        "⚙️ Chế độ học tập:", 
-        [
-            "🎪 Phòng Thí Nghiệm Ảo",
-            "📖 Học theo chuyên đề", 
-            "📝 Phòng thi / Kiểm tra"
-        ]
-    )
+    che_do = st.radio("⚙️ Chế độ học tập:", ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra"])
     st.divider()
-    
-    if che_do != "🎪 Phòng Thí Nghiệm Ảo":
-        mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
-        hien_thi_tien_do()
-    else:
-        st.success("✨ Đang mở Phòng Thí Nghiệm Khoa Học!")
+    mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
+    hien_thi_tien_do()
 
-# ==================== ĐIỀU HƯỚNG HIỂN THỊ MÀN HÌNH CHÍNH ====================
-bai_dang_hoc = ""
+# Banner đầu trang
+st.markdown(f"""
+<div class="hero-banner">
+    <p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p>
+    <p class="hero-sub">Hệ thống lý thuyết trọng tâm, bài tập phân hóa cơ bản - nâng cao và ngân hàng đề thi trắc nghiệm</p>
+</div>
+""", unsafe_allow_html=True)
 
-if che_do == "🎪 Phòng Thí Nghiệm Ảo":
-    hien_thi_phong_thí_nghiệm()
+lop_dict = DATABASE[mon]
+if not lop_dict:
+    st.warning("Đang cập nhật dữ liệu cho môn học này...")
 else:
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p>
-        <p class="hero-sub">Hệ thống lý thuyết trọng tâm, bài tập phân hóa cơ bản - nâng cao và ngân hàng đề thi trắc nghiệm</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    lop_dict = DATABASE[mon]
-    if not lop_dict:
-        st.warning(f"⚠️ Chưa tìm thấy dữ liệu nội dung cho môn **{mon}**. Vui lòng kiểm tra lại xem tệp dữ liệu tương ứng trên GitHub đã có chưa.")
-    else:
-        ds_lop = list(lop_dict.keys())
-        idx_lop = ds_lop.index("Lớp 7") if "Lớp 7" in ds_lop else 0
+    ds_lop = list(lop_dict.keys())
+    # Mặc định ưu tiên chọn Lớp 7 nếu có nhiều lớp
+    idx_lop = ds_lop.index("Lớp 7") if "Lớp 7" in ds_lop else 0
+    
+    if che_do == "📖 Học theo chuyên đề":
+        col_l, col_c, col_b = st.columns([1, 2, 2])
+        with col_l:
+            lop = st.selectbox("🏫 Khối lớp:", ds_lop, index=idx_lop, key="lop_main")
+        chuong_dict = lop_dict[lop]
         
-        if che_do == "📖 Học theo chuyên đề":
-            col_l, col_c, col_b = st.columns([1, 2, 2])
-            with col_l:
-                lop = st.selectbox("🏫 Khối lớp:", ds_lop, index=idx_lop, key="lop_main")
-            chuong_dict = lop_dict[lop]
-            
-            if not chuong_dict:
-                st.warning("Chưa có dữ liệu chương.")
-            else:
-                ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
-                with col_c:
-                    chuong = st.selectbox("📂 Chọn Chương:", ds_chuong, key="chuong_main")
-                bai_dict = chuong_dict[chuong]
-                
-                if not bai_dict:
-                    st.warning("Chưa có dữ liệu bài học.")
-                else:
-                    with col_b:
-                        bai = st.selectbox("📘 Chọn Chuyên đề:", list(bai_dict.keys()), key="bai_main")
-                    bai_dang_hoc = f"{chuong} - {bai}"
-                    st.markdown("---")
-                    hien_thi_bai(mon, lop, chuong, bai, bai_dict[bai])
+        if not chuong_dict:
+            st.warning("Chưa có dữ liệu chương.")
         else:
-            lop = st.selectbox("🏫 Chọn khối lớp dự thi:", ds_lop, index=idx_lop, key="lop_thi")
-            chuong_dict = lop_dict[lop]
-            if chuong_dict:
-                hien_thi_che_do_thi(mon, lop, chuong_dict)
-
-# ==========================================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN & MẮT THẦN (CUỐI FILE)
-# ==========================================================
+            ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
+            with col_c:
+                chuong = st.selectbox("📂 Chọn Chương:", ds_chuong, key="chuong_main")
+            bai_dict = chuong_dict[chuong]
+            
+            if not bai_dict:
+                st.warning("Chưa có dữ liệu bài học.")
+            else:
+                with col_b:
+                    bai = st.selectbox("📘 Chọn Chuyên đề:", list(bai_dict.keys()), key="bai_main")
+                st.markdown("---")
+                hien_thi_bai(mon, lop, chuong, bai, bai_dict[bai])
+    else:
+        lop = st.selectbox("🏫 Chọn khối lớp dự thi:", ds_lop, index=idx_lop, key="lop_thi")
+        chuong_dict = lop_dict[lop]
+        if chuong_dict:
+            hien_thi_che_do_thi(mon, lop, chuong_dict)
+            # ==========================================
+# KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
+# ==========================================
 st.divider()
 st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
-col_ai1, col_ai2, col_ai3 = st.columns([2.5, 1.2, 1])
-with col_ai1:
-    st.markdown("**📌 Em đang muốn hỏi Gia sư về môn nào?**")
-    mon_hoc_ai = st.radio(
-        "Ngữ cảnh môn học:", 
-        ["Toán", "Vật Lý", "Hóa Học", "Chuyện ngoài lề"], 
-        horizontal=True, 
-        label_visibility="collapsed"
-    )
-with col_ai2:
-    st.write("")
-    tu_dong_doc = st.checkbox("🔊 Tự động đọc to", value=True)
-with col_ai3:
-    st.write("")
-    if st.button("🗑️ Xóa lịch sử chat", use_container_width=True):
-        st.session_state.chat_history = []
-        st.rerun()
-
-ten_mon_ai_hien_tai = "Khoa học Tự nhiên và Toán học" if che_do == "🎪 Phòng Thí Nghiệm Ảo" else mon
-
-SYSTEM_PROMPT = f"""
-Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) chuyên kèm môn {mon_hoc_ai} lớp 7 (bám sát sách Kết Nối Tri Thức).
-Thông tin thêm: Trên màn hình học sinh đang mở mục "{ten_mon_ai_hien_tai}" ({bai_dang_hoc}).
-Nguyên tắc SƯ PHẠM TỐI THƯỢNG:
-1. TUYỆT ĐỐI KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
-2. Sử dụng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ để học sinh tự suy nghĩ và tính toán. Nếu học sinh đang thảo luận về Phòng thí nghiệm ảo, hãy hướng dẫn các em quan sát hiện tượng thực tế.
-3. HIỆN TẠI HỌC SINH ĐANG HỎI MÔN {mon_hoc_ai}: CHỈ ĐƯỢC DÙNG phương pháp và kiến thức của môn {mon_hoc_ai} lớp 7 để giải thích. TUYỆT ĐỐI KHÔNG dùng kiến thức vượt cấp.
-4. Xưng hô: "Chị" (hoặc "Anh") và "Em", dùng icon thân thiện.
-5. Trình bày công thức rõ ràng, giải thích ngắn gọn, súc tích. KHÔNG viết kéo dài chữ để bộ phát giọng nói tiếng Việt đọc chuẩn xác nhất.
+# 1. Cài đặt tính cách cho Gia sư AI
+SYSTEM_PROMPT = """
+Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) dạy môn Toán, Lý, Hóa lớp 7 (sách Kết Nối Tri Thức).
+Nguyên tắc:
+1. Tuyệt đối KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
+2. Sử dụng phương pháp gợi mở từng bước để học sinh tự tính toán.
+3. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
+4. Trình bày công thức Toán/Hóa rõ ràng.
 """
 
+# Khởi tạo bộ não AI
 model = genai.GenerativeModel(
-    model_name="gemini-3.5-flash",
+    model_name="gemini-1.5-flash",
     system_instruction=SYSTEM_PROMPT
 )
 
+# 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+# Hiển thị lại lịch sử chat trên màn hình
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-img_pil = None
-btn_gui_anh = False
-
-with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài / hình vẽ cho Gia sư", expanded=False):
-    tab_anh1, tab_anh2 = st.tabs(["📁 Tải ảnh từ máy / điện thoại", "📷 Mở Camera chụp trực tiếp"])
-    with tab_anh1:
-        file_anh = st.file_uploader("Chọn ảnh chụp bài tập hoặc hình vẽ (JPG, PNG):", type=["png", "jpg", "jpeg"], key="upload_anh")
-    with tab_anh2:
-        cam_anh = st.camera_input("Đưa vở hoặc đề bài vào khung hình để chụp:", key="cam_anh")
-    
-    anh_chon = cam_anh or file_anh
-    if anh_chon is not None:
-        img_pil = Image.open(anh_chon)
-        st.image(img_pil, caption="📌 Ảnh đề bài đang đính kèm cho Gia sư", width=320)
-        btn_gui_anh = st.button("🔍 Nhờ Gia sư xem và gợi ý giải bài trong ảnh này", type="primary")
-
-st.markdown("🎙️ **Lười gõ phím? Bấm vào nút bên dưới để đọc câu hỏi nhé:**")
-
-text_from_mic = speech_to_text(
-    language='vi-VN',
-    start_prompt="🔴 Bấm vào đây để NÓI",
-    stop_prompt="⏹️ Bấm vào đây để DỪNG",
-    just_once=True,
-    key='STT'
-)
-
-prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé...")
-
-prompt = None
-if btn_gui_anh:
-    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ!"
-elif text_from_mic:
-    prompt = text_from_mic
-elif prompt_from_keyboard:
-    prompt = prompt_from_keyboard
-
-if prompt:
+# 3. Khung cho học sinh nhập câu hỏi
+if prompt := st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé..."):
+    # Hiển thị câu hỏi của học sinh
     with st.chat_message("user"):
-        if img_pil is not None:
-            st.image(img_pil, width=250)
         st.markdown(prompt)
     st.session_state.chat_history.append({"role": "user", "content": prompt})
 
+    # Gọi AI trả lời
     with st.chat_message("assistant"):
+        # Gom các câu chuyện cũ để AI hiểu ngữ cảnh
         gemini_history = [
             {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
             for msg in st.session_state.chat_history[:-1]
         ]
+        
+        # Gửi câu hỏi và nhận câu trả lời
         chat_session = model.start_chat(history=gemini_history)
+        response = chat_session.send_message(prompt)
         
-        if img_pil is not None:
-            response = chat_session.send_message([prompt, img_pil])
-        else:
-            response = chat_session.send_message(prompt)
-        
+        # In câu trả lời ra màn hình web
         st.markdown(response.text)
         
-        try:
-            clean_text_for_audio = lam_sach_van_ban_doc(response.text)
-            if clean_text_for_audio:
-                tts = gTTS(text=clean_text_for_audio, lang='vi')
-                audio_fp = io.BytesIO()
-                tts.write_to_fp(audio_fp)
-                audio_fp.seek(0)
-                st.audio(audio_fp, format='audio/mp3', autoplay=tu_dong_doc)
-        except Exception:
-            st.caption("🔇 (Hiện chưa tạo được âm thanh cho câu trả lời này, em đọc chữ phía trên nhé!)")
-        
+    # Lưu câu trả lời của AI vào lịch sử
     st.session_state.chat_history.append({"role": "assistant", "content": response.text})
