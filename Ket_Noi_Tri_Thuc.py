@@ -408,6 +408,7 @@ else:
         if chuong_dict:
             hien_thi_che_do_thi(mon, lop, chuong_dict)
             # ==========================================
+# ==========================================
 # KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
 # ==========================================
 st.divider()
@@ -423,11 +424,10 @@ Nguyên tắc:
 4. Trình bày công thức Toán/Hóa rõ ràng.
 """
 
-# Khởi tạo bộ não AI
+# Khởi tạo bộ não AI (Đã kiểm tra kỹ cú pháp và dấu ngoặc)
 model = genai.GenerativeModel(
-    model_name="gemini-3.5-flash",
+    model_name="gemini-1.5-flash",
     system_instruction=SYSTEM_PROMPT
-)
 )
 
 # 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
