@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện
+Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện - Tích hợp Gia Sư AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
+from streamlit_mic_recorder import speech_to_text
+from gtts import gTTS
+import io
 import random
 import re
 
@@ -373,6 +376,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# Biến lưu ngữ cảnh bài học hiện tại để Gia sư AI tự động nhận biết
+bai_dang_hoc = ""
+
 lop_dict = DATABASE[mon]
 if not lop_dict:
     st.warning("Đang cập nhật dữ liệu cho môn học này...")
@@ -400,6 +406,7 @@ else:
             else:
                 with col_b:
                     bai = st.selectbox("📘 Chọn Chuyên đề:", list(bai_dict.keys()), key="bai_main")
+                bai_dang_hoc = f"{chuong} - {bai}"
                 st.markdown("---")
                 hien_thi_bai(mon, lop, chuong, bai, bai_dict[bai])
     else:
@@ -407,24 +414,41 @@ else:
         chuong_dict = lop_dict[lop]
         if chuong_dict:
             hien_thi_che_do_thi(mon, lop, chuong_dict)
-            # ==========================================
+
 # ==========================================
-# KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (CUỐI FILE)
 # ==========================================
 st.divider()
 st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
-# 1. Cài đặt tính cách cho Gia sư AI
-SYSTEM_PROMPT = """
-Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) dạy môn Toán, Lý, Hóa lớp 7 (sách Kết Nối Tri Thức).
-Nguyên tắc:
-1. Tuyệt đối KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
-2. Sử dụng phương pháp gợi mở từng bước để học sinh tự tính toán.
-3. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
-4. Trình bày công thức Toán/Hóa rõ ràng.
+# Nút chọn ngữ cảnh môn học cho AI
+col_ai1, col_ai2 = st.columns([3, 1])
+with col_ai1:
+    st.markdown("**📌 Em đang muốn hỏi Gia sư về môn nào?**")
+    mon_hoc_ai = st.radio(
+        "Ngữ cảnh môn học:", 
+        ["Toán", "Vật Lý", "Hóa Học", "Chuyện ngoài lề"], 
+        horizontal=True, 
+        label_visibility="collapsed"
+    )
+with col_ai2:
+    if st.button("🗑️ Xóa lịch sử chat", use_container_width=True):
+        st.session_state.chat_history = []
+        st.rerun()
+
+# 1. Cài đặt tính cách và ÉP NGỮ CẢNH SÁCH GIÁO KHOA
+SYSTEM_PROMPT = f"""
+Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) chuyên kèm môn {mon_hoc_ai} lớp 7 (bám sát sách Kết Nối Tri Thức).
+Thông tin thêm: Trên màn hình học sinh đang mở mục "{mon}" ({bai_dang_hoc}).
+Nguyên tắc SƯ PHẠM TỐI THƯỢNG:
+1. TUYỆT ĐỐI KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
+2. Sử dụng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ để học sinh tự suy nghĩ và tính toán.
+3. HIỆN TẠI HỌC SINH ĐANG HỎI MÔN {mon_hoc_ai}: CHỈ ĐƯỢC DÙNG phương pháp và kiến thức của môn {mon_hoc_ai} Lớp 7 để giải thích. TUYỆT ĐỐI KHÔNG dùng kiến thức vượt cấp.
+4. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
+5. Trình bày công thức Toán/Hóa rõ ràng, giải thích ngắn gọn, súc tích, đọc thuận miệng vì câu trả lời sẽ được chuyển thành giọng nói cho học sinh nghe.
 """
 
-# Khởi tạo bộ não AI (Đã kiểm tra kỹ cú pháp và dấu ngoặc)
+# Khởi tạo bộ não AI với model 3.5 đã chạy ổn định trên tài khoản
 model = genai.GenerativeModel(
     model_name="gemini-3.5-flash",
     system_instruction=SYSTEM_PROMPT
@@ -439,65 +463,9 @@ for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 3. Khung cho học sinh nhập câu hỏi
-if prompt := st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé..."):
-    # Hiển thị câu hỏi của học sinh
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
-
-    # Gọi AI trả lời
-    with st.chat_message("assistant"):
-        # Gom các câu chuyện cũ để AI hiểu ngữ cảnh
-        gemini_history = [
-            {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
-            for msg in st.session_state.chat_history[:-1]
-        ]
-        
-        # Gửi câu hỏi và nhận câu trả lời
-        chat_session = model.start_chat(history=gemini_history)
-        response = chat_session.send_message(prompt)
-        
-        # In câu trả lời ra màn hình web
-        st.markdown(response.text)
-        
-    # Lưu câu trả lời của AI vào lịch sử
-    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
-    # ==========================================
-# KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
-# ==========================================
-from streamlit_mic_recorder import speech_to_text # Thêm bộ thu âm
-
-st.divider()
-st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
-
-# 1. Cài đặt tính cách cho Gia sư AI
-SYSTEM_PROMPT = """
-Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) dạy môn Toán, Lý, Hóa lớp 7 (sách Kết Nối Tri Thức).
-Nguyên tắc:
-1. Tuyệt đối KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
-2. Sử dụng phương pháp gợi mở từng bước để học sinh tự tính toán.
-3. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
-4. Trình bày công thức Toán/Hóa rõ ràng.
-"""
-
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash-latest",
-    system_instruction=SYSTEM_PROMPT
-)
-
-# 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-for message in st.session_state.chat_history:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# 3. Khung cho học sinh nhập câu hỏi (Tích hợp Voice)
+# 3. Khung cho học sinh nhập câu hỏi (Tích hợp Thu âm Giọng nói & Bàn phím)
 st.markdown("🎙️ **Lười gõ phím? Bấm vào nút bên dưới để đọc câu hỏi nhé:**")
 
-# Hiển thị nút Micro thu âm
 text_from_mic = speech_to_text(
     language='vi-VN',
     start_prompt="🔴 Bấm vào đây để NÓI",
@@ -506,17 +474,18 @@ text_from_mic = speech_to_text(
     key='STT'
 )
 
-# Ô gõ chữ truyền thống
-prompt_from_keyboard = st.chat_input("Hoặc gõ câu hỏi vào đây...")
+prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé...")
 
 # Nhận lệnh từ Micro hoặc từ Bàn phím
 prompt = text_from_mic or prompt_from_keyboard
 
 if prompt:
+    # Hiển thị câu hỏi của học sinh
     with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.chat_history.append({"role": "user", "content": prompt})
 
+    # Gọi AI trả lời và phát giọng nói
     with st.chat_message("assistant"):
         gemini_history = [
             {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
@@ -524,6 +493,21 @@ if prompt:
         ]
         chat_session = model.start_chat(history=gemini_history)
         response = chat_session.send_message(prompt)
+        
+        # In câu trả lời bằng chữ ra màn hình
         st.markdown(response.text)
         
+        # Chuyển văn bản thành giọng nói tiếng Việt (Text-to-Speech)
+        try:
+            # Lọc bỏ các ký tự đánh dấu (*, #, _) để giọng đọc mượt mà hơn
+            clean_text_for_audio = re.sub(r'[*#_`~]', '', response.text)
+            tts = gTTS(text=clean_text_for_audio, lang='vi')
+            audio_fp = io.BytesIO()
+            tts.write_to_fp(audio_fp)
+            audio_fp.seek(0)
+            st.audio(audio_fp, format='audio/mp3')
+        except Exception:
+            st.caption("🔇 (Hiện chưa tạo được âm thanh cho câu trả lời này, em đọc chữ phía trên nhé!)")
+        
+    # Lưu câu trả lời của AI vào lịch sử
     st.session_state.chat_history.append({"role": "assistant", "content": response.text})
