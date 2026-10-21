@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """ NGÂN HÀNG DỮ LIỆU MÔN NGỮ VĂN - LỚP 7 TẬP MỘT
-Bộ sách: Kết Nối Tri Thức Với Cuộc Sống
+Bộ sách: Kết Nối Tri Thức Với Cuộc Sống (Đã làm sạch giao diện)
 """
 
 VAN = {
     "Lớp 7": {
         "Bài 1: Bầu trời tuổi thơ": {
             "Văn bản 1: Bồng chanh đỏ (trích, Đỗ Chu)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Đỗ Chu (sinh năm 1944), cây bút giàu cảm xúc viết về thiên nhiên và con người Việt Nam[cite: 7, 21].\n- Tác phẩm: Trích truyện ngắn *Bồng chanh đỏ*, kể về hai anh em Hiên và Hoài say mê loài chim bồng chanh đỏ và quyết định thả chúng về tự do[cite: 14, 28].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Đỗ Chu (sinh năm 1944), cây bút giàu cảm xúc viết về thiên nhiên và con người Việt Nam.\n- Tác phẩm: Trích truyện ngắn *Bồng chanh đỏ*, kể về hai anh em Hiên và Hoài say mê loài chim bồng chanh đỏ và quyết định thả chúng về tự do.",
                 "vi_du": "💡 **Ví dụ minh họa:** Phân tích tâm trạng của nhân vật Hoài khi cùng anh Hiên đi bắt tổ chim và quyết định thả chim về với tự nhiên.",
                 "cau_hoi": [
                     {
                         "de": "Truyện ngắn 'Bồng chanh đỏ' được kể theo ngôi thứ mấy?",
                         "da": ["Ngôi thứ nhất (nhân vật 'tôi' - Hoài)", "Ngôi thứ ba (người kể chuyện giấu mặt)", "Ngôi thứ hai", "Kết hợp nhiều ngôi kể"],
                         "d": 0,
-                        "gt": "Truyện sử dụng ngôi kể thứ nhất qua nhân vật 'tôi' (Hoài), giúp thể hiện chân thực những rung cảm và sự chuyển biến trong tâm lý nhân vật[cite: 21, 28]."
+                        "gt": "Truyện sử dụng ngôi kể thứ nhất qua nhân vật 'tôi' (Hoài), giúp thể hiện chân thực những rung cảm và sự chuyển biến trong tâm lý nhân vật."
                     }
                 ],
                 "bt_co_ban": [
@@ -34,14 +34,14 @@ VAN = {
                 ]
             },
             "Văn bản 2: Đi lấy mật (trích Đất rừng phương Nam, Đoàn Giỏi)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Đoàn Giỏi (1925–1989), nhà văn chuyên viết về thiên nhiên và con người Nam Bộ[cite: 18, 29].\n- Tác phẩm: Trích chương 9 tiểu thuyết *Đất rừng phương Nam*, kể về chuyến đi lấy mật ong trong rừng U Minh cùng tía nuôi và thằng Cò của cậu bé An[cite: 18, 23].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Đoàn Giỏi (1925–1989), nhà văn chuyên viết về thiên nhiên và con người Nam Bộ.\n- Tác phẩm: Trích chương 9 tiểu thuyết *Đất rừng phương Nam*, kể về chuyến đi lấy mật ong trong rừng U Minh cùng tía nuôi và thằng Cò của cậu bé An.",
                 "vi_du": "💡 **Ví dụ minh họa:** Vẻ đẹp trù phú, sống động của thiên nhiên rừng U Minh qua cái nhìn của nhân vật An.",
                 "cau_hoi": [
                     {
                         "de": "Đoạn trích 'Đi lấy mật' lấy bối cảnh chính ở đâu?",
                         "da": ["Rừng U Minh", "Vùng núi Tây Bắc", "Nông thôn đồng bằng Bắc Bộ", "Miền Trung nắng gió"],
                         "d": 0,
-                        "gt": "Bối cảnh của đoạn trích là không gian hoang sơ, trù phú của rừng tràm U Minh[cite: 18, 23]."
+                        "gt": "Bối cảnh của đoạn trích là không gian hoang sơ, trù phú của rừng tràm U Minh."
                     }
                 ],
                 "bt_co_ban": [
@@ -61,14 +61,14 @@ VAN = {
                 ]
             },
             "Văn bản 3: Ngàn sao làm việc (Võ Quảng)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Võ Quảng (1920–2007), nhà thơ viết cho thiếu nhi với giọng điệu trong sáng, ngộ nghĩnh[cite: 31].\n- Tác phẩm: Bài thơ miêu tả bức tranh thiên nhiên buổi tối ở làng quê qua hình ảnh các chòm sao trên bầu trời như đang cần mẫn làm việc[cite: 25, 26].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Võ Quảng (1920–2007), nhà thơ viết cho thiếu nhi với giọng điệu trong sáng, ngộ nghĩnh.\n- Tác phẩm: Bài thơ miêu tả bức tranh thiên nhiên buổi tối ở làng quê qua hình ảnh các chòm sao trên bầu trời như đang cần mẫn làm việc.",
                 "vi_du": "💡 **Ví dụ minh họa:** Biện pháp nhân hóa các chòm sao (Thần Nông, Đại Hùng) trong bài thơ.",
                 "cau_hoi": [
                     {
                         "de": "Bài thơ 'Ngàn sao làm việc' được viết theo thể thơ nào?",
                         "da": ["Thể thơ bốn chữ", "Thể thơ năm chữ", "Thể thơ tự do", "Thể thơ lục bát"],
                         "d": 0,
-                        "gt": "Bài thơ được sáng tác theo thể thơ bốn chữ nhịp nhàng, gần gũi với đồng dao[cite: 25, 26, 44]."
+                        "gt": "Bài thơ được sáng tác theo thể thơ bốn chữ nhịp nhàng, gần gũi với đồng dao."
                     }
                 ],
                 "bt_co_ban": [
@@ -90,14 +90,14 @@ VAN = {
         },
         "Bài 2: Khúc nhạc tâm hồn": {
             "Văn bản 1: Đồng dao mùa xuân (Nguyễn Khoa Điềm)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Khoa Điềm (sinh năm 1943) quê ở Huế, thơ ông giàu suy tư và trữ tình[cite: 46].\n- Tác phẩm: Bài thơ khắc họa hình ảnh người lính trẻ kiên cường hi sinh nơi chiến trường, hóa thân thành mùa xuân đất nước[cite: 40, 46].",
-                "vi_du": "💡 **Ví dụ minh họa:** Biện pháp nói giảm nói tránh trong hai dòng thơ: 'Một ngày hòa bình / Anh không về nữa'[cite: 42].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Khoa Điềm (sinh năm 1943) quê ở Huế, thơ ông giàu suy tư và trữ tình.\n- Tác phẩm: Bài thơ khắc họa hình ảnh người lính trẻ kiên cường hi sinh nơi chiến trường, hóa thân thành mùa xuân đất nước.",
+                "vi_du": "💡 **Ví dụ minh họa:** Biện pháp nói giảm nói tránh trong hai dòng thơ: 'Một ngày hòa bình / Anh không về nữa'.",
                 "cau_hoi": [
                     {
                         "de": "Bài thơ 'Đồng dao mùa xuân' sử dụng thể thơ mấy chữ?",
                         "da": ["Thể thơ bốn chữ", "Thể thơ năm chữ", "Thể thơ tự do", "Thể thơ bảy chữ"],
                         "d": 0,
-                        "gt": "Bài thơ được viết theo thể thơ bốn chữ, giọng điệu trong trẻo, nhẹ nhàng như khúc hát đồng dao[cite: 44, 51]."
+                        "gt": "Bài thơ được viết theo thể thơ bốn chữ, giọng điệu trong trẻo, nhẹ nhàng như khúc hát đồng dao."
                     }
                 ],
                 "bt_co_ban": [
@@ -117,14 +117,14 @@ VAN = {
                 ]
             },
             "Văn bản 2: Gặp lá cơm nếp (Thanh Thảo)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Thanh Thảo (sinh năm 1946) quê ở Quảng Ngãi, nhà thơ trưởng thành trong kháng chiến chống Mĩ[cite: 48].\n- Tác phẩm: Bài thơ thể hiện nỗi nhớ quê hương, nhớ người mẹ tảo tần và tình mẫu tử thiêng liêng qua hương vị xôi mùa gặt[cite: 43].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Thanh Thảo (sinh năm 1946) quê ở Quảng Ngãi, nhà thơ trưởng thành trong kháng chiến chống Mĩ.\n- Tác phẩm: Bài thơ thể hiện nỗi nhớ quê hương, nhớ người mẹ tảo tần và tình mẫu tử thiêng liêng qua hương vị xôi mùa gặt.",
                 "vi_du": "💡 **Ví dụ minh họa:** Hình ảnh người mẹ hiền hiện lên qua kí ức và hương vị xôi mùa gặt.",
                 "cau_hoi": [
                     {
                         "de": "Bài thơ 'Gặp lá cơm nếp' được viết theo thể thơ nào?",
                         "da": ["Thể thơ năm chữ", "Thể thơ bốn chữ", "Thể thơ lục bát", "Thể thơ tự do"],
                         "d": 0,
-                        "gt": "Bài thơ sáng tác theo thể thơ năm chữ, nhịp nhàng, giàu cảm xúc[cite: 43, 49]."
+                        "gt": "Bài thơ sáng tác theo thể thơ năm chữ, nhịp nhàng, giàu cảm xúc."
                     }
                 ],
                 "bt_co_ban": [
@@ -144,14 +144,14 @@ VAN = {
                 ]
             },
             "Văn bản 3: Trở gió (Nguyễn Ngọc Tư)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Ngọc Tư (sinh năm 1976) quê ở Cà Mau, văn phong trong sáng, đậm chất Nam Bộ[cite: 49].\n- Tác phẩm: Tản văn ghi lại những cảm xúc ngổn ngang, xốn xang và nỗi nhớ quê hương da diết mỗi khi mùa gió chướng về[cite: 49, 50, 51].",
-                "vi_du": "💡 **Ví dụ minh họa:** Tâm trạng 'lộn xộn, ngổn ngang' của nhân vật 'tôi' khi đón gió chướng[cite: 50, 51].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Ngọc Tư (sinh năm 1976) quê ở Cà Mau, văn phong trong sáng, đậm chất Nam Bộ.\n- Tác phẩm: Tản văn ghi lại những cảm xúc ngổn ngang, xốn xang và nỗi nhớ quê hương da diết mỗi khi mùa gió chướng về.",
+                "vi_du": "💡 **Ví dụ minh họa:** Tâm trạng 'lộn xộn, ngổn ngang' của nhân vật 'tôi' khi đón gió chướng.",
                 "cau_hoi": [
                     {
                         "de": "Văn bản 'Trở gió' thuộc thể loại gì?",
                         "da": ["Tản văn", "Truyện ngắn", "Thơ tự do", "Ký sự"],
                         "d": 0,
-                        "gt": "Trở gió là một bài tản văn đặc sắc mang đậm phong vị miền Tây Nam Bộ[cite: 44, 49]."
+                        "gt": "Trở gió là một bài tản văn đặc sắc mang đậm phong vị miền Tây Nam Bộ."
                     }
                 ],
                 "bt_co_ban": [
@@ -173,14 +173,14 @@ VAN = {
         },
         "Bài 3: Cội nguồn yêu thương": {
             "Văn bản 1: Vừa nhắm mắt vừa mở cửa sổ (trích, Nguyễn Ngọc Thuần)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Ngọc Thuần (sinh năm 1972) chuyên sáng tác cho thiếu nhi với thế giới trong trẻo, ấm áp[cite: 68].\n- Tác phẩm: Kể về cậu bé Dũng (10 tuổi) cùng những trò chơi tinh tế do người bố sáng tạo giúp con cảm nhận thế giới qua âm thanh và mùi hương[cite: 59, 68].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Nguyễn Ngọc Thuần (sinh năm 1972) chuyên sáng tác cho thiếu nhi với thế giới trong trẻo, ấm áp.\n- Tác phẩm: Kể về cậu bé Dũng (10 tuổi) cùng những trò chơi tinh tế do người bố sáng tạo giúp con cảm nhận thế giới qua âm thanh và mùi hương.",
                 "vi_du": "💡 **Ví dụ minh họa:** Ý nghĩa triết lý về những 'món quà' mà người bố đã dạy cho nhân vật 'tôi'.",
                 "cau_hoi": [
                     {
                         "de": "Trò chơi 'vừa nhắm mắt vừa mở cửa sổ' rèn luyện khả năng gì cho nhân vật 'tôi'?",
                         "da": ["Khả năng lắng nghe âm thanh và nhận diện mùi hương", "Khả năng chạy nhanh", "Khả năng vẽ tranh", "Khả năng bơi lội"],
                         "d": 0,
-                        "gt": "Trò chơi giúp cậu bé phát triển tối đa các giác quan, cảm nhận tinh tế vẻ đẹp của khu vườn[cite: 59, 60, 62]."
+                        "gt": "Trò chơi giúp cậu bé phát triển tối đa các giác quan, cảm nhận tinh tế vẻ đẹp của khu vườn."
                     }
                 ],
                 "bt_co_ban": [
@@ -200,14 +200,14 @@ VAN = {
                 ]
             },
             "Văn bản 2: Người thầy đầu tiên (trích, Aitmatov)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Chingiz Aitmatov (1928–2008), nhà văn người Cư-rơ-gư-dơ-xtan[cite: 76].\n- Tác phẩm: Kể về thầy Đuy-sen hết lòng vì học trò nghèo An-tư-nai ở vùng núi cao lạc hậu, để lại dấu ấn sâu đậm trong cuộc đời học sinh[cite: 65, 71].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Chingiz Aitmatov (1928–2008), nhà văn người Cư-rơ-gư-dơ-xtan.\n- Tác phẩm: Kể về thầy Đuy-sen hết lòng vì học trò nghèo An-tư-nai ở vùng núi cao lạc hậu, để lại dấu ấn sâu đậm trong cuộc đời học sinh.",
                 "vi_du": "💡 **Ví dụ minh họa:** Hình ảnh thầy Đuy-sen bế học sinh qua dòng suối lạnh giá mùa đông.",
                 "cau_hoi": [
                     {
                         "de": "Đoạn trích 'Người thầy đầu tiên' sử dụng hình thức thay đổi ngôi kể như thế nào?",
                         "da": ["Kết hợp linh hoạt giữa người kể chuyện ngôi thứ nhất (họa sĩ, An-tư-nai) và ngôi thứ ba", "Chỉ dùng duy nhất ngôi thứ ba", "Chỉ dùng ngôi thứ nhất của Đuy-sen", "Dùng ngôi thứ hai"],
                         "d": 0,
-                        "gt": "Tác phẩm có sự thay đổi linh hoạt các kiểu người kể chuyện, giúp câu chuyện được nhìn nhận đa chiều[cite: 63, 71]."
+                        "gt": "Tác phẩm có sự thay đổi linh hoạt các kiểu người kể chuyện, giúp câu chuyện được nhìn nhận đa chiều."
                     }
                 ],
                 "bt_co_ban": [
@@ -227,14 +227,14 @@ VAN = {
                 ]
             },
             "Văn bản 3: Quê hương (Tế Hanh)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Tế Hanh (1921–2009) quê ở Quảng Ngãi, nhà thơ gắn bó sâu nặng với làng chài ven biển[cite: 78].\n- Tác phẩm: Bài thơ thể hiện tình yêu quê hương tha thiết, trong trẻo và nỗi nhớ nhung da diết của tác giả khi phải sống xa làng chài[cite: 73, 78].",
-                "vi_du": "💡 **Ví dụ minh họa:** Hình ảnh so sánh độc đáo: 'Cánh buồm giương to như mảnh hồn làng / Rướn thân trắng bao la thâu góp gió'[cite: 73].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Tế Hanh (1921–2009) quê ở Quảng Ngãi, nhà thơ gắn bó sâu nặng với làng chài ven biển.\n- Tác phẩm: Bài thơ thể hiện tình yêu quê hương tha thiết, trong trẻo và nỗi nhớ nhung da diết của tác giả khi phải sống xa làng chài.",
+                "vi_du": "💡 **Ví dụ minh họa:** Hình ảnh so sánh độc đáo: 'Cánh buồm giương to như mảnh hồn làng / Rướn thân trắng bao la thâu góp gió'.",
                 "cau_hoi": [
                     {
                         "de": "Bài thơ 'Quê hương' của Tế Hanh được viết theo thể thơ nào?",
                         "da": ["Thể thơ tám chữ (đốt lơ / thất ngôn)", "Thể thơ bốn chữ", "Thể thơ năm chữ", "Thơ tự do"],
                         "d": 0,
-                        "gt": "Bài thơ sáng tác theo thể thơ tám chữ (thơ mới), giàu nhịp điệu và hình ảnh[cite: 73]."
+                        "gt": "Bài thơ sáng tác theo thể thơ tám chữ (thơ mới), giàu nhịp điệu và hình ảnh."
                     }
                 ],
                 "bt_co_ban": [
@@ -255,14 +255,14 @@ VAN = {
         },
         "Bài 4: Giai điệu đất nước": {
             "Văn bản 1: Mùa xuân nho nhỏ (Thanh Hải)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Thanh Hải (1930–1980) quê ở Huế, thơ mộc mạc, chân thành, đậm chất dân tộc[cite: 91, 96].\n- Tác phẩm: Viết năm 1980 khi nhà thơ đang trên giường bệnh, bài thơ là khúc ca tươi đẹp về mùa xuân thiên nhiên, đất nước và khát vọng dâng hiến thầm lặng[cite: 90, 96].",
-                "vi_du": "💡 **Ví dụ minh họa:** Ý nghĩa biểu tượng của hình ảnh 'mùa xuân nho nhỏ' lặng lẽ dâng cho đời[cite: 91].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Thanh Hải (1930–1980) quê ở Huế, thơ mộc mạc, chân thành, đậm chất dân tộc.\n- Tác phẩm: Viết năm 1980 khi nhà thơ đang trên giường bệnh, bài thơ là khúc ca tươi đẹp về mùa xuân thiên nhiên, đất nước và khát vọng dâng hiến thầm lặng.",
+                "vi_du": "💡 **Ví dụ minh họa:** Ý nghĩa biểu tượng của hình ảnh 'mùa xuân nho nhỏ' lặng lẽ dâng cho đời.",
                 "cau_hoi": [
                     {
                         "de": "Mặt đất mùa xuân của đất nước được nhà thơ Thanh Hải khắc họa qua hai hình ảnh nào?",
                         "da": ["Người cầm súng và người ra đồng", "Học sinh và giáo viên", "Bác sĩ và công nhân", "Ngư dân và thợ mỏ"],
                         "d": 0,
-                        "gt": "Hai lực lượng nòng cốt bảo vệ và xây dựng Tổ quốc là người cầm súng và người ra đồng[cite: 90, 92]."
+                        "gt": "Hai lực lượng nòng cốt bảo vệ và xây dựng Tổ quốc là người cầm súng và người ra đồng."
                     }
                 ],
                 "bt_co_ban": [
@@ -282,14 +282,14 @@ VAN = {
                 ]
             },
             "Văn bản 2: Gò Me (trích, Hoàng Tố Nguyên)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Hoàng Tố Nguyên (1929–1975) quê ở Tiền Giang, thơ đậm chất Nam Bộ[cite: 93].\n- Tác phẩm: Trích tập thơ *Từ nhớ đến thương*, gợi nhắc hình ảnh quê hương Gò Me trù phú, yên bình và nỗi nhớ da diết của người con xa xứ[cite: 93, 95].",
-                "vi_du": "💡 **Ví dụ minh họa:** Âm thanh và ánh sáng đặc trưng của miền quê Gò Me: 'Đốm hải đăng tắt, loé đêm đêm / Leng keng nhạc ngựa ngược lên chợ Gò'[cite: 93].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Hoàng Tố Nguyên (1929–1975) quê ở Tiền Giang, thơ đậm chất Nam Bộ.\n- Tác phẩm: Trích tập thơ *Từ nhớ đến thương*, gợi nhắc hình ảnh quê hương Gò Me trù phú, yên bình và nỗi nhớ da diết của người con xa xứ.",
+                "vi_du": "💡 **Ví dụ minh họa:** Âm thanh và ánh sáng đặc trưng của miền quê Gò Me: 'Đốm hải đăng tắt, loé đêm đêm / Leng keng nhạc ngựa ngược lên chợ Gò'.",
                 "cau_hoi": [
                     {
                         "de": "Bài thơ 'Gò Me' tái hiện vẻ đẹp của vùng đất nào?",
                         "da": ["Miền đất Nam Bộ trù phú, nên thơ", "Vùng núi cao Tây Bắc", "Nông thôn đồng bằng Bắc Bộ", "Miền Trung gió Lào cát trắng"],
                         "d": 0,
-                        "gt": "Gò Me là một địa danh thuộc Nam Bộ, nơi gắn liền với tuổi thơ và nỗi nhớ của tác giả[cite: 93, 95]."
+                        "gt": "Gò Me là một địa danh thuộc Nam Bộ, nơi gắn liền với tuổi thơ và nỗi nhớ của tác giả."
                     }
                 ],
                 "bt_co_ban": [
@@ -309,14 +309,14 @@ VAN = {
                 ]
             },
             "Văn bản 3: Bài thơ 'Đường núi' của Nguyễn Đình Thi (Vũ Quần Phương)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Vũ Quần Phương (sinh năm 1940) nhà thơ, nhà phê bình văn học nổi tiếng[cite: 101].\n- Tác phẩm: Văn bản bình luận tinh tế về bài thơ *Đường núi* của Nguyễn Đình Thi, làm nổi bật bức tranh chiều rừng và tình yêu đất nước sâu lắng[cite: 101, 102].",
-                "vi_du": "💡 **Ví dụ minh họa:** Nhận xét của nhà bình luận về cái tài tạo nên 'luồng không khí thân yêu trong trẻo run rẩy' trong thơ Nguyễn Đình Thi[cite: 102].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Vũ Quần Phương (sinh năm 1940) nhà thơ, nhà phê bình văn học nổi tiếng.\n- Tác phẩm: Văn bản bình luận tinh tế về bài thơ *Đường núi* của Nguyễn Đình Thi, làm nổi bật bức tranh chiều rừng và tình yêu đất nước sâu lắng.",
+                "vi_du": "💡 **Ví dụ minh họa:** Nhận xét của nhà bình luận về cái tài tạo nên 'luồng không khí thân yêu trong trẻo run rẩy' trong thơ Nguyễn Đình Thi.",
                 "cau_hoi": [
                     {
                         "de": "Văn bản 'Bài thơ Đường núi của Nguyễn Đình Thi' thuộc thể loại gì?",
                         "da": ["Văn bản nghị luận / Bình thơ", "Truyện ngắn", "Tùy bút", "Ký sự"],
                         "d": 0,
-                        "gt": "Đây là một bài bình thơ xuất sắc, thuộc thể loại văn bản nghị luận văn học[cite: 101, 102]."
+                        "gt": "Đây là một bài bình thơ xuất sắc, thuộc thể loại văn bản nghị luận văn học."
                     }
                 ],
                 "bt_co_ban": [
@@ -338,14 +338,14 @@ VAN = {
         },
         "Bài 5: Màu sắc trăm miền": {
             "Văn bản 1: Tháng Giêng, mơ về trăng non rét ngọt (Vũ Bằng)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Vũ Bằng (1913–1984) quê ở Hà Nội, nhà văn tài hoa giàu chất trữ tình, hoài niệm[cite: 113].\n- Tác phẩm: Trích tùy bút *Tháng Giêng mơ về trăng non rét ngọt*, thể hiện nỗi nhớ da diết cảnh sắc, hương vị mùa xuân đất Bắc khi tác giả đang sống ở miền Nam[cite: 106, 113].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Vũ Bằng (1913–1984) quê ở Hà Nội, nhà văn tài hoa giàu chất trữ tình, hoài niệm.\n- Tác phẩm: Trích tùy bút *Tháng Giêng mơ về trăng non rét ngọt*, thể hiện nỗi nhớ da diết cảnh sắc, hương vị mùa xuân đất Bắc khi tác giả đang sống ở miền Nam.",
                 "vi_du": "💡 **Ví dụ minh họa:** Nét đặc trưng của mùa xuân Bắc Việt: mưa riêu riêu, gió lạnh lành lạnh và bánh trôi nước.",
                 "cau_hoi": [
                     {
                         "de": "Văn bản 'Tháng Giêng, mơ về trăng non rét ngọt' thuộc thể loại nào?",
                         "da": ["Tùy bút", "Truyện ngắn", "Thơ tự do", "Văn bản thông tin"],
                         "d": 0,
-                        "gt": "Tác phẩm là áng tùy bút xuất sắc viết về mùa xuân và nỗi nhớ quê hương[cite: 110, 113]."
+                        "gt": "Tác phẩm là áng tùy bút xuất sắc viết về mùa xuân và nỗi nhớ quê hương."
                     }
                 ],
                 "bt_co_ban": [
@@ -365,14 +365,14 @@ VAN = {
                 ]
             },
             "Văn bản 2: Chuyện cơm hến (Hoàng Phủ Ngọc Tường)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Hoàng Phủ Ngọc Tường (1937–2023) quê ở Quảng Trị, gắn bó sâu nặng với xứ Huế[cite: 119].\n- Tác phẩm: Tản văn kết hợp biểu cảm và khảo cứu, giới thiệu món ăn dân dã cơm hến đậm đà bản sắc văn hóa xứ Huế[cite: 110, 119].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Tác giả: Hoàng Phủ Ngọc Tường (1937–2023) quê ở Quảng Trị, gắn bó sâu nặng với xứ Huế.\n- Tác phẩm: Tản văn kết hợp biểu cảm và khảo cứu, giới thiệu món ăn dân dã cơm hến đậm đà bản sắc văn hóa xứ Huế.",
                 "vi_du": "💡 **Ví dụ minh họa:** Sự tinh tế trong cách thưởng thức món cơm hến cay nồng, mặn mòi.",
                 "cau_hoi": [
                     {
                         "de": "Món cơm hến trong văn bản của Hoàng Phủ Ngọc Tường được xem là biểu tượng của điều gì?",
                         "da": ["Vẻ đẹp văn hóa ẩm thực và nét đặc trưng của người dân xứ Huế", "Món ăn nhanh hiện đại", "Sản phẩm công nghiệp", "Món ăn hoàng gia xa hoa"],
                         "d": 0,
-                        "gt": "Cơm hến là món ăn dân dã, chứa đựng cái hồn và phong vị văn hóa độc đáo của đất cố đô[cite: 116, 119]."
+                        "gt": "Cơm hến là món ăn dân dã, chứa đựng cái hồn và phong vị văn hóa độc đáo của đất cố đô."
                     }
                 ],
                 "bt_co_ban": [
@@ -392,14 +392,14 @@ VAN = {
                 ]
             },
             "Văn bản 3: Hội lồng tồng (Trần Quốc Vượng - Lê Văn Hảo - Dương Tất Tử)": {
-                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Các tác giả: Là những nhà nghiên cứu văn hóa Việt Nam uy tín.\n- Tác phẩm: Văn bản thông tin giới thiệu về lễ hội lồng tồng (xuống đồng) của đồng bào các dân tộc vùng Việt Bắc, nét đẹp văn hóa truyền thống[cite: 110, 121].",
+                "ly_thuyet": "📌 **I. TÁC GIẢ & TÁC PHẨM:**\n- Các tác giả: Là những nhà nghiên cứu văn hóa Việt Nam uy tín.\n- Tác phẩm: Văn bản thông tin giới thiệu về lễ hội lồng tồng (xuống đồng) của đồng bào các dân tộc vùng Việt Bắc, nét đẹp văn hóa truyền thống.",
                 "vi_du": "💡 **Ví dụ minh họa:** Ý nghĩa của lễ hội lồng tồng đối với đời sống tâm linh và nông nghiệp.",
                 "cau_hoi": [
                     {
                         "de": "Lễ hội 'lồng tồng' trong tiếng Tày có nghĩa là gì?",
                         "da": ["Xuống đồng", "Cầu mưa", "Mừng lúa mới", "Hội xuân"],
                         "d": 0,
-                        "gt": "Lồng tồng là tiếng Tày, có nghĩa là 'xuống đồng', lễ hội cầu mùa màng bội thu[cite: 121]."
+                        "gt": "Lồng tồng là tiếng Tày, có nghĩa là 'xuống đồng', lễ hội cầu mùa màng bội thu."
                     }
                 ],
                 "bt_co_ban": [
