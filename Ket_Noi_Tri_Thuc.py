@@ -426,7 +426,7 @@ Nguyên tắc:
 
 # Khởi tạo bộ não AI (Đã kiểm tra kỹ cú pháp và dấu ngoặc)
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-3.5-flash",
     system_instruction=SYSTEM_PROMPT
 )
 
