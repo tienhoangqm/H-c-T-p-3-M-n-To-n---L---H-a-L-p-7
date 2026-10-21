@@ -463,3 +463,67 @@ if prompt := st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây a
         
     # Lưu câu trả lời của AI vào lịch sử
     st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+    # ==========================================
+# KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
+# ==========================================
+from streamlit_mic_recorder import speech_to_text # Thêm bộ thu âm
+
+st.divider()
+st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
+
+# 1. Cài đặt tính cách cho Gia sư AI
+SYSTEM_PROMPT = """
+Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) dạy môn Toán, Lý, Hóa lớp 7 (sách Kết Nối Tri Thức).
+Nguyên tắc:
+1. Tuyệt đối KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
+2. Sử dụng phương pháp gợi mở từng bước để học sinh tự tính toán.
+3. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
+4. Trình bày công thức Toán/Hóa rõ ràng.
+"""
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash-latest",
+    system_instruction=SYSTEM_PROMPT
+)
+
+# 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+for message in st.session_state.chat_history:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# 3. Khung cho học sinh nhập câu hỏi (Tích hợp Voice)
+st.markdown("🎙️ **Lười gõ phím? Bấm vào nút bên dưới để đọc câu hỏi nhé:**")
+
+# Hiển thị nút Micro thu âm
+text_from_mic = speech_to_text(
+    language='vi-VN',
+    start_prompt="🔴 Bấm vào đây để NÓI",
+    stop_prompt="⏹️ Bấm vào đây để DỪNG",
+    just_once=True,
+    key='STT'
+)
+
+# Ô gõ chữ truyền thống
+prompt_from_keyboard = st.chat_input("Hoặc gõ câu hỏi vào đây...")
+
+# Nhận lệnh từ Micro hoặc từ Bàn phím
+prompt = text_from_mic or prompt_from_keyboard
+
+if prompt:
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    st.session_state.chat_history.append({"role": "user", "content": prompt})
+
+    with st.chat_message("assistant"):
+        gemini_history = [
+            {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
+            for msg in st.session_state.chat_history[:-1]
+        ]
+        chat_session = model.start_chat(history=gemini_history)
+        response = chat_session.send_message(prompt)
+        st.markdown(response.text)
+        
+    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
