@@ -122,6 +122,458 @@ C1_T7 = {
             {"de": "Tính lũy thừa: E = ( -2/3 )³","dd": ["E = -8/27"],"gt": "Mũ lẻ của số âm ra số âm: (-2)³/3³ = -8/27."},
             {"de": "Đổi số thập phân 1,25 ra phân số tối giản.","dd": ["5/4"],"gt": "1,25 = 125/100 = 5/4."}
         ],
+        {
+    "ly_thuyet": "### I. SỐ HỮU TỈ VÀ CÁC PHÉP TOÁN\n1. **Tập hợp số hữu tỉ $\\mathbb{Q}$**:\n- Số hữu tỉ là số viết được dưới dạng phân số $\\frac{a}{b}$ với $a, b \\in \\mathbb{Z}, b \\neq 0$.\n- Tập hợp các số hữu tỉ được ký hiệu là $\\mathbb{Q}$.\n- **Số đối**: Số đối của số hữu tỉ $x$ ký hiệu là $-x$. Tổng của hai số đối nhau bằng $0$.\n\n2. **Các phép tính trong $\\mathbb{Q}$**:\n- Cộng, trừ, nhân, chia số hữu tỉ thực hiện tương tự như phân số.\n- **Giá trị tuyệt đối**: $|x| = x$ nếu $x \\ge 0$ và $|x| = -x$ nếu $x < 0$.\n\n3. **Lũy thừa với số mũ tự nhiên**:\n- $x^n = \\underbrace{x \\cdot x \\cdots x}_{n \\text{ thừa số}}$ ($x \\in \\mathbb{Q}, n \\in \\mathbb{N}^*$)\n- $x^0 = 1$ ($x \\neq 0$), $x^1 = x$\n- $x^m \\cdot x^n = x^{m+n}$\n- $x^m : x^n = x^{m-n}$ ($x \\neq 0, m \\ge n$)\n- $(x^m)^n = x^{m \\cdot n}$\n- $(x \\cdot y)^n = x^n \\cdot y^n$\n- $\\left(\\frac{x}{y}\\right)^n = \\frac{x^n}{y^n}$ ($y \\neq 0$)\n\n4. **Số thập phân và làm tròn số**:\n- Nếu một phân số tối giản với mẫu dương mà mẫu không có ước nguyên tố nào khác $2$ và $5$ thì phân số đó viết được dưới dạng **số thập phân hữu hạn**.\n- Nếu mẫu có ước nguyên tố khác $2$ và $5$ thì phân số đó viết được dưới dạng **số thập phân vô hạn tuần hoàn**.\n- **Làm tròn số với độ chính xác $d$**:\n  + Độ chính xác $d = 0,5 \\rightarrow$ làm tròn đến hàng đơn vị.\n  + Độ chính xác $d = 0,05 \\rightarrow$ làm tròn đến hàng phần mười.\n  + Độ chính xác $d = 0,005 \\rightarrow$ làm tròn đến hàng phần trăm.\n\n--- \n### II. HÌNH HỌC PHẲNG\n1. **Góc ở vị trí đặc biệt**:\n- **Hai góc kề bù**: Là hai góc vừa kề nhau vừa bù nhau, có tổng số đo bằng $180^\\circ$.\n- **Hai góc đối đỉnh**: Là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia. Hai góc đối đỉnh thì bằng nhau.\n- **Tia phân giác của một góc**: Là tia nằm giữa hai cạnh của góc và tạo với hai cạnh ấy hai góc bằng nhau.\n\n2. **Hai đường thẳng song song và vuông góc**:\n- **Dấu hiệu nhận biết hai đường thẳng song song**: Nếu đường thẳng $c$ cắt hai đường thẳng $a, b$ và trong các góc tạo thành có một cặp góc so le trong bằng nhau (hoặc một cặp góc đồng vị bằng nhau) thì $a // b$.\n- **Tính chất**: Nếu $a // b$ thì:\n  + Hai góc so le trong bằng nhau.\n  + Hai góc đồng vị bằng nhau.\n  + Hai góc trong cùng phía bù nhau.\n- **Quan hệ giữa tính vuông góc và tính song song**:\n  + $a \\perp c$ và $b \\perp c \\Rightarrow a // b$\n  + $a // b$ và $c \\perp a \\Rightarrow c \\perp b$",
+    "vi_du": "### Ví dụ 1: Thực hiện phép tính\nTính giá trị biểu thức: $A = \\left(-\\frac{2}{3}\\right)^2 + \\frac{1}{6} - \\left|-\\frac{5}{12}\\right|$\n\n*Lời giải*:\n$$A = \\frac{4}{9} + \\frac{1}{6} - \\frac{5}{12} = \\frac{16}{36} + \\frac{6}{36} - \\frac{15}{36} = \\frac{16 + 6 - 15}{36} = \\frac{7}{36}$$\n\n### Ví dụ 2: Tìm $x$\nTìm $x$, biết: $|x - 1,5| + \\frac{2}{5} = 1,4$\n\n*Lời giải*:\n$$|x - 1,5| = 1,4 - 0,4 = 1$$\n$$\\Rightarrow \\left[ \\begin{array}{l} x - 1,5 = 1 \\\\ x - 1,5 = -1 \\end{array} \\right. \\Rightarrow \\left[ \\begin{array}{l} x = 2,5 \\\\ x = 0,5 \\end{array} \\right.$$\nVậy $x \\in \\{0,5; 2,5\\}$.\n\n### Ví dụ 3: Chứng minh hai đường thẳng song song\nCho hình vẽ có $\\widehat{A_1} = 60^\\circ$, $\\widehat{B_1} = 60^\\circ$ ở vị trí so le trong. Chứng minh $a // b$.\n\n*Lời giải*:\nVì đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ tạo ra cặp góc so le trong $\\widehat{A_1} = \\widehat{B_1} = 60^\\circ$ nên $a // b$ (theo dấu hiệu nhận biết hai đường thẳng song song).",
+    "cau_hoi": [
+        {
+            "de": "Khẳng định nào sau đây là đúng?",
+            "da": [
+                "$15 \\in \\mathbb{Z}$ và $15 \\notin \\mathbb{Q}$",
+                "$15 \\notin \\mathbb{Z}$ và $15 \\in \\mathbb{Q}$",
+                "$\\frac{5}{9} \\in \\mathbb{Z}$ và $-\\frac{5}{9} \\notin \\mathbb{Q}$",
+                "$\\frac{5}{9} \\notin \\mathbb{Z}$ và $-\\frac{5}{9} \\in \\mathbb{Q}$"
+            ],
+            "d": 3,
+            "gt": "$\\frac{5}{9}$ không phải là số nguyên (không thuộc $\\mathbb{Z}$) và $-\\frac{5}{9}$ là số hữu tỉ (thuộc $\\mathbb{Q}$)."
+        },
+        {
+            "de": "Giá trị của $x$ thỏa mãn $|x| + 3 = 5$ là:",
+            "da": [
+                "$x = -2$",
+                "$x = 2$",
+                "$x = 2$ hoặc $x = -2$",
+                "$x = 8$"
+            ],
+            "d": 2,
+            "gt": "$|x| + 3 = 5 \\Rightarrow |x| = 2 \\Rightarrow x = 2$ hoặc $x = -2$."
+        },
+        {
+            "de": "Giá trị của $(2^3)^5$ là:",
+            "da": [
+                "$2^8$",
+                "$2^{15}$",
+                "$2^2$",
+                "$2^{35}$"
+            ],
+            "d": 1,
+            "gt": "Áp dụng công thức lũy thừa của lũy thừa: $(a^m)^n = a^{m \\cdot n} \\Rightarrow (2^3)^5 = 2^{3 \\cdot 5} = 2^{15}$."
+        },
+        {
+            "de": "Trong các phân số $\\frac{3}{5}; \\frac{7}{12}; \\frac{15}{70}; \\frac{15}{6}$, các phân số viết được dưới dạng số thập phân vô hạn tuần hoàn là:",
+            "da": [
+                "$\\frac{7}{12}; \\frac{15}{70}; \\frac{15}{6}$",
+                "$\\frac{3}{5}; \\frac{7}{12}; \\frac{15}{70}$",
+                "$\\frac{7}{12}; \\frac{15}{70}$",
+                "$\\frac{15}{70}$"
+            ],
+            "d": 2,
+            "gt": "Rút gọn các phân số: $\\frac{3}{5}$ (mẫu là 5 - hữu hạn), $\\frac{7}{12}$ (mẫu $12 = 2^2 \\cdot 3$ chứa ước 3 - vô hạn tuần hoàn), $\\frac{15}{70} = \\frac{3}{14}$ (mẫu $14 = 2 \\cdot 7$ chứa ước 7 - vô hạn tuần hoàn), $\\frac{15}{6} = \\frac{5}{2}$ (mẫu là 2 - hữu hạn). Do đó $\\frac{7}{12}$ và $\\frac{15}{70}$ viết được dưới dạng số thập phân vô hạn tuần hoàn."
+        },
+        {
+            "de": "Số $0,3181818\\dots$ gọi là số:",
+            "da": [
+                "Số thập phân hữu hạn.",
+                "Số tự nhiên.",
+                "Số thập phân vô hạn tuần hoàn.",
+                "Số nguyên."
+            ],
+            "d": 2,
+            "gt": "Số $0,3181818\\dots = 0,3(18)$ có phần thập phân lặp lại vô hạn chu kỳ $18$ nên là số thập phân vô hạn tuần hoàn."
+        },
+        {
+            "de": "Có bao nhiêu số hữu tỉ lớn hơn $-\\frac{2}{9}$ và nhỏ hơn $-\\frac{1}{9}$?",
+            "da": [
+                "Không có",
+                "Có hữu hạn số",
+                "Có vô số số",
+                "Có 1 số duy nhất"
+            ],
+            "d": 2,
+            "gt": "Giữa hai số hữu tỉ bất kỳ luôn có vô số số hữu tỉ khác."
+        },
+        {
+            "de": "Số đối của các số hữu tỉ $-1,5$ và $\\frac{3}{4}$ lần lượt là:",
+            "da": [
+                "$1,5$ và $-\\frac{3}{4}$",
+                "$-1,5$ và $\\frac{3}{4}$",
+                "$-1,5$ và $-\\frac{3}{4}$",
+                "$1,5$ và $\\frac{3}{4}$"
+            ],
+            "d": 0,
+            "gt": "Số đối của $-1,5$ là $1,5$; số đối của $\\frac{3}{4}$ là $-\\frac{3}{4}$."
+        },
+        {
+            "de": "Số nào trong các số dưới đây viết được dưới dạng số thập phân vô hạn tuần hoàn?",
+            "da": [
+                "$\\frac{15}{24}$",
+                "$\\frac{-4}{15}$",
+                "$\\frac{14}{40}$",
+                "$\\frac{16}{50}$"
+            ],
+            "d": 1,
+            "gt": "Xét $\\frac{-4}{15}$ có mẫu $15 = 3 \\cdot 5$ chứa thừa số nguyên tố $3 \\neq 2, 5$ nên biểu diễn được dưới dạng số thập phân vô hạn tuần hoàn."
+        },
+        {
+            "de": "Kết quả làm tròn số $3,14159$ với độ chính xác $0,005$ là:",
+            "da": [
+                "$3,14$",
+                "$3,1416$",
+                "$3,142$",
+                "$3,141$"
+            ],
+            "d": 0,
+            "gt": "Độ chính xác $0,005$ đòi hỏi làm tròn số đến hàng phần trăm (chữ số thập phân thứ hai). Chữ số sau chữ số $4$ là $1 < 5$, giữ nguyên $4$. Kết quả là $3,14$."
+        },
+        {
+            "de": "Trong các phân số sau, phân số nào biểu diễn số hữu tỉ $-\\frac{3}{4}$?",
+            "da": [
+                "$\\frac{-6}{2}$",
+                "$\\frac{8}{-6}$",
+                "$\\frac{9}{-12}$",
+                "$\\frac{-12}{9}$"
+            ],
+            "d": 2,
+            "gt": "Rút gọn phân số: $\\frac{9}{-12} = -\\frac{9:3}{12:3} = -\\frac{3}{4}$."
+        },
+        {
+            "de": "Kết quả phép tính $\\left(-\\frac{1}{3}\\right)^4$ là:",
+            "da": [
+                "$\\frac{1}{81}$",
+                "$\\frac{4}{81}$",
+                "$-\\frac{1}{81}$",
+                "$-\\frac{4}{81}$"
+            ],
+            "d": 0,
+            "gt": "$\\left(-\\frac{1}{3}\\right)^4 = \\frac{(-1)^4}{3^4} = \\frac{1}{81}$."
+        },
+        {
+            "de": "Giá trị của $x$ trong đẳng thức $\\frac{3}{4} - \\frac{1}{3}x = \\frac{5}{6}$ là:",
+            "da": [
+                "$-120$",
+                "$-4$",
+                "$-\\frac{1}{4}$",
+                "$-40$"
+            ],
+            "d": 2,
+            "gt": "$\\frac{1}{3}x = \\frac{3}{4} - \\frac{5}{6} = -\\frac{1}{12} \\Rightarrow x = -\\frac{1}{12} : \\frac{1}{3} = -\\frac{1}{4}$."
+        },
+        {
+            "de": "Giá trị của phép tính $\\left(\\frac{1}{3}\\right)^8 : \\left(\\frac{1}{3}\\right)^5$ là:",
+            "da": [
+                "$\\frac{1}{3}$",
+                "$\\left(\\frac{1}{3}\\right)^3$",
+                "$\\frac{1}{27}$",
+                "$\\left(\\frac{1}{3}\\right)^{24}$"
+            ],
+            "d": 1,
+            "gt": "$\\left(\\frac{1}{3}\\right)^8 : \\left(\\frac{1}{3}\\right)^5 = \\left(\\frac{1}{3}\\right)^{8-5} = \\left(\\frac{1}{3}\\right)^3$ (hoặc bằng $\\frac{1}{27}$)."
+        },
+        {
+            "de": "Cho đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ và trong các góc tạo thành có một cặp góc so le trong bằng nhau thì:",
+            "da": [
+                "$a$ trùng $b$",
+                "$a // b$",
+                "$a$ cắt $b$",
+                "$a \\perp b$"
+            ],
+            "d": 1,
+            "gt": "Theo dấu hiệu nhận biết hai đường thẳng song song: Nếu một đường thẳng cắt hai đường thẳng tạo thành một cặp góc so le trong bằng nhau thì hai đường thẳng đó song song."
+        },
+        {
+            "de": "Qua một điểm nằm ngoài đường thẳng cho trước, ta vẽ được bao nhiêu đường thẳng song song với đường thẳng đó?",
+            "da": [
+                "1 đường thẳng",
+                "2 đường thẳng",
+                "3 đường thẳng",
+                "4 đường thẳng"
+            ],
+            "d": 0,
+            "gt": "Theo tiên đề Euclid: Qua một điểm nằm ngoài một đường thẳng chỉ có một đường thẳng song song với đường thẳng đó."
+        },
+        {
+            "de": "Nếu hai đường thẳng phân biệt $a$ và $b$ cùng vuông góc với đường thẳng $c$ thì:",
+            "da": [
+                "$a // b$",
+                "$a \\perp b$",
+                "$a$ cắt $b$",
+                "$a$ trùng $b$"
+            ],
+            "d": 0,
+            "gt": "Hai đường thẳng phân biệt cùng vuông góc với đường thẳng thứ ba thì chúng song song với nhau."
+        },
+        {
+            "de": "Cho hình vẽ có $\\widehat{B_4} = 120^\\circ$. Số đo góc $\\widehat{B_2}$ là:",
+            "da": [
+                "$60^\\circ$",
+                "$30^\\circ$",
+                "$120^\\circ$",
+                "$180^\\circ$"
+            ],
+            "d": 2,
+            "gt": "Góc $\\widehat{B_2}$ và $\\widehat{B_4}$ là hai góc đối đỉnh nên $\\widehat{B_2} = \\widehat{B_4} = 120^\\circ$."
+        },
+        {
+            "de": "Góc $\\widehat{A_1}$ ở vị trí so le trong với góc nào?",
+            "da": [
+                "$\\widehat{B_1}$",
+                "$\\widehat{B_2}$",
+                "$\\widehat{B_3}$",
+                "$\\widehat{B_4}$"
+            ],
+            "d": 2,
+            "gt": "Dựa vào vị trí hình vẽ, góc so le trong với góc $\\widehat{A_1}$ là góc $\\widehat{B_3}$."
+        },
+        {
+            "de": "Góc $\\widehat{B_3}$ ở vị trí đồng vị với góc nào?",
+            "da": [
+                "$\\widehat{A_1}$",
+                "$\\widehat{A_2}$",
+                "$\\widehat{A_3}$",
+                "$\\widehat{A_4}$"
+            ],
+            "d": 2,
+            "gt": "Góc đồng vị với $\\widehat{B_3}$ là góc $\\widehat{A_3}$."
+        },
+        {
+            "de": "Ba đường thẳng $xx', yy', zz'$ cùng đi qua $O$. Góc nào sau đây là góc kề bù với góc $\\widehat{xOy}$?",
+            "da": [
+                "Góc $\\widehat{yOx'}$",
+                "Góc $\\widehat{xOy'}$",
+                "Góc $\\widehat{yOz'}$ và góc $\\widehat{zOy'}$",
+                "Góc $\\widehat{yOx'}$ và góc $\\widehat{xOy'}$"
+            ],
+            "d": 3,
+            "gt": "Góc kề bù với $\\widehat{xOy}$ tạo bởi tia đối của $Ox$ (là $Ox'$) hoặc tia đối của $Oy$ (là $Oy'$), do đó gồm hai góc $\\widehat{yOx'}$ và $\\widehat{xOy'}$."
+        },
+        {
+            "de": "[Đề 1] Kết quả làm tròn số $36,4572$ đến hàng phần trăm là:",
+            "da": [
+                "$36,46$",
+                "$36,45$",
+                "$36,5$",
+                "$36,4$"
+            ],
+            "d": 0,
+            "gt": "Chữ số ở hàng phần trăm là $5$, chữ số đứng liền sau là $7 \\ge 5$ nên tăng $5$ lên thành $6$. Kết quả $36,46$."
+        },
+        {
+            "de": "[Đề 1] Trên trục số, điểm $M$ nằm giữa $0$ và $-1$ chia đoạn thành $2$ phần bằng nhau biểu diễn số hữu tỉ nào?",
+            "da": [
+                "$-\\frac{1}{3}$",
+                "$-\\frac{1}{2}$",
+                "$\\frac{1}{2}$",
+                "$\\frac{1}{3}$"
+            ],
+            "d": 1,
+            "gt": "Điểm $M$ nằm bên trái điểm $0$ một khoảng bằng nửa đơn vị nên biểu diễn số $-\\frac{1}{2}$."
+        },
+        {
+            "de": "[Đề 1] Giá trị của biểu thức $A = 2x^2y - 3xy$ tại $x = -2; y = 1$ là:",
+            "da": [
+                "$-14$",
+                "$12$",
+                "$-2$",
+                "$14$"
+            ],
+            "d": 3,
+            "gt": "Thay $x = -2, y = 1$ vào $A$: $A = 2(-2)^2(1) - 3(-2)(1) = 2(4)(1) + 6 = 8 + 6 = 14$."
+        },
+        {
+            "de": "[Đề 1] Chọn phát biểu đúng trong các phát biểu sau:",
+            "da": [
+                "$9 \\notin \\mathbb{Q}$ vì 9 là số tự nhiên",
+                "$-2\\frac{1}{3}$ là số hữu tỉ vì $-2\\frac{1}{3} = \\frac{-5}{3}$",
+                "$\\sqrt{2}$ là số hữu tỉ vì $\\sqrt{2} = \\frac{\\sqrt{2}}{1}$",
+                "$0,3$ là số hữu tỉ vì $0,3 = \\frac{3}{10}$"
+            ],
+            "d": 3,
+            "gt": "$0,3 = \\frac{3}{10}$ có dạng phân số với tử và mẫu là số nguyên ($3, 10 \\in \\mathbb{Z}, 10 \\neq 0$) nên là số hữu tỉ."
+        },
+        {
+            "de": "[Đề 1] Cho $Oz$ là tia phân giác của góc $\\widehat{xOy} = 70^\\circ$. Khi đó số đo góc $\\widehat{yOz}$ bằng:",
+            "da": [
+                "$35^\\circ$",
+                "$40^\\circ$",
+                "$70^\\circ$",
+                "$140^\\circ$"
+            ],
+            "d": 0,
+            "gt": "Tia phân giác chia góc thành 2 phần bằng nhau: $\\widehat{yOz} = \\frac{\\widehat{xOy}}{2} = \\frac{70^\\circ}{2} = 35^\\circ$."
+        },
+        {
+            "de": "[Đề 1] Cho $a // b$, một đường thẳng cắt $a, b$ tạo thành góc $40^\\circ$. Số đo $x$ ở vị trí so le trong là:",
+            "da": [
+                "$140^\\circ$",
+                "$60^\\circ$",
+                "$40^\\circ$",
+                "$20^\\circ$"
+            ],
+            "d": 2,
+            "gt": "Vì $a // b$ nên hai góc so le trong bằng nhau $\\Rightarrow x = 40^\\circ$."
+        },
+        {
+            "de": "[Đề 2] Khẳng định nào sau đây là sai?",
+            "da": [
+                "$-3 \\in \\mathbb{Q}$",
+                "$\\frac{3}{2} \\notin \\mathbb{Z}$",
+                "$3,2 \\in \\mathbb{N}$",
+                "$\\frac{2}{-5} \\in \\mathbb{Q}$"
+            ],
+            "d": 2,
+            "gt": "$3,2$ là số thập phân, không thuộc tập hợp số tự nhiên $\\mathbb{N}$."
+        },
+        {
+            "de": "[Đề 2] Phân số nào biểu diễn được dưới dạng số thập phân vô hạn tuần hoàn?",
+            "da": [
+                "$\\frac{7}{6}$",
+                "$\\frac{13}{10}$",
+                "$-\\frac{11}{20}$",
+                "$\\frac{12}{15}$"
+            ],
+            "d": 0,
+            "gt": "$\\frac{7}{6}$ có mẫu $6 = 2 \\cdot 3$ chứa thừa số nguyên tố $3 \\neq 2, 5$ nên viết được dưới dạng STPVHTH."
+        },
+        {
+            "de": "[Đề 2] Làm tròn số $17,5384$ với độ chính xác $0,05$ được kết quả là:",
+            "da": [
+                "$17,53$",
+                "$17,54$",
+                "$17,5$",
+                "$17,6$"
+            ],
+            "d": 2,
+            "gt": "Độ chính xác $0,05$ đòi hỏi làm tròn đến hàng phần mười. Chữ số ở hàng phần mười là $5$, chữ số sau là $3 < 5$ nên giữ nguyên. Kết quả là $17,5$."
+        },
+        {
+            "de": "[Đề 2] Cho góc $\\widehat{xOt} = 120^\\circ$. Số đo $\\widehat{yOt}$ kề bù với góc $\\widehat{xOt}$ là:",
+            "da": [
+                "$70^\\circ$",
+                "$120^\\circ$",
+                "$60^\\circ$",
+                "$180^\\circ$"
+            ],
+            "d": 2,
+            "gt": "$\\widehat{yOt} = 180^\\circ - \\widehat{xOt} = 180^\\circ - 120^\\circ = 60^\\circ$."
+        }
+    ],
+    "bt_co_ban": [
+        {
+            "de": "Thực hiện phép tính: $A = \\left(-\frac{2}{3}\\right)^2 \\cdot \\frac{21}{25} + \\frac{6}{17} \\cdot \\left(-\frac{1}{3} - \\frac{1}{8}\\right) : \\frac{7}{12}$",
+            "dd": [
+                "37/100",
+                "0.37"
+            ],
+            "lg": "1) $\\left(-\\frac{2}{3}\\right)^2 \\cdot \\frac{21}{25} = \\frac{4}{9} \\cdot \\frac{21}{25} = \\frac{28}{75}$.\n2) $-\\frac{1}{3} - \\frac{1}{8} = -\\frac{11}{24}$.\n3) $\\frac{6}{17} \\cdot \\left(-\\frac{11}{24}\\right) : \\frac{7}{12} = -\\frac{11}{68} \\cdot \\frac{12}{7} = -\\frac{33}{119}$.\n4) Cộng kết quả thu được giá trị cụ thể."
+        },
+        {
+            "de": "Thực hiện phép tính: $B = -\\frac{3}{8} \\cdot 27\\frac{1}{5} - 51\\frac{1}{5} \\cdot \\left(-\\frac{3}{8}\\right) + 2019^0$",
+            "dd": [
+                "10",
+                "x=10"
+            ],
+            "lg": "$B = -\\frac{3}{8} \\left(27\\frac{1}{5} - 51\\frac{1}{5}\\right) + 1 = -\\frac{3}{8} (-24) + 1 = 9 + 1 = 10$."
+        },
+        {
+            "de": "Tìm $x$, biết: $\\frac{1}{3}x - 2 = \\frac{3}{5}$",
+            "dd": [
+                "39/5",
+                "7.8",
+                "x=39/5"
+            ],
+            "lg": "$\\frac{1}{3}x = \\frac{3}{5} + 2 = \\frac{13}{5} \\Rightarrow x = \\frac{13}{5} \\cdot 3 = \\frac{39}{5}$."
+        },
+        {
+            "de": "Tìm $x$, biết: $2 + \\frac{1}{2} - \\left|x + \\frac{1}{3}\\right| = \\frac{3}{4}$",
+            "dd": [
+                "x=17/12",
+                "x=-25/12"
+            ],
+            "lg": "$\\left|x + \\frac{1}{3}\\right| = \\frac{5}{2} - \\frac{3}{4} = \\frac{7}{4} \\Rightarrow \\left[ \\begin{array}{l} x + \\frac{1}{3} = \\frac{7}{4} \\Rightarrow x = \\frac{17}{12} \\\\ x + \\frac{1}{3} = -\\frac{7}{4} \\Rightarrow x = -\\frac{25}{12} \\end{array} \\right.$"
+        },
+        {
+            "de": "Một mảnh vườn hình chữ nhật có kích thước $15\\text{m} \\times 20\\text{m}$. Nếu người ta trồng rau trên 4 ô vuông kích thước $2,5\\text{m} \\times 2,5\\text{m}$ thì phần diện tích còn lại là bao nhiêu?",
+            "dd": [
+                "275",
+                "275 m2",
+                "275m2"
+            ],
+            "lg": "Diện tích mảnh vườn: $15 \\times 20 = 300\\text{ m}^2$.\nDiện tích 4 ô vuông trồng rau: $4 \\times (2,5 \\times 2,5) = 4 \\times 6,25 = 25\\text{ m}^2$.\nDiện tích phần còn lại: $300 - 25 = 275\\text{ m}^2$."
+        },
+        {
+            "de": "Trong $100\\text{g}$ gạo lứt chứa: $7,5\\text{g}$ protein; $2,7\\text{g}$ lipid; $72,8\\text{g}$ glucid; $3,4\\text{g}$ celluloza; $1,4\\text{g}$ tro và phần còn lại là nước. Hỏi khối lượng nước trong $400\\text{g}$ gạo lứt là bao nhiêu?",
+            "dd": [
+                "48",
+                "48g",
+                "48 gram"
+            ],
+            "lg": "Khối lượng các chất dinh dưỡng trong $100\\text{g}$ gạo lứt là:\n$7,5 + 2,7 + 72,8 + 3,4 + 1,4 = 87,8\\text{ g}$.\nKhối lượng nước trong $100\\text{g}$ gạo lứt là: $100 - 87,8 = 12,2\\text{ g}$.\nKhối lượng nước trong $400\\text{g}$ gạo lứt là: $12,2 \\times 4 = 48\\text{ g}$."
+        },
+        {
+            "de": "Một cửa hàng thời trang giảm giá tất cả mặt hàng 20%. Bạn Hạnh định mua một cái áo giá 200.000đ và một cái quần giá 350.000đ. Tính số tiền Hạnh phải trả sau khi giảm giá.",
+            "dd": [
+                "440000",
+                "440000đ",
+                "440.000 đồng"
+            ],
+            "lg": "Tổng giá tiền ban đầu: $200.000 + 350.000 = 550.000\\text{ đ}$.\nSố tiền Hạnh phải trả (bằng $80\\%$ giá ban đầu): $550.000 \\times (1 - 0,20) = 440.000\\text{ đ}$."
+        },
+        {
+            "de": "[Đề 1 - Bài 3] Một cửa hàng nhập 200 cái bánh trung thu với chi phí 6.000.000 đồng. Cửa hàng bán ra thị trường 50.000 đồng/cái. Sau ngày 1/8 Âm lịch còn lại 120 cái, cửa hàng khuyến mãi \"Mua 1 tặng 1\" nên bán hết hàng. Hỏi cửa hàng lời hay lỗ bao nhiêu?",
+            "dd": [
+                "Lời 1.000.000 đồng",
+                "Lời 1000000đ",
+                "1000000"
+            ],
+            "lg": "Số bánh đã bán trước đợt khuyến mãi: $200 - 120 = 80$ cái.\nDoanh thu từ 80 cái đầu: $80 \\times 50.000 = 4.000.000$ đồng.\nĐợt khuyến mãi Mua 1 tặng 1: Khách trả tiền 1 cái nhận 2 cái $\\rightarrow$ Số cái bánh tính tiền là $120 : 2 = 60$ cái.\nDoanh thu đợt khuyến mãi: $60 \\times 50.000 = 3.000.000$ đồng.\nTổng doanh thu: $4.000.000 + 3.000.000 = 7.000.000$ đồng.\nSố tiền lời: $7.000.000 - 6.000.000 = 1.000.000$ đồng."
+        }
+    ],
+    "bt_nang_cao": [
+        {
+            "de": "Tìm GTNN của $A = \\frac{3}{|x-2|+1}$ và $C = |x-7| + \\frac{1}{14}$. Tìm GTLN nếu có.",
+            "hd": "Đánh giá mẫu số $|x-2|+1 \\ge 1$ để tìm GTLN của $A$; dùng $|x-7| \\ge 0$ để tìm GTNN của $C$.",
+            "dd": [
+                "GTLN A = 3",
+                "GTNN C = 1/14"
+            ],
+            "lg": "1) Do $|x-2| \\ge 0 \\Rightarrow |x-2|+1 \\ge 1 \\Rightarrow A = \\frac{3}{|x-2|+1} \\le \\frac{3}{1} = 3$.\n   Vậy GTLN của $A = 3$ khi $x = 2$.\n2) Do $|x-7| \\ge 0 \\Rightarrow C = |x-7| + \\frac{1}{14} \\ge \\frac{1}{14}$.\n   Vậy GTNN của $C = \\frac{1}{14}$ khi $x = 7$."
+        },
+        {
+            "de": "Tìm các giá trị nguyên của $x$ để biểu thức $B = \\frac{x+2}{x-1}$ nhận giá trị nguyên.",
+            "hd": "Biến đổi $B = 1 + \\frac{3}{x-1}$, để $B \\in \\mathbb{Z}$ thì $(x-1)$ phải là ước của 3.",
+            "dd": [
+                "x in {-2, 0, 2, 4}",
+                "-2, 0, 2, 4"
+            ],
+            "lg": "Ta có: $B = \\frac{x-1+3}{x-1} = 1 + \\frac{3}{x-1}$.\nĐể $B \\in \\mathbb{Z}$ thì $\\frac{3}{x-1} \\in \\mathbb{Z} \\Rightarrow (x-1) \\in \\text{Ư}(3) = \\{-3; -1; 1; 3\\}$.\n- $x - 1 = -3 \\Rightarrow x = -2$\n- $x - 1 = -1 \\Rightarrow x = 0$\n- $x - 1 = 1 \\Rightarrow x = 2$\n- $x - 1 = 3 \\Rightarrow x = 4$\nVậy $x \\in \\{-2; 0; 2; 4\\}$."
+        },
+        {
+            "de": "Chứng minh rằng: $A = (5^5 - 5^4 + 5^3) \\vdots 7$",
+            "hd": "Đặt thừa số chung $5^3$ ra ngoài.",
+            "dd": [
+                "ĐPCM"
+            ],
+            "lg": "Ta có: $A = 5^3 \\cdot (5^2 - 5 + 1) = 5^3 \\cdot (25 - 5 + 1) = 5^3 \\cdot 21$.\nVì $21 = 7 \\cdot 3 \\vdots 7$ nên $A = 5^3 \\cdot 21 \\vdots 7$ (đpcm)."
+        },
+        {
+            "de": "Cho $S = \\frac{1}{2^2} + \\frac{1}{3^2} + \\frac{1}{4^2} + \\dots + \\frac{1}{9^2}$. Chứng minh $\\frac{2}{5} < S < \\frac{8}{9}$.",
+            "hd": "Sử dụng bất đẳng thức $\\frac{1}{n^2} < \\frac{1}{(n-1)n}$ và $\\frac{1}{n^2} > \\frac{1}{n(n+1)}$.",
+            "dd": [
+                "ĐPCM"
+            ],
+            "lg": "1) Chứng minh $S < \\frac{8}{9}$:\n   $S < \\frac{1}{1 \\cdot 2} + \\frac{1}{2 \\cdot 3} + \\dots + \\frac{1}{8 \\cdot 9} = 1 - \\frac{1}{2} + \\frac{1}{2} - \\frac{1}{3} + \\dots + \\frac{1}{8} - \\frac{1}{9} = 1 - \\frac{1}{9} = \\frac{8}{9}$.\n2) Chứng minh $S > \\frac{2}{5}$:\n   $S > \\frac{1}{2 \\cdot 3} + \\frac{1}{3 \\cdot 4} + \\dots + \\frac{1}{9 \\cdot 10} = \\frac{1}{2} - \\frac{1}{10} = \\frac{4}{10} = \\frac{2}{5}$.\n   Vậy $\\frac{2}{5} < S < \\frac{8}{9}$ (đpcm)."
+        },
+        {
+            "de": "Không tính giá trị biểu thức $P = \\left(1 - \\frac{1}{2}\\right)\\left(1 - \\frac{1}{3}\\right)\\left(1 - \\frac{1}{4}\\right)\\dots\\left(1 - \\frac{1}{99}\\right)$, chứng minh $0 < P < 1$.",
+            "hd": "Rút gọn tích $P = \\frac{1}{2} \\cdot \\frac{2}{3} \\cdot \\frac{3}{4} \\dots \\frac{98}{99} = \\frac{1}{99}$.",
+            "dd": [
+                "P = 1/99",
+                "0 < P < 1"
+            ],
+            "lg": "Biến đổi các thừa số:\n$P = \\frac{1}{2} \\cdot \\frac{2}{3} \\cdot \\frac{3}{4} \\dots \\frac{98}{99} = \\frac{1 \\cdot 2 \\cdot 3 \\dots 98}{2 \\cdot 3 \\cdot 4 \\dots 99} = \\frac{1}{99}$.\nVì $0 < \\frac{1}{99} < 1$ nên $0 < P < 1$ (đpcm)."
+        }
+    ]
+}
 
         "bt_nang_cao": [
             {"de": "Tính hợp lý: A = 5/13 . ( -3/10 ) + 5/13 . ( -7/10 ) + 8/13","hd": "Dùng tính chất phân phối của phép nhân đối với phép cộng: a.b + a.c = a.(b+c)","dd": ["1"],"lg": "A = 5/13 . (-3/10 - 7/10) + 8/13 = 5/13 . (-10/10) + 8/13 = 5/13 . (-1) + 8/13 = -5/13 + 8/13 = 3/13. (Sửa lại kết quả đúng là 3/13)"},
