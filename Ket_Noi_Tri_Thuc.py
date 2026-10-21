@@ -4,8 +4,12 @@ PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
 Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện
 """
 import streamlit as st
+import google.generativeai as genai
 import random
 import re
+
+# Mở "két sắt" lấy chìa khóa kết nối AI
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # ==================== IMPORT DỮ LIỆU TỪ 3 FILE ====================
 try:
@@ -403,3 +407,58 @@ else:
         chuong_dict = lop_dict[lop]
         if chuong_dict:
             hien_thi_che_do_thi(mon, lop, chuong_dict)
+            # ==========================================
+# KHU VỰC GIA SƯ AI (ĐẶT Ở CUỐI FILE CÙNG)
+# ==========================================
+st.divider()
+st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
+
+# 1. Cài đặt tính cách cho Gia sư AI
+SYSTEM_PROMPT = """
+Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) dạy môn Toán, Lý, Hóa lớp 7 (sách Kết Nối Tri Thức).
+Nguyên tắc:
+1. Tuyệt đối KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
+2. Sử dụng phương pháp gợi mở từng bước để học sinh tự tính toán.
+3. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
+4. Trình bày công thức Toán/Hóa rõ ràng.
+"""
+
+# Khởi tạo bộ não AI
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=SYSTEM_PROMPT
+)
+
+# 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# Hiển thị lại lịch sử chat trên màn hình
+for message in st.session_state.chat_history:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# 3. Khung cho học sinh nhập câu hỏi
+if prompt := st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé..."):
+    # Hiển thị câu hỏi của học sinh
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    st.session_state.chat_history.append({"role": "user", "content": prompt})
+
+    # Gọi AI trả lời
+    with st.chat_message("assistant"):
+        # Gom các câu chuyện cũ để AI hiểu ngữ cảnh
+        gemini_history = [
+            {"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]}
+            for msg in st.session_state.chat_history[:-1]
+        ]
+        
+        # Gửi câu hỏi và nhận câu trả lời
+        chat_session = model.start_chat(history=gemini_history)
+        response = chat_session.send_message(prompt)
+        
+        # In câu trả lời ra màn hình web
+        st.markdown(response.text)
+        
+    # Lưu câu trả lời của AI vào lịch sử
+    st.session_state.chat_history.append({"role": "assistant", "content": response.text})
