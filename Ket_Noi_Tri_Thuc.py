@@ -60,7 +60,7 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
 }
 
-# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET ====================
+# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET (ĐÃ CẬP NHẬT ĐỦ HÓA HỌC) ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -69,7 +69,10 @@ DANH_MUC_THI_NGHIEM = {
         "💡 Khúc xạ & Phản xạ ánh sáng (Quang học 7)": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html",
     },
     "🧪 Môn Hóa học (KHTN)": {
-        "⚛️ Cấu tạo Nguyên tử (Đang phát triển)": "",
+        "⚛️ Xây dựng cấu tạo Nguyên tử": "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_vi.html",
+        "🧬 Lắp ghép Phân tử (H2O, CO2...)": "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_vi.html",
+        "⚖️ Cân bằng Phương trình Hóa học": "https://phet.colorado.edu/sims/html/balancing-chemical-equations/latest/balancing-chemical-equations_vi.html",
+        "🧪 Pha chế & Đo nồng độ dung dịch": "https://phet.colorado.edu/sims/html/concentration/latest/concentration_vi.html",
     },
     "📖 Môn Ngữ Văn": {
         "📖 Sơ đồ tư duy Tác phẩm & Phân tích văn học": "",
