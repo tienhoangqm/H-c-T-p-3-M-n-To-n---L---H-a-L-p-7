@@ -81,7 +81,7 @@ C1_T7 = {
             {"nd": "Cho tỉ lệ thức x/4 = 3/2. Giá trị của x là?","da": ["3","6","8","12"],"d": 1,"gt": "Nhân chéo: 2x = 12 ⇒ x = 6."},
             {"nd": "Khẳng định nào sai?","da": ["ℚ ∪ 𝕀 = ℝ","ℕ ⊂ ℤ","ℤ ⊂ ℚ","ℚ ∩ 𝕀 = ℚ"],"d": 3,"gt": "Tập số hữu tỉ ℚ và vô tỉ 𝕀 là 2 tập rời nhau, giao của chúng là tập rỗng ∅."},
             {"nd": "Số 0 là:","da": ["Số hữu tỉ dương","Số hữu tỉ âm","Số hữu tỉ không dương cũng không âm","Không phải số hữu tỉ"],"d": 2,"gt": "0 = 0/1 nên là số hữu tỉ, nó phân định số âm và số dương."},
-            {"nd": "Hỗн số -2 1/4 (Âm hai một phần tư) viết dưới dạng phân số là?","da": ["-7/4","-9/4","9/4","-1/4"],"d": 1,"gt": "Giữ dấu âm bên ngoài: -( (2.4+1)/4 ) = -9/4."},
+            {"nd": "Hỗน số -2 1/4 (Âm hai một phần tư) viết dưới dạng phân số là?","da": ["-7/4","-9/4","9/4","-1/4"],"d": 1,"gt": "Giữ dấu âm bên ngoài: -( (2.4+1)/4 ) = -9/4."},
             {"nd": "Giá trị biểu thức |-3,5| là?","da": ["3,5","-3,5","0","Không xác định"],"d": 0,"gt": "Giá trị tuyệt đối luôn ≥ 0."},
             {"nd": "Tìm x biết |x| = 1/3?","da": ["x = 1/3","x = -1/3","x = ±1/3","x = 0"],"d": 2,"gt": "Có hai số có giá trị tuyệt đối bằng 1/3 là 1/3 và -1/3."},
             {"nd": "Nếu x < 0 thì |x| bằng?","da": ["x","-x","0","1"],"d": 1,"gt": "Theo định nghĩa, nếu x < 0 thì |x| = -x (để ra số dương)."},
@@ -142,13 +142,117 @@ C1_T7 = {
             {"de": "Tìm phần nguyên của số hữu tỉ x = -4,7.","hd": "Phần nguyên của x (kí hiệu [x]) là số nguyên lớn nhất không vượt quá x.","dd": ["-5"],"lg": "Số nguyên lớn nhất nhỏ hơn hoặc bằng -4,7 là -5. Chú ý không phải là -4."},
             {"de": "Tính nhanh: B = 1/3 + 1/3² + 1/3³ + ... + 1/3^10","hd": "Nhân 3B rồi lấy 3B - B.","dd": ["B = (3^10 - 1) / (2.3^10)"],"lg": "3B = 1 + 1/3 + 1/3² + ... + 1/3^9. Trừ B ta được: 2B = 1 - 1/3^10. Vậy B = (1 - 1/3^10) / 2."},
             {"de": "Một quyển sách giảm giá 20% thì có giá 40.000đ. Hỏi giá ban đầu là bao nhiêu?","hd": "Giá sau khi giảm tương ứng với bao nhiêu % giá ban đầu?","dd": ["50.000đ"],"lg": "Giá sau khi giảm = 100% - 20% = 80% giá ban đầu. Giá ban đầu = 40.000 : 80% = 40.000 : 0,8 = 50.000đ."},
-            {"de": "Tìm x biết: |x - 2| = x - 2","hd": "Sử dụng tính chất |A] = A khi A ≥ 0.","dd": ["x ≥ 2"],"lg": "|x - 2| = x - 2 khi và chỉ khi x - 2 ≥ 0 ⇒ x ≥ 2."},
+            {"de": "Tìm x biết: |x - 2| = x - 2","hd": "Sử dụng tính chất |A| = A khi A ≥ 0.","dd": ["x ≥ 2"],"lg": "|x - 2| = x - 2 khi và chỉ khi x - 2 ≥ 0 ⇒ x ≥ 2."},
             {"de": "Tìm x, y, z biết: 2x = 3y = 4z và x + y + z = 26.","hd": "Chia các vế cho BCNN(2,3,4) = 12 để đưa về dãy tỉ số bằng nhau.","dd": ["x=12, y=8, z=6"],"lg": "2x/12 = 3y/12 = 4z/12 ⇒ x/6 = y/4 = z/3. Theo t/c dãy tỉ số bằng nhau: (x+y+z)/(6+4+3) = 26/13 = 2. Vậy x=12, y=8, z=6."}
         ]
     }
 }
 
 T7["Chương 1: Số hữu tỉ — Số thực"] = C1_T7
+
+# --- Chương 3: Góc và Đường thẳng song song ---
+C3_T7 = {
+    "Góc và Đường thẳng song song (Chuyên sâu)": {
+        "ly_thuyet": """📌 1. HAI GÓC ĐỐI ĐỈNH:
+- Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.
+- Tính chất: Hai góc đối đỉnh thì có số đo bằng nhau.
+
+📌 2. GÓC TẠO BỞI MỘT ĐƯỜNG THẲNG CẮT HAI ĐƯỜNG THẲNG:
+Khi đường thẳng c cắt hai đường thẳng a và b, tạo ra: 2 cặp góc so le trong, 4 cặp góc đồng vị, 2 cặp góc trong cùng phía.
+
+📌 3. HAI ĐƯỜNG THẲNG SONG SONG:
+- Dấu hiệu nhận biết: Nếu đường thẳng c cắt hai đường thẳng a, b và trong các góc tạo thành có:
+  + Một cặp góc so le trong bằng nhau, HOẶC
+  + Một cặp góc đồng vị bằng nhau, HOẶC
+  + Một cặp góc trong cùng phía bù nhau (tổng = 180°)
+  => Thì a song song với b (a // b).
+
+📌 4. TIÊN ĐỀ EUCLID VỀ ĐƯỜNG THẲNG SONG SONG:
+- Qua một điểm nằm ngoài một đường thẳng, chỉ có MỘT đường thẳng song song với đường thẳng đó.
+- Tính chất: Nếu a // b, đường thẳng c cắt a thì c cũng cắt b. Khi đó: Hai góc so le trong bằng nhau, Hai góc đồng vị bằng nhau, Hai góc trong cùng phía bù nhau.
+
+📌 5. ĐỊNH LÍ VÀ CHỨNG MINH ĐỊNH LÍ:
+- Cấu trúc: Giả thiết (GT - Điều cho biết) và Kết luận (KL - Điều cần chứng minh).""",
+        
+        "vi_du": """💡 VÍ DỤ 1: Tính số đo các góc đối đỉnh và kề bù
+Đề bài: Hai đường thẳng xx' và yy' cắt nhau tại O. Biết góc xOy = 60°. Tính số đo các góc còn lại.
+- Giải:
+  + Góc x'Oy' đối đỉnh với góc xOy nên x'Oy' = xOy = 60°.
+  + Góc xOy' kề bù với góc xOy nên x'Oy' = 180° - 60° = 120°.
+  + Góc x'Oy đối đỉnh với góc xOy' nên x'Oy = xOy' = 120°.
+
+💡 VÍ DỤ 2: Chứng minh hai đường thẳng song song
+Đề bài: Cho đường thẳng c cắt a tại A, cắt b tại B. Biết góc so le trong A₁ = 75° và B₁ = 75°. Hỏi a và b có song song không?
+- Giải: Ta có A₁ và B₁ là hai góc so le trong. Mà A₁ = B₁ = 75°. ⇒ a // b (Dấu hiệu nhận biết).
+
+💡 VÍ DỤ 3: Vận dụng tính chất hai đường thẳng song song
+Đề bài: Cho a // b. Đường thẳng c cắt a tại A, cắt b tại B. Biết góc đồng vị A₂ = 110°. Tính góc trong cùng phía B₄.
+- Giải: 
+  + Vì a // b nên góc đồng vị B₂ = A₂ = 110°.
+  + Góc B₄ và B₂ kề bù nên B₄ = 180° - 110° = 70°.""",
+
+        "cau_hoi": [
+            {"nd": "Hai góc đối đỉnh là hai góc có tính chất gì?","da": ["Mỗi cạnh của góc này là tia đối của một cạnh của góc kia","Có chung một cạnh","Có tổng số đo bằng 180°","Có tổng số đo bằng 90°"],"d": 0,"gt": "Định nghĩa góc đối đỉnh."},
+            {"nd": "Hai góc đối đỉnh thì:","da": ["Kề nhau","Bù nhau","Bằng nhau","Phụ nhau"],"d": 2,"gt": "Tính chất cơ bản: Hai góc đối đỉnh luôn có số đo bằng nhau."},
+            {"nd": "Cho 2 đường thẳng cắt nhau. Nếu có 1 góc bằng 45° thì góc đối đỉnh với nó bằng?","da": ["45°","135°","90°","180°"],"d": 0,"gt": "Góc đối đỉnh thì bằng nhau nên cũng bằng 45°."},
+            {"nd": "Hai góc kề bù có tổng số đo bằng bao nhiêu?","da": ["90°","180°","360°","45°"],"d": 1,"gt": "Tạo thành một góc bẹt (180°)."},
+            {"nd": "Một đường thẳng cắt hai đường thẳng tạo ra mấy cặp góc so le trong?","da": ["1 cặp","2 cặp","3 cặp","4 cặp"],"d": 1,"gt": "Tạo ra 2 cặp góc so le trong."},
+            {"nd": "Một đường thẳng cắt hai đường thẳng tạo ra mấy cặp góc đồng vị?","da": ["1 cặp","2 cặp","3 cặp","4 cặp"],"d": 3,"gt": "Tạo ra 4 cặp góc đồng vị."},
+            {"nd": "Nếu 1 đường thẳng cắt 2 đường thẳng và tạo ra cặp góc so le trong bằng nhau thì:","da": ["Vuông góc","Cắt nhau","Song song","Trùng nhau"],"d": 2,"gt": "Dấu hiệu nhận biết hai đường thẳng song song."},
+            {"nd": "Điền từ: Nếu một đường thẳng cắt hai đường thẳng song song thì hai góc đồng vị ...","da": ["Kề bù","Bằng nhau","Phụ nhau","Bù nhau"],"d": 1,"gt": "Hai góc đồng vị bằng nhau."},
+            {"nd": "Nếu a // b và c cắt a, b thì hai góc trong cùng phía có tính chất gì?","da": ["Bằng nhau","Phụ nhau","Bù nhau (Tổng 180°)","Kề nhau"],"d": 2,"gt": "Hai góc trong cùng phía bù nhau."},
+            {"nd": "Qua một điểm nằm ngoài đường thẳng, có bao nhiêu đường thẳng song song với nó?","da": ["0","1","2","Vô số"],"d": 1,"gt": "Tiên đề Euclid: Chỉ có duy nhất 1 đường thẳng."},
+            {"nd": "Nếu a ⊥ b và b ⊥ c thì quan hệ giữa a và c là gì?","da": ["a ⊥ c","a // c","Cắt nhau","Trùng nhau"],"d": 1,"gt": "Hai đường thẳng cùng vuông góc với đường thẳng thứ ba thì song song."},
+            {"nd": "Nếu a // b và b // c thì quan hệ giữa a và c là gì?","da": ["a ⊥ c","a // c","Cắt nhau","Vuông góc"],"d": 1,"gt": "Tính chất bắc cầu: a // c."},
+            {"nd": "Cho a // b, c ⊥ a. Khẳng định nào sau đây đúng?","da": ["c // b","c ⊥ b","c trùng b","Không cắt b"],"d": 1,"gt": "Một đường thẳng vuông góc với 1 trong 2 đường song song thì vuông góc với đường kia."},
+            {"nd": "Phần 'Giả thiết' của một định lí là gì?","da": ["Điều cần chứng minh","Điều đã cho biết","Kết quả","Hình vẽ"],"d": 1,"gt": "Giả thiết (GT) là những điều cho trước."},
+            {"nd": "Phần 'Kết luận' của một định lí là gì?","da": ["Điều cho trước","Điều cần chứng minh","Định nghĩa","Cách giải"],"d": 1,"gt": "Kết luận (KL) là điều cần suy ra."},
+            {"nd": "Hai góc bù nhau có tổng số đo bằng?","da": ["90°","180°","360°","45°"],"d": 1,"gt": "Bù nhau = 180°."},
+            {"nd": "Hai góc phụ nhau có tổng số đo bằng?","da": ["90°","180°","360°","45°"],"d": 0,"gt": "Phụ nhau = 90°."},
+            {"nd": "Cho góc A = 30°, góc phụ với góc A có số đo là?","da": ["60°","150°","30°","90°"],"d": 0,"gt": "90° - 30° = 60°."},
+            {"nd": "Đường trung trực của đoạn thẳng AB là đường thẳng:","da": ["Đi qua trung điểm của AB","Vuông góc với AB","Vuông góc với AB tại trung điểm","Song song với AB"],"d": 2,"gt": "Vừa vuông góc vừa đi qua trung điểm."},
+            {"nd": "Kí hiệu hai đường thẳng vuông góc là?","da": ["//","⊥","=","≡"],"d": 1,"gt": "Kí hiệu ⊥."}
+        ],
+
+        "bt_co_ban": [
+            {"de": "Cho hai đường thẳng xy và zt cắt nhau tại O. Biết góc xOz = 50°. Tính số đo góc yOt.","dd": ["50°"],"gt": "Góc yOt và góc xOz là hai góc đối đỉnh nên bằng nhau."},
+            {"de": "Cho hai đường thẳng xy và zt cắt nhau tại O. Biết góc xOz = 50°. Tính số đo góc xOt.","dd": ["130°"],"gt": "Góc xOt kề bù với góc xOz ⇒ xOt = 180° - 50° = 130°."},
+            {"de": "Cho a // b. Đường thẳng c cắt a, b. Biết một góc so le trong bằng 60°. Tính góc so le trong còn lại.","dd": ["60°"],"gt": "Hai đường thẳng song song thì hai góc so le trong bằng nhau."},
+            {"de": "Cho a // b. Đường thẳng c cắt a, b. Biết một góc đồng vị bằng 110°. Tính góc đồng vị còn lại.","dd": ["110°"],"gt": "Hai đường thẳng song song thì hai góc đồng vị bằng nhau."},
+            {"de": "Cho a // b. Biết một góc trong cùng phía bằng 80°. Tính góc trong cùng phía còn lại.","dd": ["100°"],"gt": "Hai góc trong cùng phía bù nhau ⇒ 180° - 80° = 100°."},
+            {"de": "Vẽ đường thẳng d. Lấy điểm A không thuộc d. Có bao nhiêu đường thẳng qua A và song song với d?","dd": ["1 đường thẳng"],"gt": "Theo Tiên đề Euclid."},
+            {"de": "Đường thẳng a vuông góc với c, đường thẳng b vuông góc với c. Quan hệ giữa a và b?","dd": ["a // b"],"gt": "Hai đường thẳng cùng vuông góc với đường thứ ba thì song song."},
+            {"de": "Đường thẳng d là trung trực của đoạn MN. Biết MN = 6cm. d cắt MN tại I. Tính MI.","dd": ["3cm"],"gt": "I là trung điểm của MN ⇒ MI = 6 / 2 = 3cm."},
+            {"de": "Viết giả thiết (GT) của định lí: 'Hai góc đối đỉnh thì bằng nhau'.","dd": ["GT: Hai góc O1 và O2 đối đỉnh"],"gt": "Điều đã cho biết."},
+            {"de": "Viết kết luận (KL) của định lí: 'Hai góc đối đỉnh thì bằng nhau'.","dd": ["KL: Góc O1 = Góc O2"],"gt": "Điều cần chứng minh."}
+        ],
+
+        "bt_nang_cao": [
+            {"de": "Cho 2 đường thẳng xx' và yy' cắt nhau tại O. Biết xOy + x'Oy' = 140°. Tính số đo 4 góc tạo thành.","hd": "Hai góc đối đỉnh thì bằng nhau. xOy = x'Oy'.","dd": ["xOy = x'Oy' = 70°; xOy' = x'Oy = 110°"],"lg": "Vì xOy và x'Oy' đối đỉnh nên xOy = x'Oy' = 140°/2 = 70°. Góc kề bù xOy' = 180° - 70° = 110°."},
+            {"de": "Cho hình vẽ có a // b. Đường thẳng c cắt a tại A, b tại B. Biết A1 - B1 = 40° (A1, B1 là hai góc trong cùng phía). Tính A1, B1.","hd": "Sử dụng tính chất 2 góc trong cùng phía bù nhau (A1 + B1 = 180°).","dd": ["A1 = 110°, B1 = 70°"],"lg": "A1 + B1 = 180° và A1 - B1 = 40°. Cộng 2 vế: 2.A1 = 220° ⇒ A1 = 110°. Suy ra B1 = 70°."},
+            {"de": "Cho góc xOy = 120°. Vẽ tia Oz nằm trong góc xOy sao cho xOz = 40°. Vẽ tia Ot là tia đối của tia Oz. Tính yOt.","hd": "Tính góc yOz trước. Sau đó dùng tính chất kề bù với tia đối.","dd": ["100°"],"lg": "yOz = xOy - xOz = 120° - 40° = 80°. Ot là tia đối của Oz nên yOt và yOz kề bù ⇒ yOt = 180° - 80° = 100°."},
+            {"de": "Chứng minh định lí: Nếu hai đường thẳng a, b song song với nhau, một đường thẳng c vuông góc với a thì c cũng vuông góc với b.","hd": "Sử dụng tính chất góc đồng vị hoặc so le trong.","dd": ["Xem lời giải"],"lg": "Gọi A là giao của c và a, B là giao của c và b. c ⊥ a ⇒ Góc A1 = 90°. Vì a // b nên góc đồng vị B1 = A1 = 90°. Vậy c ⊥ b."},
+            {"de": "Cho tam giác ABC. Qua A vẽ đường thẳng m // BC, qua B vẽ đường thẳng n // AC. Hai đường m, n cắt nhau tại D. Có nhận xét gì về góc D và góc C?","hd": "Sử dụng các góc so le trong và đồng vị do các đường thẳng song song tạo ra.","dd": ["Góc D = Góc C"],"lg": "Vì m // BC nên góc D = góc DBA (so le trong). Vì n // AC nên góc DBA = góc C (đồng vị hoặc so le trong với đường phụ). Suy ra D = C."},
+            {"de": "Cho ba đường thẳng d1, d2, d3 cắt nhau tại O. Biết góc d1Od2 = 30°, d2Od3 = 60°. Tính góc giữa d1 và d3.","hd": "Có hai trường hợp tùy thuộc tia nằm giữa.","dd": ["90° hoặc 30°"],"lg": "TH1: d2 nằm giữa d1, d3 ⇒ Góc = 30° + 60° = 90°. TH2: d1 nằm giữa d2, d3 ⇒ Góc = 60° - 30° = 30°."},
+            {"de": "Cho a // b. Vẽ tia phân giác của hai góc trong cùng phía cắt nhau tại M. Tính góc tạo bởi hai tia phân giác đó.","hd": "Tổng hai góc trong cùng phía là 180°. Tổng hai nửa góc bằng bao nhiêu?","dd": ["90°"],"lg": "Tổng 2 góc trong cùng phía = 180°. Phân giác chia đôi góc nên tổng 2 góc nhỏ = 180°/2 = 90°. Xét tam giác tạo thành, góc ở đỉnh M = 180° - 90° = 90°."},
+            {"de": "Vẽ hai góc kề bù xOy và yOz, biết xOy = 60°. Gọi Om, On lần lượt là phân giác của xOy và yOz. Tính mOn.","hd": "Góc tạo bởi hai tia phân giác của hai góc kề bù luôn là góc vuông.","dd": ["90°"],"lg": "xOy + yOz = 180°. mOn = 1/2 xOy + 1/2 yOz = 1/2(180°) = 90°."},
+            {"de": "Cho hai đường thẳng song song a và b. Đường thẳng c cắt a tại A, b tại B. Trên a lấy điểm C, trên b lấy điểm D sao cho AC // BD. Chứng minh AC = BD.","hd": "Gợi ý: Vẽ đường chéo AD, chứng minh hai tam giác bằng nhau (sẽ học kĩ ở chương sau). Ở đây dùng tính chất đoạn chắn song song.","dd": ["Các đoạn song song bị chắn bởi các đường song song thì bằng nhau."],"lg": "Theo tính chất đoạn chắn: Hai đoạn thẳng song song bị chắn bởi hai đường thẳng song song thì bằng nhau. Suy ra AC = BD."},
+            {"de": "Một đường thẳng cắt hai đường thẳng song song tạo ra một cặp góc đồng vị có dạng (2x + 10)° và (3x - 20)°. Tìm x.","hd": "Hai góc đồng vị bằng nhau.","dd": ["x = 30"],"lg": "2x + 10 = 3x - 20 ⇒ x = 30."},
+            {"de": "Một đường thẳng cắt hai đường thẳng song song tạo ra cặp góc trong cùng phía có số đo lần lượt là 3x° và 2x°. Tính số đo hai góc đó.","hd": "Tổng 2 góc trong cùng phía bằng 180°.","dd": ["108° và 72°"],"lg": "3x + 2x = 180 ⇒ 5x = 180 ⇒ x = 36. Các góc: 3.36 = 108° và 2.36 = 72°."},
+            {"de": "Cho góc xOy = 90°. Vẽ tia Oz nằm trong góc xOy sao cho góc xOz = 1/3 góc xOy. Tính yOz.","hd": "xOz + yOz = xOy.","dd": ["60°"],"lg": "xOz = 90° / 3 = 30°. yOz = 90° - 30° = 60°."},
+            {"de": "Cho góc bẹt xOy. Vẽ tia Oz sao cho xOz = 70°. Vẽ tia Ot sao cho yOt = 50° (Oz, Ot cùng nửa mặt phẳng). Tính zOt.","hd": "Các tia cùng nằm trên nửa mặt phẳng. Tính xOt rồi trừ.","dd": ["60°"],"lg": "xOt = 180° - yOt = 180° - 50° = 130°. Tia Oz nằm giữa Ox, Ot nên zOt = 130° - 70° = 60°."},
+            {"de": "Qua điểm O, vẽ 5 đường thẳng phân biệt. Hỏi có bao nhiêu cặp góc đối đỉnh (nhỏ hơn góc bẹt)?","hd": "Công thức n(n-1) cặp với n đường thẳng.","dd": ["20 cặp"],"lg": "Với n đường thẳng cắt nhau tại 1 điểm, số cặp góc đối đỉnh là n(n-1). Thay n=5 ⇒ 5.4 = 20 cặp."},
+            {"de": "Có hai đường thẳng a và b. Nếu a vuông góc với c, b cắt c một góc 60°. Hỏi a và b có song song không?","hd": "Nếu a // b thì góc đồng vị phải bằng nhau.","dd": ["Không song song"],"lg": "Nếu a // b thì b cũng phải vuông góc với c (tức là góc 90°). Đề cho 60° ≠ 90° nên không song song."},
+            {"de": "Cho hình chữ nhật ABCD. Kẻ đường chéo AC. Nêu tên các cặp góc so le trong bằng nhau.","hd": "Sử dụng tính chất AB // CD và AD // BC.","dd": ["Góc BAC = ACD; Góc DAC = BCA"],"lg": "Vì AB // CD, AC là cát tuyến nên góc BAC = ACD. Tương tự AD // BC nên góc DAC = BCA."},
+            {"de": "Nếu hai đường thẳng cắt nhau tạo thành 4 góc, trong đó tổng 3 góc là 290°. Tính số đo 4 góc đó.","hd": "Tổng 4 góc là 360°.","dd": ["70°, 110°, 70°, 110°"],"lg": "Góc còn lại = 360° - 290° = 70°. Góc đối đỉnh với nó = 70°. Hai góc kề bù với nó = 180° - 70° = 110°."},
+            {"de": "Định lí 'Nếu hai góc bằng nhau thì đối đỉnh' là đúng hay sai? Vẽ hình minh họa.","hd": "Mệnh đề đảo của định lí đối đỉnh có thể sai.","dd": ["Sai"],"lg": "Sai. Ví dụ hai góc bằng nhau là 60° nhưng không chung đỉnh, hoặc chung đỉnh nhưng không tạo thành các đường thẳng chéo nhau (tia phân giác)."},
+            {"de": "Cho a // b. Một đường thẳng c cắt a, b tạo thành 8 góc. Biết tổng của hai góc so le trong là 140°. Tính số đo tất cả các góc.","hd": "Hai góc so le trong bằng nhau. Tính 1 góc, từ đó suy ra các góc còn lại (kề bù, đối đỉnh).","dd": ["Bốn góc 70° và bốn góc 110°"],"lg": "Hai góc so le trong bằng nhau nên mỗi góc = 140°/2 = 70°. Góc kề bù với nó = 180° - 70° = 110°. Các góc đồng vị, đối đỉnh tương ứng cũng bằng 70° và 110°."},
+            {"de": "Chứng minh rằng hai tia phân giác của hai góc đối đỉnh là hai tia đối nhau.","hd": "Tính tổng các góc trên đường thẳng tạo bởi hai tia phân giác đó.","dd": ["Xem lời giải"],"lg": "Gọi xOy và x'Oy' là hai góc đối đỉnh. Oz là p/g xOy, Oz' là p/g x'Oy'. Ta có zOy = 1/2 xOy; yOx' = 180° - xOy; x'Oz' = 1/2 x'Oy' = 1/2 xOy. Tổng góc zOy + yOx' + x'Oz' = 1/2 xOy + 180° - xOy + 1/2 xOy = 180°. Vậy Oz và Oz' tạo thành góc bẹt, là 2 tia đối nhau."}
+        ]
+    }
+}
+
+T7["Chương 3: Góc và Đường thẳng song song"] = C3_T7
 
 # --- Chương 2: Số thực ---
 C2_T7 = {
@@ -246,127 +350,14 @@ C2_T7 = {
             {"de": "Chứng minh rằng số √3 là số vô tỉ.","hd": "Sử dụng phương pháp phản chứng tương tự như chứng minh √2 là số vô tỉ.","dd": ["Xem lời giải chi tiết"],"lg": "Giả sử √3 là số hữu tỉ, tồn tại phân số tối giản m/n sao cho m/n = √3 (m, n ∈ ℕ, ƯCLN(m,n)=1). Suy ra m² = 3n². Do đó m² chia hết cho 3 ⇒ m chia hết cho 3 ⇒ m = 3k. Thay vào ta có 9k² = 3n² ⇒ n² = 3k² ⇒ n chia hết cho 3. Vậy m và n cùng chia hết cho 3, trái với giả thiết phân số tối giản. Mâu thuẫn chứng tỏ √3 là số vô tỉ."},
             {"de": "So sánh hai số thực: 2 + √3 và √15","hd": "Bình phương hai số dương để so sánh.","dd":["2 + √3 < √15"],"lg": "(2 + √3)² = 4 + 4√3 + 3 = 7 + 4√3 = 7 + √48. Mà (√15)² = 15 = 7 + 8 = 7 + √64. Vì 48 < 64 nên √48 < √64, suy ra 7 + √48 < 7 + √64, do đó 2 + √3 < √15."},
             {"de": "Tìm x nguyên để biểu thức P = (√x + 1) / (√x - 3) nhận giá trị nguyên. (Với x ≥ 0, x ≠ 9)","hd": "Tách tử thức theo mẫu thức: P = (√x - 3 + 4) / (√x - 3) = 1 + 4/(√x - 3).","dd": ["x ∈ {1; 16; 25; 49}"],"lg": "Để P nguyên thì √x - 3 phải là ước của 4. Ư(4) = {±1; ±2; ±4}. Ta xét các trường hợp: √x - 3 = 1 ⇒ √x = 4 ⇒ x = 16; √x - 3 = -1 ⇒ √x = 2 ⇒ x = 4; √x - 3 = 2 ⇒ √x = 5 ⇒ x = 25; √x - 3 = -2 ⇒ √x = 1 ⇒ x = 1; √x - 3 = 4 ⇒ √x = 7 ⇒ x = 49; √x - 3 = -4 ⇒ √x = -1 (loại). Vậy x ∈ {1; 4; 16; 25; 49}."},
-            {"de": "Tìm số thực x, biết: |x - 1| + |x - 2| + |x - 3| = 2","hd": "Lập bảng xét dấu hoặc chia khoảng giá trị của x trên trục số.","dd":["x = 1 hoặc x = 3"],"lg": "Xét các khoảng của x: Nếu x < 1 ...; Nếu 1 ≤ x ≤ 3: Biểu thức trái thành (x-1) + (2-x) + (3-x) = 4 - x = 2 ⇒ x = 2 (thỏa mãn 1 ≤ x ≤ 3). Nếu x > 3: Biểu thức trái thành (x-1) + (x-2) + (x-3) = 3x - 6 = 2 ⇒ 3x = 8 ⇒ x = 8/3 (loại vì không thỏa x > 3). Kiểm tra lại mút: x = 1 thay vào ta có 0 + 1 + 2 = 3 (loại); x = 3 thay vào ta có 2 + 1 + 0 = 3 (loại). Vậy x = 2."},
+            {"de": "Tìm số thực x, biết: |x - 1| + |x - 2| + |x - 3| = 2","hd": "Lập bảng xét dấu hoặc chia khoảng giá trị của x trên trục số.","dd":["x = 1 hoặc x = 3"],"lg": "Xét các khoảng của x: Nếu 1 ≤ x ≤ 3: Biểu thức trái thành (x-1) + (2-x) + (3-x) = 4 - x = 2 ⇒ x = 2 (thỏa mãn 1 ≤ x ≤ 3). Kiểm tra x = 2: |1| + |0| + |-1| = 2 (Đúng). Vậy x = 2."},
             {"de": "Tính giá trị biểu thức: S = 1/(1 + √2) + 1/(√2 + √3) + 1/(√3 + √4) + ... + 1/(√99 + √100)","hd": "Nhân liên hợp từng số hạng: 1/(√a + √b) = (√b - √a)/(b - a).","dd":["9"],"lg": "Nhân liên hợp mỗi số hạng ta được: (√2 - 1)/(2 - 1) + (√3 - 2)/(3 - 2) + ... + (√100 - √99)/(100 - 99) = -1 + √2 - √2 + √3 - ... + √100 = √100 - 1 = 10 - 1 = 9."},
-            {"de": "Tìm x, y, z thuộc ℝ thỏa mãn: √(x - 1) + √(y - 2) + √(z - 3) = 1/2 . (x + y + z - 6)","hd": "Chuyển vế, ghép thành các hằng đẳng thức bình phương: (A - B)² + ... = 0.","dd":["x = 2, y = 3, z = 4"],"lg": "Nhân 2 vào hai vế: 2√(x-1) + 2√(y-2) + 2√(z-3) = x + y + z - 6. Chuyển vế nhóm lại: (x - 1 - 2√(x-1) + 1) + (y - 2 - 2√(y-2) + 1) + (z - 3 - 2√(z-3) + 1) = 0 ⇒ (√(x-1) - 1)² + (√(y-2) - 1)² + (√(z-3) - 1)² = 0. Từ đó suy ra √(x-1) = 1, √(y-2) = 1, √(z-3) = 1 ⇒ x = 2, y = 3, z = 4."},
-            {"de": "Giải phương trình nghiệm nguyên: x² + y² + z² = x.y.z (Nâng cao chuyên toán)","hd": "Sử dụng phương pháp lùi vô hạn hoặc nguyên lý cực hạn.","dd":["(0,0,0) hoặc (3,3,3)"],"lg": "Nghiệm của phương trình là (0,0,0) hoặc (3,3,3)."},
-            {"de": "Cho x, y là các số thực thỏa mãn x + y = 1. Tìm giá trị nhỏ nhất của biểu thức M = x³ + y³","hd": "Phân tích x³ + y³ = (x + y)(x² - xy + y²)...","dd":["Min M = 1/4 khi x = y = 1/2"],"lg": "M = (x+y)(x² - xy + y²) = x² - xy + y². Ta có x + y = 1 ⇒ y = 1 - x. M = x² - x(1 - x) + (1 - x)² = 3x² - 3x + 1 = 3(x - 1/2)² + 1/4 ≥ 1/4. Dấu '=' xảy ra khi x = y = 1/2."},
-            {"de": "Tìm số tự nhiên n để giá trị biểu thức A = n³ + 3n² - n - 3 là một số nguyên tố.","hd": "Phân tích đa thức thành nhân tử: A = (n - 1)(n + 1)(n + 3).","dd":["n = 2"],"lg": "A = n²(n + 3) - 1(n + 3) = (n² - 1)(n + 3) = (n - 1)(n + 1)(n + 3). Thử n = 2 ta có A = 15 (không phải nguyên tố). Tuy nhiên xét theo tài liệu chuyên toán, đây là bài tập lọc nghiệm."},
-            {"de": "Rút gọn biểu thức: P = √(x² - 4x + 4) + x với x < 2","hd": "Sử dụng hằng đẳng thức √(A²) = |A| và phá dấu giá trị tuyệt đối dựa vào điều kiện x < 2.","dd":["P = 2"],"lg": "P = √((x - 2)²) + x = |x - 2| + x. Vì x < 2 nên x - 2 < 0, do đó |x - 2| = -(x - 2) = 2 - x. Vậy P = 2 - x + x = 2."},
-            {"de": "Cho x, y > 0 thỏa mãn x + y ≤ 1. Tìm GTNN của biểu thức S = 1/(xy) + 1/(x² + y²)","hd": "Sử dụng bất đẳng thức phụ 1/ab + 1/a² + 1/b²...","dd":["Min S = 6"],"lg": "S = 1/(xy) + 1/(x² + y²) = 1/(2xy) + 1/(x² + y²) + 1/(2xy). Áp dụng BĐT 1/a + 1/b ≥ 4/(a+b)... Min S = 6 khi x = y = 1/2."},
-            {"de": "Tìm tất cả các số nguyên x, y thỏa mãn: x² + 2xy + 3x + 2y = 2","hd": "Đưa về phương trình tích bằng cách nhóm nhân tử chung.","dd":["(x,y) ∈ {(1,-1); (-3, 3)}"],"lg": "Biến đổi thành (x + 1)(x + 2y + 2) = 2. Từ đó xét các ước của 2 (là ±1, ±2) để tìm x, y."},
-            {"de": "Cho biểu thức T = √x / (√x + 2). Tìm các số nguyên x để T là số nguyên. (Với x ≥ 0)","hd": "Tách tử: T = (√x + 2 - 2)/(√x + 2) = 1 - 2/(√x + 2).","dd":["x = 0"],"lg": "Vì √x + 2 ≥ 2 nên √x + 2 chỉ có thể bằng 2. Suy ra √x = 0 ⇒ x = 0."},
-            {"de": "Chứng minh rằng với mọi số nguyên dương n, ta luôn có: 1/1² + 1/2² + 1/3² + ... + 1/n² < 2","hd": "Áp dụng đánh giá 1/k² < 1/(k(k-1)) với k ≥ 2.","dd":["Xem lời giải"],"lg": "Dùng tính chất đánh giá chuỗi số: tổng < 2 - 1/n < 2 (đpcm)."},
-            {"de": "Tìm x, y thuộc ℝ sao cho: |x - y| + |y - 2z| + |z + 3| = 0","hd": "Tổng các giá trị tuyệt đối bằng 0 khi tất cả các biểu thức bên trong đều bằng 0.","dd":["x = -6, y = -6, z = -3"],"lg": "Từ z + 3 = 0 ⇒ z = -3. y - 2z = 0 ⇒ y = -6. x - y = 0 ⇒ x = -6."},
-            {"de": "Cho góc xOy và tia phân giác Oz của góc đó. Lấy điểm M trên Oz. Kẻ MA ⊥ Ox, MB ⊥ Oy. Chứng minh rằng MA = MB.","hd": "Sử dụng tam giác bằng nhau.","dd":["MA = MB"],"lg": "Xét hai tam giác vuông OAM và OBM có cạnh huyền OM chung, góc nhọn AOM = BOM. Suy ra tam giác vuông bằng nhau, do đó MA = MB."}
+            {"de": "Tìm x, y, z thuộc ℝ thỏa mãn: √(x - 1) + √(y - 2) + √(z - 3) = 1/2 . (x + y + z - 6)","hd": "Chuyển vế, ghép thành các hằng đẳng thức bình phương: (A - B)² + ... = 0.","dd":["x = 2, y = 3, z = 4"],"lg": "Nhân 2 vào hai vế: 2√(x-1) + 2√(y-2) + 2√(z-3) = x + y + z - 6. Chuyển vế nhóm lại: (√(x-1) - 1)² + (√(y-2) - 1)² + (√(z-3) - 1)² = 0. Từ đó suy ra x = 2, y = 3, z = 4."}
         ]
     }
 }
 
 T7["Chương 2: Số thực"] = C2_T7
-
-# --- Chương 3: Góc và Đường thẳng song song ---
-C3_T7 = {
-    "Góc và Đường thẳng song song (Chuyên sâu)": {
-        "ly_thuyet": """📌 1. HAI GÓC ĐỐI ĐỈNH:
-- Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.
-- Tính chất: Hai góc đối đỉnh thì có số đo bằng nhau.
-
-📌 2. GÓC TẠO BỞI MỘT ĐƯỜNG THẲNG CẮT HAI ĐƯỜNG THẲNG:
-Khi đường thẳng c cắt hai đường thẳng a và b, tạo ra: 2 cặp góc so le trong, 4 cặp góc đồng vị, 2 cặp góc trong cùng phía.
-
-📌 3. HAI ĐƯỜNG THẲNG SONG SONG:
-- Dấu hiệu nhận biết: Nếu đường thẳng c cắt hai đường thẳng a, b và trong các góc tạo thành có:
-  + Một cặp góc so le trong bằng nhau, HOẶC
-  + Một cặp góc đồng vị bằng nhau, HOẶC
-  + Một cặp góc trong cùng phía bù nhau (tổng = 180°)
-  => Thì a song song với b (a // b).
-
-📌 4. TIÊN ĐỀ EUCLID VỀ ĐƯỜNG THẲNG SONG SONG:
-- Qua một điểm nằm ngoài một đường thẳng, chỉ có MỘT đường thẳng song song với đường thẳng đó.
-- Tính chất: Nếu a // b, đường thẳng c cắt a thì c cũng cắt b. Khi đó: Hai góc so le trong bằng nhau, Hai góc đồng vị bằng nhau, Hai góc trong cùng phía bù nhau.
-
-📌 5. ĐỊNH LÍ VÀ CHỨNG MINH ĐỊNH LÍ:
-- Cấu trúc: Giả thiết (GT - Điều cho biết) và Kết luận (KL - Điều cần chứng minh).""",
-        
-        "vi_du": """💡 VÍ DỤ 1: Tính số đo các góc đối đỉnh và kề bù
-Đề bài: Hai đường thẳng xx' và yy' cắt nhau tại O. Biết góc xOy = 60°. Tính số đo các góc còn lại.
-- Giải:
-  + Góc x'Oy' đối đỉnh với góc xOy nên x'Oy' = xOy = 60°.
-  + Góc xOy' kề bù với góc xOy nên xOy' = 180° - 60° = 120°.
-  + Góc x'Oy đối đỉnh với góc xOy' nên x'Oy = xOy' = 120°.
-
-💡 VÍ DỤ 2: Chứng minh hai đường thẳng song song
-Đề bài: Cho đường thẳng c cắt a tại A, cắt b tại B. Biết góc so le trong A₁ = 75° và B₁ = 75°. Hỏi a và b có song song không?
-- Giải: Ta có A₁ và B₁ là hai góc so le trong. Mà A₁ = B₁ = 75°. ⇒ a // b (Dấu hiệu nhận biết).
-
-💡 VÍ DỤ 3: Vận dụng tính chất hai đường thẳng song song
-Đề bài: Cho a // b. Đường thẳng c cắt a tại A, cắt b tại B. Biết góc đồng vị A₂ = 110°. Tính góc trong cùng phía B₄.
-- Giải: 
-  + Vì a // b nên góc đồng vị B₂ = A₂ = 110°.
-  + Góc B₄ và B₂ kề bù nên B₄ = 180° - 110° = 70°.""",
-
-        "cau_hoi": [
-            {"nd": "Hai góc đối đỉnh là hai góc có tính chất gì?","da": ["Mỗi cạnh của góc này là tia đối của một cạnh của góc kia","Có chung một cạnh","Có tổng số đo bằng 180°","Có tổng số đo bằng 90°"],"d": 0,"gt": "Định nghĩa góc đối đỉnh."},
-            {"nd": "Hai góc đối đỉnh thì:","da": ["Kề nhau","Bù nhau","Bằng nhau","Phụ nhau"],"d": 2,"gt": "Tính chất cơ bản: Hai góc đối đỉnh luôn có số đo bằng nhau."},
-            {"nd": "Cho 2 đường thẳng cắt nhau. Nếu có 1 góc bằng 45° thì góc đối đỉnh với nó bằng?","da": ["45°","135°","90°","180°"],"d": 0,"gt": "Góc đối đỉnh thì bằng nhau nên cũng bằng 45°."},
-            {"nd": "Hai góc kề bù có tổng số đo bằng bao nhiêu?","da": ["90°","180°","360°","45°"],"d": 1,"gt": "Tạo thành một góc bẹt (180°)."},
-            {"nd": "Một đường thẳng cắt hai đường thẳng tạo ra mấy cặp góc so le trong?","da": ["1 cặp","2 cặp","3 cặp","4 cặp"],"d": 1,"gt": "Tạo ra 2 cặp góc so le trong."},
-            {"nd": "Một đường thẳng cắt hai đường thẳng tạo ra mấy cặp góc đồng vị?","da": ["1 cặp","2 cặp","3 cặp","4 cặp"],"d": 3,"gt": "Tạo ra 4 cặp góc đồng vị."},
-            {"nd": "Nếu 1 đường thẳng cắt 2 đường thẳng và tạo ra cặp góc so le trong bằng nhau thì:","da": ["Vuông góc","Cắt nhau","Song song","Trùng nhau"],"d": 2,"gt": "Dấu hiệu nhận biết hai đường thẳng song song."},
-            {"nd": "Điền từ: Nếu một đường thẳng cắt hai đường thẳng song song thì hai góc đồng vị ...","da": ["Kề bù","Bằng nhau","Phụ nhau","Bù nhau"],"d": 1,"gt": "Hai góc đồng vị bằng nhau."},
-            {"nd": "Nếu a // b và c cắt a, b thì hai góc trong cùng phía có tính chất gì?","da": ["Bằng nhau","Phụ nhau","Bù nhau (Tổng 180°)","Kề nhau"],"d": 2,"gt": "Hai góc trong cùng phía bù nhau."},
-            {"nd": "Qua một điểm nằm ngoài đường thẳng, có bao nhiêu đường thẳng song song với nó?","da": ["0","1","2","Vô số"],"d": 1,"gt": "Tiên đề Euclid: Chỉ có duy nhất 1 đường thẳng."},
-            {"nd": "Nếu a ⊥ b và b ⊥ c thì quan hệ giữa a và c là gì?","da": ["a ⊥ c","a // c","Cắt nhau","Trùng nhau"],"d": 1,"gt": "Hai đường thẳng cùng vuông góc với đường thẳng thứ ba thì song song."},
-            {"nd": "Nếu a // b và b // c thì quan hệ giữa a và c là gì?","da": ["a ⊥ c","a // c","Cắt nhau","Vuông góc"],"d": 1,"gt": "Tính chất bắc cầu: a // c."},
-            {"nd": "Cho a // b, c ⊥ a. Khẳng định nào sau đây đúng?","da": ["c // b","c ⊥ b","c trùng b","Không cắt b"],"d": 1,"gt": "Một đường thẳng vuông góc với 1 trong 2 đường song song thì vuông góc với đường kia."},
-            {"nd": "Phần 'Giả thiết' của một định lí là gì?","da": ["Điều cần chứng minh","Điều đã cho biết","Kết quả","Hình vẽ"],"d": 1,"gt": "Giả thiết (GT) là những điều cho trước."},
-            {"nd": "Phần 'Kết luận' của một định lí là gì?","da": ["Điều cho trước","Điều cần chứng minh","Định nghĩa","Cách giải"],"d": 1,"gt": "Kết luận (KL) là điều cần suy ra."},
-            {"nd": "Hai góc bù nhau có tổng số đo bằng?","da": ["90°","180°","360°","45°"],"d": 1,"gt": "Bù nhau = 180°."},
-            {"nd": "Hai góc phụ nhau có tổng số đo bằng?","da": ["90°","180°","360°","45°"],"d": 0,"gt": "Phụ nhau = 90°."},
-            {"nd": "Cho góc A = 30°, góc phụ với góc A có số đo là?","da": ["60°","150°","30°","90°"],"d": 0,"gt": "90° - 30° = 60°."},
-            {"nd": "Đường trung trực của đoạn thẳng AB là đường thẳng:","da": ["Đi qua trung điểm của AB","Vuông góc với AB","Vuông góc với AB tại trung điểm","Song song với AB"],"d": 2,"gt": "Vừa vuông góc vừa đi qua trung điểm."},
-            {"nd": "Kí hiệu hai đường thẳng vuông góc là?","da": ["//","⊥","=","≡"],"d": 1,"gt": "Kí hiệu ⊥."}
-        ],
-
-        "bt_co_ban": [
-            {"de": "Cho hai đường thẳng xy và zt cắt nhau tại O. Biết góc xOz = 50°. Tính số đo góc yOt.","dd": ["50°"],"gt": "Góc yOt và góc xOz là hai góc đối đỉnh nên bằng nhau."},
-            {"de": "Cho hai đường thẳng xy và zt cắt nhau tại O. Biết góc xOz = 50°. Tính số đo góc xOt.","dd": ["130°"],"gt": "Góc xOt kề bù với góc xOz ⇒ xOt = 180° - 50° = 130°."},
-            {"de": "Cho a // b. Đường thẳng c cắt a, b. Biết một góc so le trong bằng 60°. Tính góc so le trong còn lại.","dd": ["60°"],"gt": "Hai đường thẳng song song thì hai góc so le trong bằng nhau."},
-            {"de": "Cho a // b. Đường thẳng c cắt a, b. Biết một góc đồng vị bằng 110°. Tính góc đồng vị còn lại.","dd": ["110°"],"gt": "Hai đường thẳng song song thì hai góc đồng vị bằng nhau."},
-            {"de": "Cho a // b. Biết một góc trong cùng phía bằng 80°. Tính góc trong cùng phía còn lại.","dd": ["100°"],"gt": "Hai góc trong cùng phía bù nhau ⇒ 180° - 80° = 100°."},
-            {"de": "Vẽ đường thẳng d. Lấy điểm A không thuộc d. Có bao nhiêu đường thẳng qua A và song song với d?","dd": ["1 đường thẳng"],"gt": "Theo Tiên đề Euclid."},
-            {"de": "Đường thẳng a vuông góc với c, đường thẳng b vuông góc với c. Quan hệ giữa a và b?","dd": ["a // b"],"gt": "Hai đường thẳng cùng vuông góc với đường thứ ba thì song song."},
-            {"de": "Đường thẳng d là trung trực của đoạn MN. Biết MN = 6cm. d cắt MN tại I. Tính MI.","dd": ["3cm"],"gt": "I là trung điểm của MN ⇒ MI = 6 / 2 = 3cm."},
-            {"de": "Viết giả thiết (GT) của định lí: 'Hai góc đối đỉnh thì bằng nhau'.","dd": ["GT: Hai góc O1 và O2 đối đỉnh"],"gt": "Điều đã cho biết."},
-            {"de": "Viết kết luận (KL) của định lí: 'Hai góc đối đỉnh thì bằng nhau'.","dd": ["KL: Góc O1 = Góc O2"],"gt": "Điều cần chứng minh."}
-        ],
-
-        "bt_nang_cao": [
-            {"de": "Cho 2 đường thẳng xx' và yy' cắt nhau tại O. Biết xOy + x'Oy' = 140°. Tính số đo 4 góc tạo thành.","hd": "Hai góc đối đỉnh thì bằng nhau. xOy = x'Oy'.","dd": ["xOy = x'Oy' = 70°; xOy' = x'Oy = 110°"],"lg": "Vì xOy và x'Oy' đối đỉnh nên xOy = x'Oy' = 140°/2 = 70°. Góc kề bù xOy' = 180° - 70° = 110°."},
-            {"de": "Cho hình vẽ có a // b. Đường thẳng c cắt a tại A, b tại B. Biết A1 - B1 = 40° (A1, B1 là hai góc trong cùng phía). Tính A1, B1.","hd": "Sử dụng tính chất 2 góc trong cùng phía bù nhau (A1 + B1 = 180°).","dd": ["A1 = 110°, B1 = 70°"],"lg": "A1 + B1 = 180° và A1 - B1 = 40°. Cộng 2 vế: 2.A1 = 220° ⇒ A1 = 110°. Suy ra B1 = 70°."},
-            {"de": "Cho góc xOy = 120°. Vẽ tia Oz nằm trong góc xOy sao cho xOz = 40°. Vẽ tia Ot là tia đối của tia Oz. Tính yOt.","hd": "Tính góc yOz trước. Sau đó dùng tính chất kề bù với tia đối.","dd": ["100°"],"lg": "yOz = xOy - xOz = 120° - 40° = 80°. Ot là tia đối của Oz nên yOt và yOz kề bù ⇒ yOt = 180° - 80° = 100°."},
-            {"de": "Chứng minh định lí: Nếu hai đường thẳng a, b song song với nhau, một đường thẳng c vuông góc với a thì c cũng vuông góc với b.","hd": "Sử dụng tính chất góc đồng vị hoặc so le trong.","dd": ["Xem lời giải"],"lg": "Gọi A là giao của c và a, B là giao của c và b. c ⊥ a ⇒ Góc A1 = 90°. Vì a // b nên góc đồng vị B1 = A1 = 90°. Vậy c ⊥ b."},
-            {"de": "Cho tam giác ABC. Qua A vẽ đường thẳng m // BC, qua B vẽ đường thẳng n // AC. Hai đường m, n cắt nhau tại D. Có nhận xét gì về góc D và góc C?","hd": "Sử dụng các góc so le trong và đồng vị do các đường thẳng song song tạo ra.","dd": ["Góc D = Góc C"],"lg": "Vì m // BC nên góc D = góc DBA (so le trong). Vì n // AC nên góc DBA = góc C (đồng vị hoặc so le trong với đường phụ). Suy ra D = C."},
-            {"de": "Cho ba đường thẳng d1, d2, d3 cắt nhau tại O. Biết góc d1Od2 = 30°, d2Od3 = 60°. Tính góc giữa d1 và d3.","hd": "Có hai trường hợp tùy thuộc tia nằm giữa.","dd": ["90° hoặc 30°"],"lg": "TH1: d2 nằm giữa d1, d3 ⇒ Góc = 30° + 60° = 90°. TH2: d1 nằm giữa d2, d3 ⇒ Góc = 60° - 30° = 30°."},
-            {"de": "Cho a // b. Vẽ tia phân giác của hai góc trong cùng phía cắt nhau tại M. Tính góc tạo bởi hai tia phân giác đó.","hd": "Tổng hai góc trong cùng phía là 180°. Tổng hai nửa góc bằng bao nhiêu?","dd": ["90°"],"lg": "Tổng 2 góc trong cùng phía = 180°. Phân giác chia đôi góc nên tổng 2 góc nhỏ = 180°/2 = 90°. Xét tam giác tạo thành, góc ở đỉnh M = 180° - 90° = 90°."},
-            {"de": "Vẽ hai góc kề bù xOy và yOz, biết xOy = 60°. Gọi Om, On lần lượt là phân giác của xOy và yOz. Tính mOn.","hd": "Góc tạo bởi hai tia phân giác của hai góc kề bù luôn là góc vuông.","dd": ["90°"],"lg": "xOy + yOz = 180°. mOn = 1/2 xOy + 1/2 yOz = 1/2(180°) = 90°."},
-            {"de": "Cho hai đường thẳng song song a và b. Đường thẳng c cắt a tại A, b tại B. Trên a lấy điểm C, trên b lấy điểm D sao cho AC // BD. Chứng minh AC = BD.","hd": "Gợi ý: Vẽ đường chéo AD, chứng minh hai tam giác bằng nhau (sẽ học kĩ ở chương sau). Ở đây dùng tính chất đoạn chắn song song.","dd": ["Các đoạn song song bị chắn bởi các đường song song thì bằng nhau."],"lg": "Theo tính chất đoạn chắn: Hai đoạn thẳng song song bị chắn bởi hai đường thẳng song song thì bằng nhau. Suy ra AC = BD."},
-            {"de": "Một đường thẳng cắt hai đường thẳng song song tạo ra một cặp góc đồng vị có dạng (2x + 10)° và (3x - 20)°. Tìm x.","hd": "Hai góc đồng vị bằng nhau.","dd": ["x = 30"],"lg": "2x + 10 = 3x - 20 ⇒ x = 30."},
-            {"de": "Một đường thẳng cắt hai đường thẳng song song tạo ra cặp góc trong cùng phía có số đo lần lượt là 3x° và 2x°. Tính số đo hai góc đó.","hd": "Tổng 2 góc trong cùng phía bằng 180°.","dd": ["108° và 72°"],"lg": "3x + 2x = 180 ⇒ 5x = 180 ⇒ x = 36. Các góc: 3.36 = 108° và 2.36 = 72°."},
-            {"de": "Cho góc xOy = 90°. Vẽ tia Oz nằm trong góc xOy sao cho góc xOz = 1/3 góc xOy. Tính yOz.","hd": "xOz + yOz = xOy.","dd": ["60°"],"lg": "xOz = 90° / 3 = 30°. yOz = 90° - 30° = 60°."},
-            {"de": "Cho góc bẹt xOy. Vẽ tia Oz sao cho xOz = 70°. Vẽ tia Ot sao cho yOt = 50° (Oz, Ot cùng nửa mặt phẳng). Tính zOt.","hd": "Các tia cùng nằm trên nửa mặt phẳng. Tính xOt rồi trừ.","dd": ["60°"],"lg": "xOt = 180° - yOt = 180° - 50° = 130°. Tia Oz nằm giữa Ox, Ot nên zOt = 130° - 70° = 60°."},
-            {"de": "Qua điểm O, vẽ 5 đường thẳng phân biệt. Hỏi có bao nhiêu cặp góc đối đỉnh (nhỏ hơn góc bẹt)?","hd": "Công thức n(n-1) cặp với n đường thẳng.","dd": ["20 cặp"],"lg": "Với n đường thẳng cắt nhau tại 1 điểm, số cặp góc đối đỉnh là n(n-1). Thay n=5 ⇒ 5.4 = 20 cặp."},
-            {"de": "Có hai đường thẳng a và b. Nếu a vuông góc với c, b cắt c một góc 60°. Hỏi a và b có song song không?","hd": "Nếu a // b thì góc đồng vị phải bằng nhau.","dd": ["Không song song"],"lg": "Nếu a // b thì b cũng phải vuông góc với c (tức là góc 90°). Đề cho 60° ≠ 90° nên không song song."},
-            {"de": "Cho hình chữ nhật ABCD. Kẻ đường chéo AC. Nêu tên các cặp góc so le trong bằng nhau.","hd": "Sử dụng tính chất AB // CD và AD // BC.","dd": ["Góc BAC = ACD; Góc DAC = BCA"],"lg": "Vì AB // CD, AC là cát tuyến nên góc BAC = ACD. Tương tự AD // BC nên góc DAC = BCA."},
-            {"de": "Nếu hai đường thẳng cắt nhau tạo thành 4 góc, trong đó tổng 3 góc là 290°. Tính số đo 4 góc đó.","hd": "Tổng 4 góc là 360°.","dd": ["70°, 110°, 70°, 110°"],"lg": "Góc còn lại = 360° - 290° = 70°. Góc đối đỉnh với nó = 70°. Hai góc kề bù với nó = 180° - 70° = 110°."},
-            {"de": "Định lí 'Nếu hai góc bằng nhau thì đối đỉnh' là đúng hay sai? Vẽ hình minh họa.","hd": "Mệnh đề đảo của định lí đối đỉnh có thể sai.","dd": ["Sai"],"lg": "Sai. Ví dụ hai góc bằng nhau là 60° nhưng không chung đỉnh, hoặc chung đỉnh nhưng không tạo thành các đường thẳng chéo nhau."},
-            {"de": "Cho a // b. Một đường thẳng c cắt a, b tạo thành 8 góc. Biết tổng của hai góc so le trong là 140°. Tính số đo tất cả các góc.","hd": "Hai góc so le trong bằng nhau. Tính 1 góc, từ đó suy ra các góc còn lại.","dd": ["Bốn góc 70° và bốn góc 110°"],"lg": "Hai góc so le trong bằng nhau nên mỗi góc = 140°/2 = 70°. Góc kề bù với nó = 180° - 70° = 110°."},
-            {"de": "Chứng minh rằng hai tia phân giác của hai góc đối đỉnh là hai tia đối nhau.","hd": "Tính tổng các góc trên đường thẳng tạo bởi hai tia phân giác đó.","dd": ["Xem lời giải"],"lg": "Chứng minh góc tạo bởi 2 tia phân giác là 180 độ, suy ra là 2 tia đối nhau."}
-        ]
-    }
-}
-T7["Chương 3: Góc và Đường thẳng song song"] = C3_T7
 
 # --- Chương 4: Tam giác bằng nhau ---
 C4_T7 = {
@@ -418,17 +409,7 @@ C4_T7 = {
             {"nd": "Để ∆ABC = ∆DEF theo trường hợp g.c.g, nếu BC = EF, góc B = góc E thì cần thêm điều kiện gì?","da": ["Góc A = Góc D","Góc C = Góc F","AB = DE","AC = DF"],"d": 1,"gt": "Hai góc kề với cạnh BC là góc B và góc C. Góc tương ứng là E và F."},
             {"nd": "Tam giác có hai góc bằng 60° là tam giác gì?","da": ["Tam giác vuông","Tam giác tù","Tam giác cân","Tam giác đều"],"d": 3,"gt": "Góc thứ ba = 180° - 60° - 60° = 60°. Tam giác có 3 góc 60° là tam giác đều."},
             {"nd": "Điểm nằm trên đường trung trực của đoạn thẳng AB thì:","da": ["Cách đều hai điểm A và B","Chỉ cách A 2cm","Nằm trên đoạn AB","Là trung điểm của AB"],"d": 0,"gt": "Tính chất điểm trên đường trung trực."},
-            {"nd": "Trường hợp bằng nhau Cạnh huyền - Cạnh góc vuông áp dụng cho loại tam giác nào?","da": ["Tam giác nhọn","Tam giác vuông","Tam giác tù","Tam giác đều"],"d": 1,"gt": "Chỉ áp dụng cho tam giác vuông."},
-            {"nd": "Nếu ∆ABC = ∆DEF và góc A = 70° thì góc nào của ∆DEF cũng bằng 70°?","da": ["Góc D","Góc E","Góc F","Không xác định"],"d": 0,"gt": "Các đỉnh tương ứng viết cùng vị trí: A tương ứng với D."},
-            {"nd": "Cho ∆MNP có góc ngoài tại đỉnh M bằng 110°. Tổng góc N + góc P bằng?","da": ["110°","70°","180°","90°"],"d": 0,"gt": "Góc ngoài bằng tổng 2 góc trong không kề nó."},
-            {"nd": "Cho ∆ABC cân tại A. Phát biểu nào ĐÚNG?","da": ["Góc A = Góc B","AB = BC","Góc B = Góc C","Góc A = Góc C"],"d": 2,"gt": "Tam giác cân tại A thì 2 đáy là B và C bằng nhau."},
-            {"nd": "Mỗi góc của tam giác đều có số đo bằng bao nhiêu?","da": ["45°","60°","90°","120°"],"d": 1,"gt": "180° / 3 = 60°."},
-            {"nd": "Tam giác vuông cân có hai góc nhọn bằng bao nhiêu?","da": ["30°","45°","60°","90°"],"d": 1,"gt": "90° / 2 = 45°."},
-            {"nd": "Đoạn thẳng vuông góc kẻ từ một điểm đến một đường thẳng gọi là?","da": ["Đường xiên","Hình chiếu","Đường vuông góc","Đường cao"],"d": 2,"gt": "Khoảng cách ngắn nhất là đường vuông góc."},
-            {"nd": "Trong tam giác tù, có bao nhiêu góc tù?","da": ["1","2","3","0"],"d": 0,"gt": "Tổng 3 góc là 180°, nếu có 2 góc tù (>90°) thì tổng > 180° (vô lý). Nên chỉ có tối đa 1 góc tù."},
-            {"nd": "Trong tam giác ABC, nếu AB = AC và góc A = 90° thì tam giác ABC là?","da": ["Tam giác cân","Tam giác đều","Tam giác vuông cân","Tam giác tù"],"d": 2,"gt": "Vừa vuông tại A, vừa cân tại A."},
-            {"nd": "Trong một tam giác, góc lớn nhất là góc đối diện với?","da": ["Cạnh nhỏ nhất","Cạnh lớn nhất","Góc kề","Cạnh huyền"],"d": 1,"gt": "Góc đối diện với cạnh lớn nhất là góc lớn nhất."},
-            {"nd": "Cho ∆ABC = ∆DEF, biết AB = 5cm, DF = 7cm. Tính chu vi ∆ABC nếu EF = 6cm.","da": ["12cm","15cm","18cm","20cm"],"d": 2,"gt": "AB=DE=5; AC=DF=7; BC=EF=6. Chu vi = 5+6+7 = 18cm."}
+            {"nd": "Trường hợp bằng nhau Cạnh huyền - Cạnh góc vuông áp dụng cho loại tam giác nào?","da": ["Tam giác nhọn","Tam giác vuông","Tam giác tù","Tam giác đều"],"d": 1,"gt": "Chỉ áp dụng cho tam giác vuông."}
         ],
 
         "bt_co_ban": [
@@ -436,28 +417,16 @@ C4_T7 = {
             {"de": "Cho ∆MNP có góc ngoài tại đỉnh P bằng 130°. Biết góc M = 50°, tính góc N.","dd": ["80°"],"gt": "Góc N = 130° - 50° = 80°."},
             {"de": "Cho ∆ABC = ∆DEF. Biết AB = 5cm, BC = 7cm, DF = 6cm. Tính các cạnh còn lại của hai tam giác.","dd": ["AC = 6cm, DE = 5cm, EF = 7cm"],"gt": "Các cạnh tương ứng bằng nhau: AB=DE, BC=EF, AC=DF."},
             {"de": "Cho ∆ABC cân tại A, biết góc A = 70°. Tính góc B và góc C.","dd": ["Góc B = Góc C = 55°"],"gt": "(180° - 70°) / 2 = 55°."},
-            {"de": "Cho ∆DEF vuông tại D, biết góc E = 35°. Tính góc F.","dd": ["55°"],"gt": "Hai góc nhọn phụ nhau: 90° - 35° = 55°."},
-            {"de": "Vẽ đoạn thẳng AB = 4cm. Vẽ đường trung trực d của AB. d cắt AB tại I. Tính IA.","dd": ["IA = 2cm"],"gt": "d đi qua trung điểm I nên IA = AB/2 = 2cm."},
-            {"de": "Một tam giác có ba cạnh tỉ lệ với 2, 3, 4. Chu vi bằng 27cm. Tính các cạnh của tam giác đó.","dd": ["6cm, 9cm, 12cm"],"gt": "2x + 3x + 4x = 27 ⇒ 9x = 27 ⇒ x = 3. Các cạnh: 6, 9, 12."},
-            {"de": "Kiểm tra xem bộ ba độ dài 2cm, 5cm, 7cm có phải là 3 cạnh của một tam giác không?","dd": ["Không"],"gt": "2 + 5 = 7 không thỏa mãn BĐT tam giác (phải >)."},
-            {"de": "Cho ∆ABC cân tại A, có chu vi là 20cm. Biết cạnh đáy BC = 6cm. Tính chiều dài 2 cạnh bên.","dd": ["AB = AC = 7cm"],"gt": "(20 - 6) / 2 = 7cm."},
-            {"de": "Cho ∆MNP cân tại N. Phân giác góc N cắt MP tại I. Chứng minh ∆MNI = ∆PNI.","dd": ["Xem lời giải"],"gt": "∆MNI và ∆PNI có: NM=NP, góc MNI = PNI, cạnh NI chung. ⇒ Bằng nhau (c.g.c)."}
+            {"de": "Cho ∆DEF vuông tại D, biết góc E = 35°. Tính góc F.","dd": ["55°"],"gt": "Hai góc nhọn phụ nhau: 90° - 35° = 55°."}
         ],
 
         "bt_nang_cao": [
             {"de": "Cho ∆ABC. Tia phân giác của góc B và góc C cắt nhau tại I. Biết góc A = 60°. Tính góc BIC.","hd": "Dùng tổng các góc trong tam giác ABC và IBC.","dd": ["120°"],"lg": "B + C = 180° - 60° = 120°. IBC + ICB = (B+C)/2 = 60°. Góc BIC = 180° - 60° = 120°."},
-            {"de": "Cho ∆ABC có góc A = 90°, AB = AC. Lấy điểm D thuộc cạnh BC sao cho BD = AB. Tính góc ADC.","hd": "∆ABC vuông cân nên B=C=45°. ∆ABD cân tại B.","dd": ["67,5° hoặc 112,5° tùy tia"],"lg": "Vì B = 45° và BD = BA nên ∆ABD cân tại B. Góc BAD = BDA = (180° - 45°)/2 = 67,5°. Góc ADC kề bù với BDA nên ADC = 180° - 67,5° = 112,5°."},
-            {"de": "Cho ∆ABC. Trên tia đối của tia AB lấy điểm D sao cho AD = AB. Trên tia đối của tia AC lấy điểm E sao cho AE = AC. Chứng minh BC // DE.","hd": "Chứng minh ∆ABC = ∆ADE.","dd": ["Xem lời giải"],"lg": "∆ABC và ∆ADE có: AB = AD, góc BAC = DAE (đối đỉnh), AC = AE. ⇒ ∆ABC = ∆ADE (c.g.c). Suy ra góc ABC = ADE (so le trong). Vậy BC // DE."},
-            {"de": "Cho góc xOy nhọn. Lấy A, B trên Ox sao cho OA < OB. Lấy C, D trên Oy sao cho OC = OA, OD = OB. Gọi E là giao của AD và BC. Chứng minh ∆OAD = ∆OCB và OE là phân giác góc xOy.","hd": "Chứng minh 2 tam giác lớn bằng nhau, suy ra cạnh và góc tương ứng, rồi chứng minh 2 tam giác nhỏ chứa đỉnh E bằng nhau.","dd": ["Xem lời giải"],"lg": "∆OAD và ∆OCB có OA=OC, góc O chung, OD=OB ⇒ Bằng nhau (c.g.c). Từ đó AD=CB, góc OAD=OCB, góc ODA=OBC. Suy ra ∆EAB = ∆ECD (g.c.g). Có EA=EC, xét ∆OAE = ∆OCE (c.c.c) ⇒ góc AOE = COE ⇒ OE là phân giác."},
-            {"de": "Cho ∆ABC cân tại A (góc A < 90°). Kẻ BH ⊥ AC, CK ⊥ AB. Chứng minh BH = CK.","hd": "Xét 2 tam giác vuông ABH và ACK hoặc BHC và CKB.","dd": ["Xem lời giải"],"lg": "Xét ∆vuông ABH và ∆vuông ACK có: Cạnh huyền AB = AC, góc A chung. ⇒ ∆ABH = ∆ACK (cạnh huyền - góc nhọn). Suy ra BH = CK."},
-            {"de": "Cho ∆ABC vuông tại A. Tia phân giác góc B cắt AC tại D. Kẻ DE ⊥ BC tại E. Chứng minh DA = DE.","hd": "Xét 2 tam giác vuông ABD và EBD.","dd": ["Xem lời giải"],"lg": "Xét ∆ABD và ∆EBD có: BD chung, góc ABD = EBD. ⇒ ∆ABD = ∆EBD (cạnh huyền - góc nhọn). Suy ra DA = DE."},
-            {"de": "Cho ∆ABC cân tại A. Trên tia đối của tia BC lấy M, trên tia đối của tia CB lấy N sao cho BM = CN. Chứng minh ∆AMN là tam giác cân.","hd": "Chứng minh ∆ABM = ∆ACN.","dd": ["Xem lời giải"],"lg": "Góc ABC = ACB ⇒ góc kề bù ABM = ACN. Xét ∆ABM và ∆ACN có: AB = AC, ABM = ACN, BM = CN. ⇒ ∆ABM = ∆ACN (c.g.c) ⇒ AM = AN ⇒ ∆AMN cân tại A."},
-            {"de": "Đường trung trực của cạnh BC trong ∆ABC cắt AC tại D. Biết AD = 3cm, DC = 5cm. Tính chu vi ∆ABD nếu AB = 4cm.","hd": "D nằm trên trung trực BC nên DB = DC.","dd": ["12 cm"],"lg": "D ∈ trung trực BC ⇒ DB = DC = 5cm. Chu vi ∆ABD = AB + AD + DB = 4 + 3 + 5 = 12cm."},
-            {"de": "Một cái thang dài 5m dựa vào tường. Khoảng cách từ chân thang đến tường là 3m. Tính chiều cao bức tường từ điểm tựa thang xuống đất.","hd": "Áp dụng định lí Pytago.","dd": ["4m"],"lg": "h = √(5² - 3²) = √16 = 4m."},
-            {"de": "Tìm độ dài x trên hình vẽ biết ∆ vuông có cạnh góc vuông là 5, x và cạnh huyền là 13.","hd": "Dùng Pytago","dd": ["12"],"lg": "x² + 5² = 13² ⇒ x² = 169 - 25 = 144 ⇒ x = 12."}
+            {"de": "Cho ∆ABC có góc A = 90°, AB = AC. Lấy điểm D thuộc cạnh BC sao cho BD = AB. Tính góc ADC.","hd": "∆ABC vuông cân nên B=C=45°. ∆ABD cân tại B.","dd": ["67,5° hoặc 112,5° tùy tia"],"lg": "Vì B = 45° và BD = BA nên ∆ABD cân tại B. Góc BAD = BDA = (180° - 45°)/2 = 67,5°. Góc ADC kề bù với BDA nên ADC = 180° - 67,5° = 112,5°."}
         ]
     }
 }
+
 T7["Chương 4: Tam giác bằng nhau"] = C4_T7
 
 # --- Chương 5: Thu thập và biểu diễn dữ liệu ---
@@ -494,31 +463,17 @@ C5_T7 = {
             {"nd": "Để biểu diễn sự thay đổi nhiệt độ trong một tuần, ta nên dùng loại biểu đồ nào là hợp lí nhất?","da": ["Biểu đồ cột","Biểu đồ hình quạt tròn","Biểu đồ đoạn thẳng","Biểu đồ tranh"],"d": 2,"gt": "Biểu đồ đoạn thẳng chuyên dùng để biểu diễn sự thay đổi theo thời gian."},
             {"nd": "Để biểu diễn tỉ lệ phần trăm các loại trái cây trong một cửa hàng, dùng biểu đồ nào tốt nhất?","da": ["Biểu đồ cột kép","Biểu đồ hình quạt tròn","Biểu đồ đoạn thẳng","Bảng thống kê"],"d": 1,"gt": "Biểu đồ quạt biểu diễn cơ cấu/tỉ lệ % rất trực quan."},
             {"nd": "Một biểu đồ hình quạt tròn hoàn chỉnh luôn tương ứng với tổng tỉ lệ là bao nhiêu?","da": ["100%","90%","360%","180%"],"d": 0,"gt": "Toàn bộ hình tròn biểu diễn 100%."},
-            {"nd": "Trong biểu đồ quạt tròn, một thành phần chiếm 25% thì góc ở tâm của hình quạt đó là bao nhiêu?","da": ["25°","90°","45°","180°"],"d": 1,"gt": "25% của 360° = 1/4 × 360° = 90°."},
-            {"nd": "Thu thập dữ liệu 'Tên các loài hoa trong vườn' là dữ liệu:","da": ["Định lượng","Định tính","Số liệu rời rạc","Số liệu liên tục"],"d": 1,"gt": "Tên là chữ (không phải số) nên là định tính."},
-            {"nd": "Nếu 1 hình quạt có góc ở tâm là 180° thì nó biểu diễn bao nhiêu phần trăm?","da": ["180%","100%","50%","25%"],"d": 2,"gt": "180/360 = 1/2 = 50%."},
-            {"nd": "Khi điều tra về điểm thi môn Toán của tổ 1, bạn An thu được dãy: 7, 8, 9, 11, 6. Số liệu nào không hợp lí?","da": ["7","9","11","6"],"d": 2,"gt": "Điểm thi tối đa là 10, nên số 11 không hợp lí."},
-            {"nd": "Điều tra loại phương tiện đi lại của học sinh: Xe đạp, Xe buýt, Ô tô, Tàu hỏa. Kết quả 'Đi bộ' có hợp lí không?","da": ["Có","Không","Tuỳ trường hợp","Không xác định"],"d": 0,"gt": "Đi bộ cũng là một hình thức di chuyển hợp lí."},
-            {"nd": "Trong biểu đồ đoạn thẳng, nếu đường nét đứt đi lên (↗) thì thể hiện điều gì?","da": ["Đại lượng giữ nguyên","Đại lượng giảm xuống","Đại lượng tăng lên","Đại lượng không xác định"],"d": 2,"gt": "Đường đi lên thể hiện giá trị tăng lên."}
+            {"nd": "Trong biểu đồ quạt tròn, một thành phần chiếm 25% thì góc ở tâm của hình quạt đó là bao nhiêu?","da": ["25°","90°","45°","180°"],"d": 1,"gt": "25% của 360° = 1/4 × 360° = 90°."}
         ],
 
         "bt_co_ban": [
             {"de": "Thu thập cỡ giày của 5 bạn nam: 39, 40, 41, 40, 'XL'. Giá trị nào không hợp lí?","dd": ["'XL'"],"gt": "Cỡ giày là số, XL là kí hiệu cỡ áo."},
             {"de": "Một biểu đồ quạt tròn biểu diễn 4 loại sách. Truyện tranh chiếm 50%, Tiểu thuyết 25%, Khoa học 15%. Tính % sách Lịch sử.","dd": ["10%"],"gt": "100% - (50+25+15)% = 10%."},
-            {"de": "Tính góc ở tâm của hình quạt biểu diễn tỉ lệ 20% trong biểu đồ quạt tròn.","dd": ["72°"],"gt": "20% × 360° = 72°."},
-            {"de": "Cho dãy số liệu về số học sinh giỏi của 4 lớp khối 7: 12, 15, 14, 18. Tổng số học sinh giỏi khối 7 là bao nhiêu?","dd": ["59 học sinh"],"gt": "12 + 15 + 14 + 18 = 59."},
-            {"de": "Dựa vào biểu đồ đoạn thẳng mô tả nhiệt độ: T2 (20°), T3 (22°), T4 (21°), T5 (25°). Nhiệt độ tăng mạnh nhất vào ngày nào?","dd": ["Từ T4 đến T5"],"gt": "Tăng 4 độ, cao nhất trong các ngày."},
-            {"de": "Nếu 5% số học sinh trường A là 20 em. Hỏi trường A có tất cả bao nhiêu học sinh?","dd": ["400 học sinh"],"gt": "20 / 5% = 400."},
-            {"de": "Khảo sát thời gian tự học (giờ) của 5 học sinh: 1, 2, 2.5, 3, 24. Số liệu nào phi lý?","dd": ["24"],"gt": "Một ngày chỉ có 24 giờ, không thể tự học trọn vẹn 24 giờ không ngủ/ăn."},
-            {"de": "Biểu đồ quạt biểu diễn xếp loại Học lực: Tốt (25%), Khá (45%), Đạt (20%), Chưa đạt. Tính % Chưa đạt.","dd": ["10%"],"gt": "100% - 90% = 10%."},
-            {"de": "Để lập biểu đồ hình quạt tròn, bước đầu tiên cần làm là gì?","dd": ["Tính tỉ lệ phần trăm của từng thành phần"],"gt": "Phải có % mới chia được góc ở tâm."},
-            {"de": "Dữ liệu 'Nhiệt độ sôi của một số chất lỏng' là loại dữ liệu gì?","dd": ["Dữ liệu định lượng (số liệu)"],"gt": "Nhiệt độ được đo bằng con số."}
+            {"de": "Tính góc ở tâm của hình quạt biểu diễn tỉ lệ 20% trong biểu đồ quạt tròn.","dd": ["72°"],"gt": "20% × 360° = 72°."}
         ],
 
         "bt_nang_cao": [
-            {"de": "Trong một cuộc khảo sát 200 học sinh về phương tiện đến trường: 80 em đi xe đạp, 60 em đi xe buýt, 40 em đi bộ, còn lại đi xe máy. Nếu vẽ biểu đồ quạt tròn, góc ở tâm của phần biểu diễn 'xe máy' là bao nhiêu độ?","hd": "Tính số học sinh đi xe máy, sau đó tính % rồi nhân 360°.","dd": ["36°"],"lg": "Số HS đi xe máy = 200 - (80+60+40) = 20 em. Tỉ lệ % = 20/200 = 10%. Góc = 10% × 360° = 36°."},
-            {"de": "Biểu đồ đoạn thẳng biểu diễn doanh thu 6 tháng. Tháng 1: 50tr, Tháng 2: 45tr, Tháng 3: 55tr, Tháng 4: 60tr, Tháng 5: 58tr, Tháng 6: 70tr. Nêu nhận xét về xu hướng doanh thu chung.","hd": "So sánh điểm đầu và điểm cuối, các đoạn biến động.","dd": ["Xu hướng chung là tăng trưởng."],"lg": "Dù có giảm nhẹ ở tháng 2 và tháng 5, nhưng nhìn chung từ tháng 1 đến tháng 6 doanh thu tăng mạnh từ 50tr lên 70tr."},
-            {"de": "Nếu một biểu đồ quạt biểu diễn 3 thành phần A, B, C. Góc ở tâm của A là 120°, của B là 90°. Hỏi thành phần C chiếm bao nhiêu phần trăm?","hd": "Tính góc của C rồi chia cho 360°.","dd": ["41,67% (hoặc xấp xỉ 41,7%)"],"lg": "Góc C = 360° - 120° - 90° = 150°. Phần trăm C = (150/360) × 100% ≈ 41,67%."}
+            {"de": "Trong một cuộc khảo sát 200 học sinh về phương tiện đến trường: 80 em đi xe đạp, 60 em đi xe buýt, 40 em đi bộ, còn lại đi xe máy. Nếu vẽ biểu đồ quạt tròn, góc ở tâm của phần biểu diễn 'xe máy' là bao nhiêu độ?","hd": "Tính số học sinh đi xe máy, sau đó tính % rồi nhân 360°.","dd": ["36°"],"lg": "Số HS đi xe máy = 200 - (80+60+40) = 20 em. Tỉ lệ % = 20/200 = 10%. Góc = 10% × 360° = 36°."}
         ]
     }
 }
@@ -569,33 +524,16 @@ C6_T7 = {
             {"nd": "Từ đẳng thức a.d = b.c (a, b, c, d khác 0), ta KHÔNG thể suy ra tỉ lệ thức nào?","da": ["a/b = c/d","a/c = b/d","d/b = c/a","a/b = d/c"],"d": 3,"gt": "Nhân chéo a/b = d/c sẽ ra a.c = b.d (sai với đẳng thức ban đầu)."},
             {"nd": "Cho x/4 = 3/2. Giá trị của x là?","da": ["6","8","12","2"],"d": 0,"gt": "x.2 = 4.3 ⇒ 2x = 12 ⇒ x = 6."},
             {"nd": "Nếu a/b = c/d thì:","da": ["a.b = c.d","a.c = b.d","a.d = b.c","a+d = b+c"],"d": 2,"gt": "Tích trung tỉ bằng tích ngoại tỉ."},
-            {"nd": "Tính chất dãy tỉ số bằng nhau nào sau đây ĐÚNG?","da": ["a/b = c/d = (a-c)/(b+d)","a/b = c/d = (a.c)/(b.d)","a/b = c/d = (a+c)/(b+d)","a/b = c/d = (a+b)/(c+d)"],"d": 2,"gt": "Tử cộng tử, mẫu cộng mẫu tương ứng."},
-            {"nd": "Đại lượng y tỉ lệ thuận với đại lượng x theo hệ số tỉ lệ k = -2. Công thức biểu diễn là?","da": ["y = -2x","y = x/-2","x = -2y","y = -2/x"],"d": 0,"gt": "Tỉ lệ thuận có công thức y = k.x."},
-            {"nd": "Nếu y tỉ lệ nghịch với x theo hệ số tỉ lệ a = 12 thì công thức nào ĐÚNG?","da": ["y = 12x","y = x/12","y = 12/x","x = 12y"],"d": 2,"gt": "Tỉ lệ nghịch: y = a/x."},
-            {"nd": "Đại lượng x và y tỉ lệ thuận. Khi x = 2 thì y = 6. Hệ số tỉ lệ k của y đối với x là?","da": ["3","12","1/3","-3"],"d": 0,"gt": "k = y/x = 6/2 = 3."},
-            {"nd": "Chu vi hình vuông tỉ lệ thuận hay tỉ lệ nghịch với cạnh của nó?","da": ["Tỉ lệ thuận","Tỉ lệ nghịch","Không tỉ lệ","Bằng nhau"],"d": 0,"gt": "C = 4.a ⇒ Tỉ lệ thuận với hệ số k=4."},
-            {"nd": "Vận tốc và thời gian (khi quãng đường không đổi) là hai đại lượng?","da": ["Tỉ lệ thuận","Tỉ lệ nghịch","Bằng nhau","Không liên quan"],"d": 1,"gt": "v.t = S (không đổi) ⇒ v và t tỉ lệ nghịch."}
+            {"nd": "Tính chất dãy tỉ số bằng nhau nào sau đây ĐÚNG?","da": ["a/b = c/d = (a-c)/(b+d)","a/b = c/d = (a.c)/(b.d)","a/b = c/d = (a+c)/(b+d)","a/b = c/d = (a+b)/(c+d)"],"d": 2,"gt": "Tử cộng tử, mẫu cộng mẫu tương ứng."}
         ],
 
         "bt_co_ban": [
             {"de": "Tìm x biết x/7 = 4/14.","dd": ["x = 2"],"gt": "x.14 = 7.4 = 28 ⇒ x = 2."},
-            {"de": "Tìm x, y biết x/3 = y/5 và x + y = 32.","dd": ["x = 12, y = 20"],"gt": "(x+y)/(3+5) = 32/8 = 4. x = 3.4 = 12; y = 5.4 = 20."},
-            {"de": "Biết x và y tỉ lệ thuận, khi x = 4 thì y = 12. Tìm hệ số tỉ lệ của y đối với x và tính y khi x = 5.","dd": ["k = 3; y = 15"],"gt": "k = 12/4 = 3. Khi x=5 ⇒ y = 3.5 = 15."},
-            {"de": "Biết x và y tỉ lệ nghịch, khi x = 2 thì y = 10. Tìm hệ số tỉ lệ và tính y khi x = 4.","dd": ["a = 20; y = 5"],"gt": "a = x.y = 20. Khi x=4 ⇒ y = 20/4 = 5."},
-            {"de": "Ba lớp 7A, 7B, 7C trồng được 120 cây. Số cây tỉ lệ thuận với 3, 4, 5. Tính số cây lớp 7B.","dd": ["40 cây"],"gt": "120/(3+4+5) = 10. Lớp 7B = 4.10 = 40."},
-            {"de": "Tìm x biết (x-1)/5 = 3/15.","dd": ["x = 2"],"gt": "3/15 = 1/5 ⇒ (x-1)/5 = 1/5 ⇒ x-1 = 1 ⇒ x = 2."},
-            {"de": "12 công nhân xây xong nhà trong 30 ngày. Hỏi 15 công nhân xây xong trong bao lâu? (Năng suất như nhau)","dd": ["24 ngày"],"gt": "Tỉ lệ nghịch: 12.30 = 15.x ⇒ 360 = 15.x ⇒ x = 24."},
-            {"de": "Mua 5 quyển vở hết 40.000 đồng. Hỏi mua 8 quyển vở loại đó hết bao nhiêu tiền?","dd": ["64.000 đồng"],"gt": "Tỉ lệ thuận: 40000/5 = 8000/quyển. 8.8000 = 64.000đ."},
-            {"de": "Từ đẳng thức 2.15 = 5.6, hãy viết một tỉ lệ thức.","dd": ["2/5 = 6/15 (hoặc 2/6 = 5/15...)"],"gt": "Dựa vào nguyên lí a.d = b.c ⇒ a/b = c/d."},
-            {"de": "Cho x/2 = y/3 = z/4 và x + y + z = 18. Tính z.","dd": ["z = 8"],"gt": "18/(2+3+4) = 18/9 = 2. z = 4.2 = 8."}
+            {"de": "Tìm x, y biết x/3 = y/5 và x + y = 32.","dd": ["x = 12, y = 20"],"gt": "(x+y)/(3+5) = 32/8 = 4. x = 3.4 = 12; y = 5.4 = 20."}
         ],
 
         "bt_nang_cao": [
-            {"de": "Tìm x, y, z biết x/2 = y/3, y/4 = z/5 và x + y + z = 105.","hd": "Đưa về cùng một mẫu chung cho y. BCNN(3,4) = 12.","dd": ["x=24, y=36, z=45"],"lg": "x/8 = y/12 và y/12 = z/15 ⇒ x/8 = y/12 = z/15. Tổng: 105/(8+12+15) = 105/35 = 3. Suy ra x=24, y=36, z=45."},
-            {"de": "Tìm x, y biết x/3 = y/4 và x.y = 48.","hd": "Đặt x = 3k, y = 4k thay vào phương trình tích.","dd": ["x=6, y=8 hoặc x=-6, y=-8"],"lg": "(3k).(4k) = 48 ⇒ 12k² = 48 ⇒ k² = 4 ⇒ k = 2 hoặc k = -2. Từ đó tính x, y."},
-            {"de": "Tìm x, y biết x/5 = y/3 và x² - y² = 64.","hd": "Đặt x = 5k, y = 3k thay vào hiệu bình phương.","dd": ["x=10, y=6 hoặc x=-10, y=-6"],"lg": "(5k)² - (3k)² = 25k² - 9k² = 16k² = 64 ⇒ k² = 4 ⇒ k = ±2."},
-            {"de": "Một bánh răng cưa có 24 răng quay được 80 vòng/phút. Nó khớp với bánh thứ hai có 60 răng. Hỏi bánh thứ hai quay được bao nhiêu vòng/phút?","hd": "Số răng và số vòng quay là hai đại lượng tỉ lệ nghịch.","dd": ["32 vòng/phút"],"lg": "x.y = const ⇒ 24 . 80 = 60 . V ⇒ V = 1920 / 60 = 32 vòng/phút."},
-            {"de": "Chia số 310 thành ba phần tỉ lệ nghịch với 2, 3, 5. Tìm phần nhỏ nhất.","hd": "Tỉ lệ nghịch với 2, 3, 5 tức là tỉ lệ thuận với 1/2, 1/3, 1/5.","dd": ["60"],"lg": "x/(1/2) = y/(1/3) = z/(1/5). Quy đồng mẫu: x/15 = y/10 = z/6. Tổng 310/(15+10+6) = 310/31 = 10. Phần nhỏ nhất z = 6.10 = 60."}
+            {"de": "Tìm x, y, z biết x/2 = y/3, y/4 = z/5 và x + y + z = 105.","hd": "Đưa về cùng một mẫu chung cho y. BCNN(3,4) = 12.","dd": ["x=24, y=36, z=45"],"lg": "x/8 = y/12 và y/12 = z/15 ⇒ x/8 = y/12 = z/15. Tổng: 105/(8+12+15) = 105/35 = 3. Suy ra x=24, y=36, z=45."}
         ]
     }
 }
@@ -650,33 +588,16 @@ C7_T7 = {
             {"nd": "Giá trị của biểu thức 5x - 3 tại x = 2 là?","da": ["7","10","13","4"],"d": 0,"gt": "5.2 - 3 = 10 - 3 = 7."},
             {"nd": "Cho biểu thức 2x²y. Tính giá trị khi x=-1, y=3.","da": ["-6","6","-12","12"],"d": 1,"gt": "2.(-1)².3 = 2.1.3 = 6."},
             {"nd": "Bậc của đa thức P(x) = 3x⁵ - 4x³ + 2x - 1 là?","da": ["3","5","2","1"],"d": 1,"gt": "Số mũ cao nhất của biến x là 5."},
-            {"nd": "Hệ số cao nhất của đa thức Q(x) = -2x⁴ + 5x³ - x + 7 là?","da": ["5","-2","7","-1"],"d": 1,"gt": "Hệ số của lũy thừa cao nhất x⁴ là -2."},
-            {"nd": "Hệ số tự do của đa thức H(x) = 4x³ - 6x² + 9 là?","da": ["4","-6","9","0"],"d": 2,"gt": "Hạng tử không chứa biến x là 9."},
-            {"nd": "Nghiệm của đa thức f(x) = x - 5 là?","da": ["-5","5","0","1"],"d": 1,"gt": "x - 5 = 0 ⇒ x = 5."},
-            {"nd": "Nghiệm của đa thức g(x) = 2x + 8 là?","da": ["4","-4","8","-8"],"d": 1,"gt": "2x + 8 = 0 ⇒ 2x = -8 ⇒ x = -4."},
-            {"nd": "Thu gọn đa thức 2x³ - 3x³ + x² ta được?","da": ["-x³ + x²","5x³ + x²","x²","-x²"],"d": 0,"gt": "(2-3)x³ + x² = -x³ + x²."},
-            {"nd": "Đa thức nào sau đây không có nghiệm?","da": ["x - 1","x² - 1","x² + 1","x + 2"],"d": 2,"gt": "x² ≥ 0 nên x² + 1 ≥ 1 > 0 ∀x, không thể bằng 0."}
+            {"nd": "Hệ số cao nhất của đa thức Q(x) = -2x⁴ + 5x³ - x + 7 là?","da": ["5","-2","7","-1"],"d": 1,"gt": "Hệ số của lũy thừa cao nhất x⁴ là -2."}
         ],
 
         "bt_co_ban": [
             {"de": "Viết biểu thức đại số biểu thị chu vi hình chữ nhật có chiều dài x và chiều rộng y.","dd": ["2(x + y)"],"gt": "Chu vi = 2 × (Dài + Rộng)."},
-            {"de": "Tính giá trị biểu thức A = -x² + 4x tại x = 3.","dd": ["A = 3"],"gt": "A = -(3²) + 4.3 = -9 + 12 = 3."},
-            {"de": "Tìm bậc, hệ số cao nhất, hệ số tự do của đa thức P(x) = -4x³ + 2x - 7.","dd": ["Bậc 3; HSCN = -4; HSTD = -7"],"gt": "Chỉ ra các thông số theo định nghĩa."},
-            {"de": "Tính tổng P(x) + Q(x) biết P(x) = x² - 2x + 1 và Q(x) = -x² + 5x.","dd": ["3x + 1"],"gt": "(x² - x²) + (-2x + 5x) + 1 = 3x + 1."},
-            {"de": "Tính hiệu M(x) - N(x) biết M(x) = 3x² + x và N(x) = x² - x.","dd": ["2x² + 2x"],"gt": "3x² + x - x² + x = 2x² + 2x."},
-            {"de": "Tìm nghiệm của đa thức f(x) = 5x - 15.","dd": ["x = 3"],"gt": "5x = 15 ⇒ x = 3."},
-            {"de": "Nhân đơn thức: -2x . (3x² - x)","dd": ["-6x³ + 2x²"],"gt": "Phân phối: (-2x).(3x²) + (-2x).(-x)."},
-            {"de": "Chia đa thức: (4x³ - 6x²) : 2x²","dd": ["2x - 3"],"gt": "Chia từng hạng tử: 4x³/2x² - 6x²/2x²."},
-            {"de": "Cho đa thức P(x) = ax + 4. Tìm a biết P(2) = 10.","dd": ["a = 3"],"gt": "a.2 + 4 = 10 ⇒ 2a = 6 ⇒ a = 3."},
-            {"de": "Chứng minh đa thức x² + 5 vô nghiệm.","dd": ["Xem lời giải"],"gt": "x² ≥ 0 ⇒ x² + 5 ≥ 5 > 0 ∀x, nên không thể bằng 0."}
+            {"de": "Tính giá trị biểu thức A = -x² + 4x tại x = 3.","dd": ["A = 3"],"gt": "A = -(3²) + 4.3 = -9 + 12 = 3."}
         ],
 
         "bt_nang_cao": [
-            {"de": "Tính giá trị biểu thức A = x(x - y) + y(x - y) tại x = 99, y = -1.","hd": "Rút gọn biểu thức trước khi thay số.","dd": ["9800"],"lg": "A = (x - y)(x + y) = x² - y². Thay x=99, y=-1 vào A = 99² - (-1)² = 9801 - 1 = 9800."},
-            {"de": "Tìm đa thức P(x) biết P(x) + (x² - 3x + 2) = 3x² - x + 5.","hd": "P(x) = Tổng - Đa thức hạng.","dd": ["2x² + 2x + 3"],"lg": "P(x) = (3x² - x + 5) - (x² - 3x + 2) = 2x² + 2x + 3."},
-            {"de": "Tìm nghiệm của đa thức: x² - 5x + 6","hd": "Phân tích đa thức thành nhân tử bằng cách tách -5x = -2x - 3x.","dd": ["x = 2 hoặc x = 3"],"lg": "x² - 2x - 3x + 6 = 0 ⇒ x(x - 2) - 3(x - 2) = 0 ⇒ (x - 2)(x - 3) = 0. Do đó x = 2 hoặc x = 3."},
-            {"de": "Chứng minh rằng giá trị của biểu thức B = (x - 2)(x + 2) - x² luôn không phụ thuộc vào x.","hd": "Khai triển biểu thức.","dd": ["B = -4 (Không đổi)"],"lg": "B = x² - 4 - x² = -4. Kết quả là hằng số nên không phụ thuộc vào x."},
-            {"de": "Tìm a, b để đa thức P(x) = x² + ax + b có hai nghiệm là x = 1 và x = 2.","hd": "Lập hệ phương trình P(1) = 0 và P(2) = 0.","dd": ["a = -3, b = 2"],"lg": "P(1) = 1 + a + b = 0 ⇒ a + b = -1. P(2) = 4 + 2a + b = 0 ⇒ 2a + b = -4. Trừ hai PT ta được a = -3 ⇒ b = 2."}
+            {"de": "Tính giá trị biểu thức A = x(x - y) + y(x - y) tại x = 99, y = -1.","hd": "Rút gọn biểu thức trước khi thay số.","dd": ["9800"],"lg": "A = (x - y)(x + y) = x² - y². Thay x=99, y=-1 vào A = 99² - (-1)² = 9801 - 1 = 9800."}
         ]
     }
 }
@@ -728,35 +649,18 @@ C: "Lấy được viên bi hình cầu".
         "cau_hoi": [
             {"nd": "Biến cố luôn xảy ra được gọi là?","da": ["Biến cố chắc chắn","Biến cố ngẫu nhiên","Biến cố không thể","Biến cố độc lập"],"d": 0,"gt": "Định nghĩa biến cố chắc chắn."},
             {"nd": "Xác suất của biến cố không thể bằng bao nhiêu?","da": ["1","0,5","0","100%"],"d": 2,"gt": "Không bao giờ xảy ra nên xác suất = 0."},
-            {"nd": "Xác suất của một biến cố ngẫu nhiên luôn nằm trong khoảng nào?","da": ["Từ 0 đến 1","Từ 1 đến 10","Từ -1 đến 1","Lớn hơn 1"],"d": 0,"gt": "Xác suất không bao giờ âm và tối đa là 1 (100%)."},
+            {"nd": "Xác suất của một biến cố ngẫu nhiên luôn nằm trong khoảng nào?","da": ["Từ 0 đến 1","From 1 to 10","Từ -1 đến 1","Lớn hơn 1"],"d": 0,"gt": "Xác suất không bao giờ âm và tối đa là 1 (100%)."},
             {"nd": "Gieo 1 đồng xu cân đối, xác suất xuất hiện mặt Sấp là?","da": ["0","1/2","1/3","1"],"d": 1,"gt": "Đồng xu có 2 mặt (S, N) nên xác suất là 1/2."},
-            {"nd": "Trong hộp có 10 viên bi xanh. Biến cố 'Lấy được viên bi đỏ' là:","da": ["Biến cố ngẫu nhiên","Biến cố chắc chắn","Biến cố không thể","Chưa đủ dữ kiện"],"d": 2,"gt": "Không có bi đỏ nên không thể lấy được."},
-            {"nd": "Gieo một con xúc xắc 6 mặt, biến cố 'Xuất hiện mặt có số chấm lớn hơn 6' là?","da": ["Biến cố chắc chắn","Biến cố không thể","Biến cố ngẫu nhiên","Biến cố đối"],"d": 1,"gt": "Xúc xắc chỉ có số chấm từ 1 đến 6."},
-            {"nd": "Một hộp có 3 quả bóng đỏ và 2 quả bóng xanh. Lấy ngẫu nhiên 1 quả. Xác suất lấy được bóng đỏ là?","da": ["3/2","2/5","3/5","1/2"],"d": 2,"gt": "Có 3 quả đỏ trên tổng số 5 quả ⇒ 3/5."},
-            {"nd": "Gieo một con xúc xắc, xác suất ra mặt chẵn là?","da": ["1/6","1/3","1/2","2/3"],"d": 2,"gt": "Mặt chẵn gồm {2, 4, 6} (3 mặt) trên tổng 6 mặt ⇒ 3/6 = 1/2."},
-            {"nd": "Xác suất của biến cố chắc chắn là?","da": ["0%","50%","100%","99%"],"d": 2,"gt": "Chắc chắn xảy ra nên xác suất tuyệt đối là 100% (hay 1)."},
-            {"nd": "Chọn ngẫu nhiên một số từ 1 đến 10. Xác suất chọn được số chia hết cho 3 là?","da": ["3/10","4/10","1/3","1/5"],"d": 0,"gt": "Các số chia hết cho 3 là {3, 6, 9} (3 số) / Tổng 10 số."}
+            {"nd": "Trong hộp có 10 viên bi xanh. Biến cố 'Lấy được viên bi đỏ' là:","da": ["Biến cố ngẫu nhiên","Biến cố chắc chắn","Biến cố không thể","Chưa đủ dữ kiện"],"d": 2,"gt": "Không có bi đỏ nên không thể lấy được."}
         ],
 
         "bt_co_ban": [
             {"de": "Gieo một con xúc xắc cân đối. Liệt kê các kết quả có thể xảy ra.","dd": ["{1, 2, 3, 4, 5, 6}"],"gt": "Xúc xắc có 6 mặt tương ứng với 1 đến 6 chấm."},
-            {"de": "Hộp có 5 bút xanh và 3 bút đỏ. Tính xác suất lấy được bút đỏ.","dd": ["3/8"],"gt": "Tổng số bút = 8. Bút đỏ = 3 ⇒ 3/8."},
-            {"de": "Biến cố 'Tháng 2 có 30 ngày' là loại biến cố gì?","dd": ["Biến cố không thể"],"gt": "Tháng 2 nhiều nhất chỉ có 29 ngày (năm nhuận)."},
-            {"de": "Trong bảng chữ cái Tiếng Việt (29 chữ), xác suất rút ngẫu nhiên được chữ 'A' là?","dd": ["1/29"],"gt": "Chỉ có 1 chữ A trong 29 chữ cái."},
-            {"de": "Một bánh xe quay có 8 hình quạt bằng nhau, đánh số từ 1 đến 8. Xác suất kim chỉ vào số 5 là?","dd": ["1/8"],"gt": "Có 1 ô số 5 trên tổng số 8 ô."},
-            {"de": "Rút một lá bài từ bộ 52 lá. Xác suất rút được lá Át bích là?","dd": ["1/52"],"gt": "Trong bộ bài chỉ có duy nhất 1 lá Át bích."},
-            {"de": "Biến cố 'Nước sôi ở 100°C (ở điều kiện tiêu chuẩn)' là biến cố gì?","dd": ["Biến cố chắc chắn"],"gt": "Đây là hiện tượng vật lý hiển nhiên luôn xảy ra."},
-            {"de": "Túi có 4 quả bóng xanh, 4 bóng đỏ. Xác suất lấy được bóng xanh là bao nhiêu %?","dd": ["50%"],"gt": "4/8 = 1/2 = 50%."},
-            {"de": "Một bộ xóc đĩa có 4 đồng xu. Xác suất xuất hiện 5 mặt ngửa là?","dd": ["0"],"gt": "Chỉ có 4 đồng xu nên không thể có 5 mặt ngửa (Biến cố không thể)."},
-            {"de": "Chọn 1 ngày ngẫu nhiên trong tháng 8. Xác suất chọn được ngày 32 là?","dd": ["0"],"gt": "Tháng 8 chỉ có 31 ngày."}
+            {"de": "Hộp có 5 bút xanh và 3 bút đỏ. Tính xác suất lấy được bút đỏ.","dd": ["3/8"],"gt": "Tổng số bút = 8. Bút đỏ = 3 ⇒ 3/8."}
         ],
 
         "bt_nang_cao": [
-            {"de": "Gieo hai con xúc xắc cân đối. Tính xác suất để tổng số chấm trên hai mặt bằng 7.","hd": "Lập bảng các cặp kết quả có tổng bằng 7. Tổng số kết quả là 6 x 6 = 36.","dd": ["1/6"],"lg": "Các cặp có tổng = 7: (1,6), (6,1), (2,5), (5,2), (3,4), (4,3). Có 6 kết quả thuận lợi. P = 6/36 = 1/6."},
-            {"de": "Trong hộp có thẻ đánh số từ 1 đến 30. Rút 1 thẻ, tính xác suất thẻ rút được là số nguyên tố.","hd": "Liệt kê các số nguyên tố từ 1 đến 30.","dd": ["1/3"],"lg": "Các số nguyên tố: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 (10 số). P = 10/30 = 1/3."},
-            {"de": "Gieo 1 xúc xắc 2 lần liên tiếp. Tính xác suất để lần 1 ra mặt chẵn, lần 2 ra mặt lẻ.","hd": "Mỗi lần độc lập nhau. Lần 1 chẵn (3 cách), lần 2 lẻ (3 cách).","dd": ["1/4"],"lg": "Số kết quả thỏa mãn: 3 x 3 = 9. Tổng số kết quả: 6 x 6 = 36. P = 9/36 = 1/4."},
-            {"de": "Tung 3 đồng xu cùng lúc. Tính xác suất để có đúng 2 mặt Ngửa.","hd": "Liệt kê 8 kết quả có thể.","dd": ["3/8"],"lg": "Các kết quả có thể: SSS, SSN, SNS, SNN, NSS, NSN, NNS, NNN (8). Có đúng 2 ngửa: SNN, NSN, NNS (3). P = 3/8."},
-            {"de": "Một lồng quay xổ số có bóng đánh số 00 đến 99. Xác suất quay được quả bóng có hai chữ số giống nhau?","hd": "Các số giống nhau: 00, 11, 22...","dd": ["1/10"],"lg": "Các số 00, 11, 22, 33, 44, 55, 66, 77, 88, 99 (10 quả). Tổng số bóng = 100. P = 10/100 = 1/10."}
+            {"de": "Gieo hai con xúc xắc cân đối. Tính xác suất để tổng số chấm trên hai mặt bằng 7.","hd": "Lập bảng các cặp kết quả có tổng bằng 7. Tổng số kết quả là 6 x 6 = 36.","dd": ["1/6"],"lg": "Các cặp có tổng = 7: (1,6), (6,1), (2,5), (5,2), (3,4), (4,3). Có 6 kết quả thuận lợi. P = 6/36 = 1/6."}
         ]
     }
 }
@@ -787,47 +691,37 @@ C9_T7 = {
 Đề bài: Cho ∆ABC có AB = 4cm, BC = 6cm, AC = 5cm. Sắp xếp các góc của tam giác theo thứ tự tăng dần.
 - Giải:
   Ta có: AB < AC < BC (4 < 5 < 6).
-  Góc đối diện với AB là C, với AC là C... (tương ứng).
+  Góc đối diện với AB là C, với AC là B, với BC là A.
+  ⇒ Góc C < Góc B < Góc A.
 
 💡 VÍ DỤ 2: Bất đẳng thức tam giác
 Đề bài: Có thể vẽ được tam giác với độ dài 3 cạnh là 2cm, 3cm và 6cm không?
 - Giải:
   Ta lấy tổng 2 cạnh nhỏ nhất: 2 + 3 = 5.
   Vì 5 < 6 (tổng 2 cạnh nhỏ hơn cạnh thứ 3) ⇒ Không thỏa mãn Bất đẳng thức tam giác.
-  Vậy không thể vẽ được tam giác này.""",
+  Vậy không thể vẽ được tam giác này.
+
+💡 VÍ DỤ 3: Tính chất trọng tâm
+Đề bài: Cho ∆ABC có đường trung tuyến AM = 9cm. Trọng tâm G nằm trên AM. Tính độ dài AG và GM.
+- Giải:
+  Theo tính chất trọng tâm: AG = 2/3 . AM = 2/3 . 9 = 6cm.
+  GM = 1/3 . AM = 1/3 . 9 = 3cm (hoặc GM = AM - AG = 9 - 6 = 3cm).""",
 
         "cau_hoi": [
             {"nd": "Trong một tam giác, đối diện với cạnh lớn nhất là?","da": ["Góc nhọn","Góc nhỏ nhất","Góc lớn nhất","Góc vuông"],"d": 2,"gt": "Định lí góc đối diện với cạnh lớn hơn."},
             {"nd": "Cho ∆ABC có góc A = 80°, B = 40°. Cạnh nào lớn nhất?","da": ["AB","BC","AC","Không xác định"],"d": 1,"gt": "Góc C = 180 - 80 - 40 = 60°. Góc A lớn nhất ⇒ cạnh BC đối diện lớn nhất."},
             {"nd": "Cho ∆MNP có MN = 3, NP = 4, MP = 5. Khẳng định nào đúng?","da": ["Góc M lớn nhất","Góc N lớn nhất","Góc P lớn nhất","Ba góc bằng nhau"],"d": 1,"gt": "Cạnh MP lớn nhất (5) ⇒ Góc đối diện là góc N lớn nhất."},
             {"nd": "Bất đẳng thức tam giác phát biểu rằng độ dài một cạnh luôn:","da": ["Lớn hơn tổng 2 cạnh kia","Bằng tổng 2 cạnh kia","Nhỏ hơn tổng 2 cạnh kia","Gấp đôi tổng 2 cạnh kia"],"d": 2,"gt": "Một cạnh < tổng 2 cạnh còn lại."},
-            {"nd": "Bộ 3 độ dài nào sau đây tạo thành một tam giác?","da": ["1, 2, 3","2, 4, 7","3, 4, 5","1, 1, 3"],"d": 2,"gt": "Chỉ có 3+4 > 5 thỏa mãn BĐT tam giác."},
-            {"nd": "Giao điểm 3 đường trung tuyến của tam giác gọi là?","da": ["Trực tâm","Trọng tâm","Tâm đường tròn ngoại tiếp","Tâm đường tròn nội tiếp"],"d": 1,"gt": "Giao trung tuyến là Trọng tâm."},
-            {"nd": "Giao điểm 3 đường cao của tam giác gọi là?","da": ["Trực tâm","Trọng tâm","Tâm nội tiếp","Tâm ngoại tiếp"],"d": 0,"gt": "Đường cao giao nhau tại Trực tâm."},
-            {"nd": "Khoảng cách từ trọng tâm G đến đỉnh bằng bao nhiêu phần đường trung tuyến đi qua đỉnh đó?","da": ["1/3","1/2","2/3","3/4"],"d": 2,"gt": "Tính chất trọng tâm: AG = 2/3 AM."},
-            {"nd": "Điểm cách đều 3 đỉnh của tam giác là giao điểm của 3 đường gì?","da": ["Phân giác","Cao","Trung tuyến","Trung trực"],"d": 3,"gt": "Tính chất đường trung trực của đoạn thẳng."},
-            {"nd": "Điểm cách đều 3 cạnh của tam giác là giao điểm của 3 đường gì?","da": ["Trung trực","Phân giác","Trung tuyến","Cao"],"d": 1,"gt": "Tính chất đường phân giác góc."}
+            {"nd": "Bộ 3 độ dài nào sau đây tạo thành một tam giác?","da": ["1, 2, 3","2, 4, 7","3, 4, 5","1, 1, 3"],"d": 2,"gt": "Chỉ có 3+4 > 5 thỏa mãn BĐT tam giác."}
         ],
 
         "bt_co_ban": [
             {"de": "Cho ∆ABC có góc A = 50°, góc B = 60°. Sắp xếp độ dài 3 cạnh của tam giác từ nhỏ đến lớn.","dd": ["BC < AC < AB"],"gt": "Góc C = 180 - 50 - 60 = 70°. Góc A < B < C ⇒ Cạnh đối BC < AC < AB."},
-            {"de": "Tam giác có hai cạnh là 3cm và 8cm. Tìm số nguyên duy nhất có thể là độ dài cạnh thứ 3 nếu nó là tam giác cân.","dd": ["8 cm"],"gt": "Cạnh kia là 3 hoặc 8. Nếu là 3: 3+3 < 8 (loại). Nếu là 8: 3+8 > 8 (nhận)."},
-            {"de": "Đường trung tuyến AM của ∆ABC dài 15cm. Trọng tâm G. Tính AG.","dd": ["10 cm"],"gt": "AG = 2/3 AM = 2/3 . 15 = 10."},
-            {"de": "Điểm I là giao của 3 đường phân giác trong ∆ABC. Nếu khoảng cách từ I đến AB là 4cm, tính khoảng cách từ I đến BC.","dd": ["4 cm"],"gt": "Giao 3 phân giác cách đều 3 cạnh."},
-            {"de": "Cho ∆MNP có MN = 5, NP = 12, MP = 13. Cạnh nào lớn nhất? Góc nào lớn nhất?","dd": ["Cạnh MP lớn nhất, Góc N lớn nhất"],"gt": "MP = 13 là lớn nhất, đối diện MP là góc N."},
-            {"de": "Kiểm tra bộ ba độ dài 5cm, 6cm, 10cm có là ba cạnh tam giác không?","dd": ["Có"],"gt": "5+6=11 > 10 (Thỏa mãn BĐT tam giác)."},
-            {"de": "Trong tam giác đều, trực tâm và trọng tâm có trùng nhau không?","dd": ["Có"],"gt": "Tính chất đặc biệt của tam giác đều."},
-            {"de": "Trung trực của cạnh AB cắt AB tại M. Biết AB = 10cm. Tính MA.","dd": ["5 cm"],"gt": "Trung trực đi qua trung điểm ⇒ MA = 10/2 = 5cm."},
-            {"de": "Cho ∆ABC vuông tại A. Trực tâm của tam giác nằm ở đâu?","dd": ["Tại đỉnh A"],"gt": "Giao của 2 đường cao AB và AC chính là A."},
-            {"de": "Hai cạnh của một tam giác là 4cm và 9cm. Cạnh thứ 3 là số nguyên chẵn. Tìm độ dài cạnh thứ 3.","dd": ["6cm, 8cm, 10cm, 12cm"],"gt": "9-4 < x < 9+4 ⇒ 5 < x < 13. Các số chẵn là 6, 8, 10, 12."}
+            {"de": "Tam giác có hai cạnh là 3cm và 8cm. Tìm số nguyên duy nhất có thể là độ dài cạnh thứ 3 nếu nó là tam giác cân.","dd": ["8 cm"],"gt": "Cạnh kia là 3 hoặc 8. Nếu là 3: 3+3 < 8 (loại). Nếu là 8: 3+8 > 8 (nhận)."}
         ],
 
         "bt_nang_cao": [
-            {"de": "Chứng minh rằng trong một tam giác, nửa chu vi luôn lớn hơn mỗi cạnh của tam giác đó.","hd": "Dùng BĐT tam giác: a < b + c. Cộng a vào 2 vế.","dd": ["Xem lời giải"],"lg": "a < b + c ⇒ a + a < a + b + c ⇒ 2a < P ⇒ a < P/2 (đpcm)."},
-            {"de": "Cho ∆ABC có trung tuyến AM. Chứng minh AM < (AB + AC)/2.","hd": "Lấy D đối xứng A qua M. Xét ∆AMC và ∆DMB.","dd": ["Xem lời giải"],"lg": "Dựng D sao cho M là trung điểm AD. Dễ thấy ∆AMB = ∆DMC ⇒ AB = CD. Trong ∆ACD có AD < AC + CD = AC + AB. Mà AD = 2AM ⇒ 2AM < AB + AC ⇒ AM < (AB+AC)/2."},
-            {"de": "Giao điểm 3 đường trung trực của tam giác vuông nằm ở trung điểm cạnh huyền. Chứng minh điều này.","hd": "Gọi M là trung điểm cạnh huyền BC, chứng minh MA = MB = MC.","dd": ["Xem lời giải"],"lg": "Trong tam giác vuông, đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền. AM = MB = MC = BC/2."},
-            {"de": "Cho ∆ABC có I là giao điểm của hai tia phân giác góc B và C. Kẻ IH ⊥ BC. Khẳng định: I là tâm đường tròn nội tiếp ∆ABC đúng không?","hd": "I là giao 2 phân giác thì nó có thuộc phân giác thứ 3 không?","dd": ["Đúng"],"lg": "Giao của 2 đường phân giác cũng là giao của cả 3 đường phân giác. I cách đều 3 cạnh. I là tâm đường tròn nội tiếp."},
-            {"de": "Cho điểm O nằm trong tam giác ABC. Chứng minh: OA + OB + OC > (AB + BC + CA) / 2","hd": "Xét 3 tam giác nhỏ OAB, OBC, OCA rồi dùng BĐT tam giác.","dd": ["Xem lời giải"],"lg": "Xét ∆OAB: OA+OB > AB. ∆OBC: OB+OC > BC. ∆OCA: OC+OA > AC. Cộng 3 BĐT: 2(OA+OB+OC) > AB+BC+CA ⇒ OA+OB+OC > P/2."}
+            {"de": "Chứng minh rằng trong một tam giác, nửa chu vi luôn lớn hơn mỗi cạnh của tam giác đó.","hd": "Dùng BĐT tam giác: a < b + c. Cộng a vào 2 vế.","dd": ["Xem lời giải"],"lg": "a < b + c ⇒ a + a < a + b + c ⇒ 2a < P ⇒ a < P/2 (đpcm)."}
         ]
     }
 }
@@ -884,4 +778,18 @@ C10_T7 = {
             {"nd": "Hình lập phương có bao nhiêu mặt?","da": ["4","6","8","12"],"d": 1,"gt": "Có 6 mặt là hình vuông."},
             {"nd": "Hình hộp chữ nhật có bao nhiêu cạnh?","da": ["6","8","10","12"],"d": 3,"gt": "Có 4 cạnh dài, 4 cạnh rộng, 4 cạnh cao ⇒ 12 cạnh."},
             {"nd": "Công thức tính thể tích V của hình hộp chữ nhật (kích thước a, b, h) là?","da": ["V = (a+b)h","V = 2(a+b)h","V = abh","V = a+b+h"],"d": 2,"gt": "Thể tích = Dài × Rộng × Cao."},
-            {"nd": "Công thức tính diện tích xung quanh của hình hộp chữ nhật là?","da": ["2(a+b)h","(a+
+            {"nd": "Công thức tính diện tích xung quanh của hình hộp chữ nhật là?","da": ["2(a+b)h","(a+b)h","abh","2(ab+ah+bh)"],"d": 0,"gt": "Chu vi đáy nhân chiều cao = 2(a+b)h."}
+        ],
+
+        "bt_co_ban": [
+            {"de": "Tính thể tích của hình hộp chữ nhật có kích thước là 4cm, 5cm và 8cm.","dd": ["160 cm³"],"gt": "V = 4 . 5 . 8 = 160 cm³."},
+            {"de": "Một hình lập phương có cạnh bằng 6dm. Tính diện tích xung quanh của nó.","dd": ["144 dm²"],"gt": "S_xq = 4 . 6² = 4 . 36 = 144 dm²."}
+        ],
+
+        "bt_nang_cao": [
+            {"de": "Người ta cần sơn tường và trần của một căn phòng HHCN có chiều dài 6m, rộng 4m, cao 3m. Tổng diện tích các cửa là 8m². Tính diện tích cần sơn.","hd": "Diện tích cần sơn = Diện tích xung quanh + 1 Diện tích đáy (trần) - Diện tích cửa.","dd": ["76 m²"],"lg": "S_xq = 2.(6+4).3 = 60 m². S_trần = 6.4 = 24 m². Tổng diện tích sơn = 60 + 24 - 8 = 76 m²."}
+        ]
+    }
+}
+T7["Chương 10: Một số hình khối trong thực tiễn"] = C10_T7
+TOAN["Lớp 7"] = T7
