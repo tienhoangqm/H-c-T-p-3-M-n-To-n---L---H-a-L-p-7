@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Multi-Key Gemini + Dola Timeout Ngắn + Cache Bộ Đệm + Rate Limit
+Phiên bản Tối thượng: Tích hợp Phòng Thí Nghiệm Ngữ Văn Tương Tác Trực Quan + Đếm Online + Multi-Key Gemini
 """
 import streamlit as st
 import google.generativeai as genai
@@ -143,6 +143,7 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
 }
 
+# ==================== DANH MỤC MÔ PHỎNG PHET & NGỮ VĂN TƯƠNG TÁC ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -157,7 +158,59 @@ DANH_MUC_THI_NGHIEM = {
         "🧪 Pha chế & Đo nồng độ dung dịch": "https://phet.colorado.edu/sims/html/concentration/latest/concentration_vi.html",
     },
     "📖 Môn Ngữ Văn": {
-        "📖 Sơ đồ tư duy Tác phẩm & Phân tích văn học": "",
+        "🗺️ 1. Bản đồ Cấu trúc & Bối cảnh Tác phẩm": "van_hoc_cau_truc",
+        "🎭 2. Biểu đồ Tương tác & Phân tích Nhân vật": "van_hoc_nhan_vat",
+        "🕸️ 3. Sơ đồ Quan hệ Nhân vật": "van_hoc_quan_he",
+        "✍️ 4. Phòng thực hành Luyện từ & Ngữ pháp": "van_hoc_ngu_phap",
+        "📝 5. Trạm Lập dàn ý & Cấu trúc bài văn": "van_hoc_dan_y"
+    }
+}
+
+# ==================== DỮ LIỆU MẪU PHÒNG THÍ NGHIỆM NGỮ VĂN ====================
+DATA_LAB_NGU_VAN = {
+    "🗺️ 1. Bản đồ Cấu trúc & Bối cảnh Tác phẩm": {
+        "tieu_de": "Bản đồ Cấu trúc Tác phẩm: Cuộc chia tay của những con búp bê (Khánh Hoài)",
+        "hoan_canh": "Viết năm 1992, đạt giải Nhất cuộc thi viết tương lai vì trẻ em.",
+        "bo_cuc": [
+            {"phan": "Phần 1: Mở đầu", "noi_dung": "Hai anh em Thành và Thủy phải chia đồ chơi vì bố mẹ chia tay."},
+            {"phan": "Phần 2: Diễn biến", "noi_dung": "Thủy đến lớp chào cô giáo và các bạn, cuộc chia tay đầy nước mắt với em Vệ."},
+            {"phan": "Phần 3: Cao trào", "noi_dung": "Hai anh em chia tay nhau ngậm ngùi, con búp bê Vệ Sĩ và Em Nhỏ không nỡ rời xa."},
+            {"phan": "Phần 4: Kết thúc", "noi_dung": "Thủy quyết định không bắt Vệ Sĩ rời xa Em Nhỏ, nhưng lòng đau xót khôn nguôi."}
+        ],
+        "y_nghia": "Ca ngợi tình cảm anh em thắm thiết, sâu nặng; lên án những gia đình thiếu trách nhiệm làm tổn thương trẻ thơ."
+    },
+    "🎭 2. Biểu đồ Tương tác & Phân tích Nhân vật": {
+        "nhan_vat": "Bé Thủy trong 'Cuộc chia tay của những con búp bê'",
+        "dac_diem": "Ngây thơ, giàu tình cảm, thương anh và vô cùng gắn bó với đồ chơi.",
+        "hanh_vi_tieu_bieu": "Khóc nức nở khi phải chia đồ chơi; nhường hết bút mực cho anh; đau đớn khi đặt hai con búp bê cạnh nhau.",
+        "dien_bien_tam_ly": [
+            {"giai_doan": "Đầu truyện", "tam_trang": "Buồn bã, hoảng hốt khi nghe tin bố mẹ chia tay."},
+            {"giai_doan": "Giữa truyện", "tam_trang": "Nén nước mắt khi chia tay thầy cô, bạn bè."},
+            {"giai_doan": "Cuối truyện", "tam_trang": "Đau đớn tột cùng khi buộc phải chia cắt hai con búp bê Vệ Sĩ và Em Nhỏ."}
+        ]
+    },
+    "🕸️ 3. Sơ đồ Quan hệ Nhân vật": {
+        "tac_pham": "Truyện ngắn 'Dế Mèn phiêu lưu ký' (Tô Hoài)",
+        "quan_he": [
+            {"tu_khoa": "Dế Mèn ↔️ Dế Choắt", "loai": "Gắn bó - Bài học sâu sắc", "mo_ta": "Choắt yếu đuối, hay gây chuyện nhưng được Mèn thương tình, tuy nhiên sự ngông cuồng của Mèn đã dẫn đến cái chết thương tâm của Choắt."},
+            {"tu_khoa": "Dế Mèn ↔️ Nhà Trò", "loai": "Cứu giúp - Che chở", "mo_ta": "Mèn bảo vệ Nhà Trò khỏi bọn Nhện độc ác, thể hiện lòng thương người và tinh thần trượng nghĩa."},
+            {"tu_khoa": "Dế Mèn ↔️ Xén Tóc / Cốc", "loai": "Xung đột - Thử thách", "mo_ta": "Những va chạm ngoài xã hội giúp Dế Mèn trưởng thành, bớt tính xốc nổi."}
+        ]
+    },
+    "✍️ 4. Phòng thực hành Luyện từ & Ngữ pháp": {
+        "chu_de": "Phân biệt Câu đơn và Câu phức & Biện pháp tu từ",
+        "cau_hoi_mau": [
+            {"cau": "Bởi vì trời mưa lớn, / nên đường phố ngập nước.", "loai": "Câu phức (Quan hệ Nguyên nhân - Kết quả)", "phan_tich": "Vế 1: Nguyên nhân (trời mưa lớn), Vế 2: Kết quả (đường phố ngập nước)."},
+            {"cau": "Dế Mèn / rất khỏe mạnh và cường tráng.", "loai": "Câu đơn (Mở rộng vị ngữ)", "phan_tich": "Chủ ngữ: Dế Mèn, Vị ngữ: rất khỏe mạnh và cường tráng."}
+        ]
+    },
+    "📝 5. Trạm Lập dàn ý & Cấu trúc bài văn": {
+        "the_loai": "Văn biểu cảm về người thân (Mẹ / Bà)",
+        "dan_y": [
+            {"buoc": "1. Mở bài", "noi_dung": "Giới thiệu người thân định tả và ấn tượng chung sâu sắc nhất."},
+            {"buoc": "2. Thân bài", "noi_dung": "- Ngoại hình, cử chỉ, hành động thể hiện tình yêu thương.\n- Kỷ niệm sâu sắc nhất giữa em và người đó.\n- Phẩm chất cao đẹp (hy sinh, tần tảo)."},
+            {"buoc": "3. Kết bài", "noi_dung": "Khẳng định tình cảm thiêng liêng của em và lời hứa phấn đấu ngoan ngoãn."}
+        ]
     }
 }
 
@@ -173,7 +226,7 @@ if dark_mode:
         .hero-banner { background: linear-gradient(135deg, #1E293B 0%, #334155 100%); color: #F8FAFC; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1.2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
         .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
-        .card-home { background-color: #1E293B; border: 1px solid #334155; padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem; color: #F1F5F9; display: flex; flex-direction: column; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .card-home { background-color: #1E293B; border: 1px solid #334155; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.0rem; color: #F1F5F9; display: flex; flex-direction: column; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .card-home h3 { margin-top: 0; font-size: 1.15rem; margin-bottom: 0.6rem; color: #60A5FA; }
         .card-home p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: #94A3B8; }
         .khung-lythuyet { background-color: #1E293B; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #3B82F6; color: #F1F5F9 !important; }
@@ -191,7 +244,7 @@ else:
         .hero-banner { background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); color: white; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1.2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
-        .card-home { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem; display: flex; flex-direction: column; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-home { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.4rem; border-radius: 12px; margin-bottom: 1.0rem; display: flex; flex-direction: column; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .card-home h3 { margin-top: 0; font-size: 1.15rem; margin-bottom: 0.6rem; color: #1D4ED8; }
         .card-home p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: #475569; }
         .khung-lythuyet { background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #2563EB; color: #1E293B !important; }
@@ -373,7 +426,65 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
 
     raise last_err
 
-# ==================== CÁC HÀM HIỂN THỊ CHỨC NĂNG ====================
+# ==================== HÀM HIỂN THỊ PHÒNG THÍ NGHIỆM NGỮ VĂN TƯƠNG TÁC ====================
+def hien_thi_phong_thi_nghiem_ngu_van(key_prefix="van"):
+    st.markdown("""
+    <div class="hero-banner">
+        <p class="hero-title">🎭 Phòng Thí Nghiệm & Mô Phỏng Tương Tác Ngữ Văn</p>
+        <p class="hero-sub">Khám phá cấu trúc tác phẩm, phân tích nhân vật và sơ đồ tư duy trực quan</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    ds_modul = list(DANH_MUC_THI_NGHIEM["📖 Môn Ngữ Văn"].keys())
+    chon_modul = st.selectbox("📚 Chọn Mô-đun Tương tác Ngữ Văn:", ds_modul, key=f"select_modul_{key_prefix}")
+
+    st.divider()
+
+    if "Bản đồ Cấu trúc" in chon_modul:
+        data = DATA_LAB_NGU_VAN["🗺️ 1. Bản đồ Cấu trúc & Bối cảnh Tác phẩm"]
+        st.markdown(f"### 🗺️ {data['tieu_de']}")
+        st.info(f"⏳ **Hoàn cảnh sáng tác:** {data['hoan_canh']}")
+        st.markdown("#### 📂 Sơ đồ Phân bố Bố cục:")
+        for idx, item in enumerate(data["bo_cuc"], 1):
+            with st.expander(f"🔹 {item['phan']}"):
+                st.write(item['noi_dung'])
+        st.success(f"💡 **Ý nghĩa nhân văn:** {data['y_nghia']}")
+
+    elif "Biểu đồ Tương tác" in chon_modul:
+        data = DATA_LAB_NGU_VAN["🎭 2. Biểu đồ Tương tác & Phân tích Nhân vật"]
+        st.markdown(f"### 🎭 {data['nhan_vat']}")
+        st.markdown(f"⭐ **Đặc điểm nổi bật:** {data['dac_diem']}")
+        st.markdown(f"🎯 **Hành vi tiêu biểu:** {data['hanh_vi_tieu_bieu']}")
+        st.markdown("---")
+        st.markdown("#### 📈 Diễn biến tâm lý nhân vật qua các chặng:")
+        for stage in data["dien_bien_tam_ly"]:
+            st.markdown(f"* **{stage['giai_doan']}:** {stage['tam_trang']}")
+
+    elif "Sơ đồ Quan hệ" in chon_modul:
+        data = DATA_LAB_NGU_VAN["🕸️ 3. Sơ đồ Quan hệ Nhân vật"]
+        st.markdown(f"### 🕸️ {data['tac_pham']}")
+        st.markdown("*(Nhấp vào các mục bên dưới để xem phân tích chi tiết mối quan hệ)*")
+        for idx, rel in enumerate(data["quan_he"], 1):
+            with st.expander(f"{idx}. {rel['tu_khoa']} — *[{rel['loai']}]*"):
+                st.write(rel['mo_ta'])
+
+    elif "Luyện từ & Ngữ pháp" in chon_modul:
+        data = DATA_LAB_NGU_VAN["✍️ 4. Phòng thực hành Luyện từ & Ngữ pháp"]
+        st.markdown(f"### ✍️ {data['chu_de']}")
+        for idx, bai in enumerate(data["cau_hoi_mau"], 1):
+            st.markdown(f"**Câu mẫu {idx}:** `{bai['cau']}`")
+            st.markdown(f"👉 **Phân loại:** **{bai['loai']}**")
+            st.info(f"💡 **Giải thích:** {bai['phan_tich']}")
+            st.divider()
+
+    elif "Lập dàn ý" in chon_modul:
+        data = DATA_LAB_NGU_VAN["📝 5. Trạm Lập dàn ý & Cấu trúc bài văn"]
+        st.markdown(f"### 📝 Hướng dẫn Lập dàn ý: {data['the_loai']}")
+        for buoc in data["dan_y"]:
+            with st.expander(f"📋 {buoc['buoc']}"):
+                st.text(buoc['noi_dung'])
+
+# ==================== CÁC HÀM HIỂN THỊ CHỨC NĂNG KHÁC ====================
 def hien_thi_tim_kiem_toan_dien():
     st.markdown("""<div class="hero-banner"><p class="hero-title">🔍 Tra Cứu & Tìm Kiếm Tri Thức Thông Minh</p><p class="hero-sub">Gõ từ khóa bất kỳ để tìm nhanh bài học trong toàn bộ hệ thống</p></div>""", unsafe_allow_html=True)
     tu_khoa = st.text_input("🔎 Nhập từ khóa cần tìm kiếm:", placeholder="Gõ tên bài học hoặc khái niệm...")
@@ -404,19 +515,22 @@ def hien_thi_trang_chu():
         st.markdown("""<div class="card-home"><h3>🌟 Giới thiệu Hệ thống</h3><p>Không gian học tập trực tuyến bám sát sách <b>Kết Nối Tri Thức</b> lớp 7 gồm đầy đủ Toán, Lý, Hóa và Ngữ Văn.</p></div>""", unsafe_allow_html=True)
         st.markdown("""<div class="card-home"><h3>🌙 Chế độ Ban đêm (Dark Mode)</h3><p>Bật công tắc chế độ ban đêm ở menu bên trái để bảo vệ mắt khi ôn tập vào buổi tối.</p></div>""", unsafe_allow_html=True)
     with col_h2:
-        st.markdown("""<div class="card-home"><h3>💬 Trợ lý AI Phân Tải Thông Minh</h3><p>Tích hợp bộ đệm câu hỏi, tự động luân phiên khóa API và điều phối tuần tự giữa Gemini & Dola giúp hệ thống luôn ổn định.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="card-home"><h3>💬 Trợ lý AI Phân Tải Thông Minh</h3><p>Tích hợp bộ đệm câu hỏi, tự động luân phiên khóa API và điều phối tuần tự giúp hệ thống luôn ổn định.</p></div>""", unsafe_allow_html=True)
         st.markdown("""<div class="card-home"><h3>📱 Tối ưu thiết bị di động</h3><p>Giao diện co giãn mượt mà trên mọi thiết bị điện thoại, máy tính bảng và laptop.</p></div>""", unsafe_allow_html=True)
 
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
-    st.markdown("#### 🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác (PhET Colorado)")
-    ds_tn_mon = DANH_MUC_THI_NGHIEM.get(mon_hien_tai, {})
-    if not ds_tn_mon: ds_tn_mon = DANH_MUC_THI_NGHIEM["🔬 Môn Vật lý (KHTN)"]
-    ten_tn = st.selectbox(f"🔬 Chọn mô phỏng thực hành cho {mon_hien_tai}:", list(ds_tn_mon.keys()), key=f"select_tn_{key_prefix}_{lam_sach_id(mon_hien_tai)}")
-    url_tn = ds_tn_mon[ten_tn]
-    if not url_tn: st.warning("🚧 **Tính năng đang phát triển:** Phòng thí nghiệm cho môn học này đang được cập nhật thêm mô phỏng chuẩn bị ra mắt học sinh!")
+    if mon_hien_tai == "📖 Môn Ngữ Văn":
+        hien_thi_phong_thi_nghiem_ngu_van(key_prefix=key_prefix)
     else:
-        st.components.v1.iframe(url_tn, height=580, scrolling=True)
-        st.info("💡 **Mẹo thực hành:** Dùng chuột kéo thả trực tiếp trên màn hình, sau đó kéo xuống hỏi Gia sư AI để hiểu rõ bản chất nhé!")
+        st.markdown("#### 🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác (PhET Colorado)")
+        ds_tn_mon = DANH_MUC_THI_NGHIEM.get(mon_hien_tai, {})
+        if not ds_tn_mon: ds_tn_mon = DANH_MUC_THI_NGHIEM["🔬 Môn Vật lý (KHTN)"]
+        ten_tn = st.selectbox(f"🔬 Chọn mô phỏng thực hành cho {mon_hien_tai}:", list(ds_tn_mon.keys()), key=f"select_tn_{key_prefix}_{lam_sach_id(mon_hien_tai)}")
+        url_tn = ds_tn_mon[ten_tn]
+        if not url_tn: st.warning("🚧 **Tính năng đang phát triển:** Phòng thí nghiệm cho môn học này đang được cập nhật!")
+        else:
+            st.components.v1.iframe(url_tn, height=580, scrolling=True)
+            st.info("💡 **Mẹo thực hành:** Dùng chuột kéo thả trực tiếp trên màn hình, sau đó kéo xuống hỏi Gia sư AI để hiểu rõ bản chất nhé!")
 
 def hien_thi_tram_nap_du_lieu():
     st.markdown("""<div class="hero-banner"><p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p><p class="hero-sub">Dành cho Admin: Tải file đề bài để tạo Code Python chuẩn.</p></div>""", unsafe_allow_html=True)
@@ -462,7 +576,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     c2.metric("✏️ Cơ bản", f"{len(bt_cb)} bài")
     c3.metric("🔥 Nâng cao", f"{len(bt_nc)} bài")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📚 Lý thuyết", "✏️ Cơ bản", "🔥 Nâng cao", "📝 Trắc nghiệm", "🎪 Thí nghiệm"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📚 Lý thuyết", "✏️ Cơ bản", "🔥 Nâng cao", "📝 Trắc nghiệm", "🎪 Phòng thí nghiệm"])
 
     with tab1:
         if lt: st.markdown(f"<div class='khung-lythuyet'>{lt}</div>", unsafe_allow_html=True)
@@ -598,8 +712,7 @@ if che_do == "🏠 Trang chủ / Hướng dẫn": hien_thi_trang_chu()
 elif che_do == "🔍 Tra cứu / Tìm kiếm": hien_thi_tim_kiem_toan_dien()
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)": hien_thi_tram_nap_du_lieu()
 elif che_do == "🎪 Phòng thí nghiệm ảo":
-    st.markdown("""<div class="hero-banner"><p class="hero-title">🎪 Phòng Thí Nghiệm Ảo — Khoa Học Tự Nhiên</p><p class="hero-sub">Mô phỏng tương tác trực quan chuẩn PhET (Đại học Colorado, Mỹ)</p></div>""", unsafe_allow_html=True)
-    hien_thi_phong_thi_nghiem("🔬 Môn Vật lý (KHTN)", key_prefix="sidebar_mode")
+    hien_thi_phong_thi_nghiem("📖 Môn Ngữ Văn", key_prefix="sidebar_mode")
 else:
     st.markdown(f"""<div class="hero-banner"><p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p><p class="hero-sub">Hệ thống học tập thông minh lớp 7</p></div>""", unsafe_allow_html=True)
     lop_dict = DATABASE[mon]
