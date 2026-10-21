@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX — Ẩn hoàn toàn nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI Đa Giác Quan
+Phiên bản chuẩn hóa UI/UX — Ẩn toàn bộ nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI
 """
 import streamlit as st
 import google.generativeai as genai
@@ -378,15 +378,11 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
 
 # ==================== HIỂN THỊ PHÒNG THÍ NGHIỆM ẢO (VIRTUAL LAB) ====================
 def hien_thi_phong_thí_nghiệm():
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎪 Phòng Thí Nghiệm & Thực Hành Ảo (Virtual Lab)</p>
-        <p class="hero-sub">Trải nghiệm các mô phỏng tương tác khoa học trực quan chuẩn PhET (Đại học Colorado, Mỹ)</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("### 🎪 PHÒNG THÍ NGHIỆM & THỰC HÀNH ẢO (VIRTUAL LAB)")
+    st.markdown("Trải nghiệm các mô phỏng tương tác khoa học trực quan chuẩn PhET (Đại học Colorado, Mỹ) giúp học sinh dễ dàng hình dung hiện tượng Vật lý, Hóa học và Toán học.")
     
     chon_mon_lab = st.selectbox(
-        "🔬 Chọn lĩnh vực thí nghiệm cần thực hành:", 
+        "🔬 Chọn lĩnh vực thí nghiệm:", 
         [
             "⚡ Vật lý: Mạch điện xoay chiều / một chiều (Circuit Construction Kit)",
             "💡 Vật lý: Định luật Phản xạ ánh sáng & Gương phẳng",
@@ -426,7 +422,8 @@ with st.sidebar:
         mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
         hien_thi_tien_do()
     else:
-        st.success("✨ Đang mở Phòng Thí Nghiệm Khoa Học!")
+        st.success("✨ Đang kích hoạt chế độ thực hành trực quan!")
+        mon = "🎪 Phòng Thí Nghiệm Khoa Học"
 
 bai_dang_hoc = ""
 
@@ -499,12 +496,9 @@ with col_ai3:
         st.session_state.chat_history = []
         st.rerun()
 
-# Xác định tên môn ngữ cảnh cho AI thông minh hơn
-ten_mon_ai_hien_tai = "Khoa học Tự nhiên và Toán học" if che_do == "🎪 Phòng Thí Nghiệm Ảo" else mon
-
 SYSTEM_PROMPT = f"""
 Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) chuyên kèm môn {mon_hoc_ai} lớp 7 (bám sát sách Kết Nối Tri Thức).
-Thông tin thêm: Trên màn hình học sinh đang mở mục "{ten_mon_ai_hien_tai}" ({bai_dang_hoc}).
+Thông tin thêm: Trên màn hình học sinh đang mở mục "{mon}" ({bai_dang_hoc}).
 Nguyên tắc SƯ PHẠM TỐI THƯỢNG:
 1. TUYỆT ĐỐI KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
 2. Sử dụng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ để học sinh tự suy nghĩ và tính toán. Nếu học sinh đang thảo luận về Phòng thí nghiệm ảo, hãy hướng dẫn các em quan sát hiện tượng thực tế.
@@ -555,7 +549,7 @@ prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào, gõ v�
 
 prompt = None
 if btn_gui_anh:
-    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ!"
+    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ ạ!"
 elif text_from_mic:
     prompt = text_from_mic
 elif prompt_from_keyboard:
