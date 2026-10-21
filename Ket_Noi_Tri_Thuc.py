@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX — Ẩn toàn bộ nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI
+Phiên bản chuẩn hóa UI/UX — Ẩn hoàn toàn nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
@@ -549,7 +549,7 @@ prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào, gõ v�
 
 prompt = None
 if btn_gui_anh:
-    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ ạ!"
+    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ!"
 elif text_from_mic:
     prompt = text_from_mic
 elif prompt_from_keyboard:
