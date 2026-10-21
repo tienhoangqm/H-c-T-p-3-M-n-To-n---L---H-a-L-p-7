@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Đã khôi phục đầy đủ dữ liệu Ngữ Văn Học Kỳ 1 + Phòng Thí Nghiệm Văn học Tương tác
+Phiên bản Hoàn thiện Nhóm 1 & Nhóm 2: Trộn đáp án trắc nghiệm, Chấm số chính xác, Sửa Cache AI & Xử lý ảnh độc lập
 """
 import streamlit as st
 import google.generativeai as genai
@@ -15,6 +15,7 @@ import uuid
 import requests
 import os
 import hashlib
+import threading
 
 # ==================== CẤU HÌNH TRANG (PHẢI ĐẶT ĐẦU TIÊN) ====================
 st.set_page_config(
@@ -83,33 +84,33 @@ except Exception:
     DOLA_KEY = ""
     DOLA_PROJECT_TIER = "high_limit_edu"
 
-# ==================== HỆ THỐNG ĐẾM NGƯỜI DÙNG TRỰC TUYẾN ====================
+# ==================== HỆ THỐNG ĐẾM NGƯỜI DÙNG TRỰC TUYẾN (CÓ THREADING LOCK) ====================
 @st.cache_resource
 def lay_bo_nho_truy_cap():
-    return {}
+    return {"dict": {}, "lock": threading.Lock()}
 
 def cap_nhat_nguoi_online():
-    bo_nho = lay_bo_nho_truy_cap()
-    if 'user_id' not in st.session_state:
-        st.session_state.user_id = str(uuid.uuid4())
-        
-    bo_nho[st.session_state.user_id] = time.time()
-    thoi_gian_hien_tai = time.time()
-    danh_sach_online = {uid: t for uid, t in bo_nho.items() if thoi_gian_hien_tai - t < 300}
-    bo_nho.clear()
-    bo_nho.update(danh_sach_online)
-    return len(bo_nho)
+    bo_nho_obj = lay_bo_nho_truy_cap()
+    bo_nho = bo_nho_obj["dict"]
+    lock = bo_nho_obj["lock"]
+    
+    with lock:
+        if 'user_id' not in st.session_state:
+            st.session_state.user_id = str(uuid.uuid4())
+            
+        bo_nho[st.session_state.user_id] = time.time()
+        thoi_gian_hien_tai = time.time()
+        danh_sach_online = {uid: t for uid, t in bo_nho.items() if thoi_gian_hien_tai - t < 300}
+        bo_nho.clear()
+        bo_nho.update(danh_sach_online)
+        return len(bo_nho)
 
-# ==================== BỘ ĐỆM & KIỂM TRA TẦN SUẤT ====================
+# ==================== BỘ ĐỆM AI THÔNG MINH & GIỚI HẠN TẦN SUẤT ====================
 @st.cache_resource
 def lay_bo_nho_cache_ai():
     return {}
 
-def tao_ma_hash_cau_hoi(mon_hoc, cau_hoi):
-    chuoi_chuan = f"{mon_hoc.strip().lower()}_{re.sub(r'\s+', ' ', cau_hoi.strip().lower())}"
-    return hashlib.md5(chuoi_chuan.encode('utf-8')).hexdigest()
-
-def kiem_tra_gioi_han_tan_suat(cooldown_seconds=5):
+def kiem_tra_gioi_han_tan_suat(cooldown_seconds=3):
     now = time.time()
     last_time = st.session_state.get("last_ai_request_time", 0.0)
     elapsed = now - last_time
@@ -118,7 +119,7 @@ def kiem_tra_gioi_han_tan_suat(cooldown_seconds=5):
     st.session_state["last_ai_request_time"] = now
     return True, 0
 
-# ==================== IMPORT DỮ LIỆU TOÁN, LÝ, HÓA ====================
+# ==================== IMPORT DỮ LIỆU TOÁN, LÝ, HÓA, VĂN ====================
 try:
     from data_toan import TOAN
 except ImportError:
@@ -131,101 +132,18 @@ try:
     from data_hoa import HOA
 except ImportError:
     HOA = {}
-
-# ==================== DỮ LIỆU NGỮ VĂN HỌC KỲ 1 (ĐÃ KHÔI PHỤC ĐẦY ĐỦ CÁC CHƯƠNG) ====================
-VAN = {
-    "Lớp 7": {
-        "Chương 1: Bầu trời tuổi thơ (Truyện)": {
-            "Văn bản 1: Bồng chanh đỏ (trích, Đỗ Chu)": {
-                "ly_thuyet": "Truyện ngắn kể về hai anh em Hoài và Ý với tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
-                "vi_du": "Chi tiết thả chim bồng chanh đỏ về tự nhiên thể hiện sự thức tỉnh nhân cách và lòng nhân ái.",
-                "cau_hoi": [
-                    {
-                        "nd": "Truyện 'Bồng chanh đỏ' của tác giả nào?",
-                        "da": ["Đỗ Chu", "Tô Hoài", "Khánh Hoài", "Duy Khán"],
-                        "d": 0
-                    },
-                    {
-                        "nd": "Nhân vật chính trong truyện là ai?",
-                        "da": ["Hai anh em Hoài và Ý", "Ông nội", "Côn và Bản", "Thành và Thủy"],
-                        "d": 0
-                    }
-                ],
-                "bt_co_ban": [
-                    {"de": "Nêu ý nghĩa nhan đề 'Bồng chanh đỏ'?", "dd": ["Biểu tượng cho vẻ đẹp thiên nhiên và ước mơ tuổi thơ"], "lg": "Đó là hình ảnh trung tâm khơi gợi những cảm xúc trong trẻo."}
-                ],
-                "bt_nang_cao": [
-                    {"de": "Phân tích sự biến đổi tâm trạng của nhân vật Hoài?", "dd": ["Từ tò mò muốn sở hữu đến thấu hiểu và buông bỏ để bảo vệ sự sống"], "lg": "Thể hiện sự nhân hậu, tôn trọng tự nhiên."}
-                ]
-            },
-            "Văn bản 2: Bố cục và mạch ngầm trong văn bản": {
-                "ly_thuyet": "Tìm hiểu cách xây dựng cốt truyện và các lớp ý nghĩa ẩn giấu trong tác phẩm truyện.",
-                "vi_du": "Mạch ngầm văn bản là những cảm xúc không nói trực tiếp mà gửi gắm qua chi tiết.",
-                "cau_hoi": [
-                    {
-                        "nd": "Mạch ngầm văn bản là gì?",
-                        "da": ["Những suy nghĩ, cảm xúc ẩn giấu dưới lời văn", "Cốt truyện chính", "Lời thoại của nhân vật", "Bối cảnh sáng tác"],
-                        "d": 0
-                    }
-                ],
-                "bt_co_ban": [{"de": "Mạch ngầm thường được bộc lộ qua đâu?", "dd": ["Chi tiết nghệ thuật và hình ảnh biểu tượng"], "lg": "Thông qua các chi tiết miêu tả và hành động."}],
-                "bt_nang_cao": [{"de": "Tác dụng của mạch ngầm trong truyện ngắn?", "dd": ["Tăng chiều sâu và sức gợi cảm cho tác phẩm"], "lg": "Giúp người đọc suy ngẫm nhiều hơn."}]
-            }
-        },
-        "Chương 2: Khúc tâm tình của đất nước (Thơ)": {
-            "Văn bản 1: Tia nắng đầu tiên (Đức Lợi)": {
-                "ly_thuyet": "Bài thơ ca ngợi vẻ đẹp thiên nhiên buổi sáng và tình cảm gia đình ấm áp.",
-                "vi_du": "Hình ảnh tia nắng sớm chiếu qua khung cửa sổ mang lại sức sống mới.",
-                "cau_hoi": [
-                    {
-                        "nd": "Bài thơ 'Tia nắng đầu tiên' thuộc thể thơ nào?",
-                        "da": ["Thơ tự do / 5 chữ", "Thơ lục bát", "Thơ 7 chữ", "Thơ song thất lục bát"],
-                        "d": 0
-                    }
-                ],
-                "bt_co_ban": [{"de": "Tia nắng đầu tiên tượng trưng cho điều gì?", "dd": ["Niềm hy vọng và khởi đầu tốt đẹp"], "lg": "Mang ý nghĩa biểu tượng sâu sắc."}],
-                "bt_nang_cao": [{"de": "Phân tích cảm xúc của nhân vật trữ tình trong bài thơ?", "dd": ["Rung động tinh tế trước thiên nhiên và tình mẫu tử"], "lg": "Gắn kết không gian thiên nhiên với tình cảm gia đình."}]
-            },
-            "Văn bản 2: Mẹ (Đỗ Bạch Nga)": {
-                "ly_thuyet": "Bài thơ khắc họa hình ảnh người mẹ tần tảo, hy sinh vì con cái.",
-                "vi_du": "Hình ảnh gánh nặng cuộc đời oằn trên vai mẹ.",
-                "cau_hoi": [
-                    {
-                        "nd": "Biện pháp tu từ nổi bật trong bài thơ 'Mẹ' là gì?",
-                        "da": ["Ẩn dụ / So sánh", "Nói quá", "Liệt kê", "Chơi chữ"],
-                        "d": 0
-                    }
-                ],
-                "bt_co_ban": [{"de": "Tình cảm của người con đối với mẹ được thể hiện như thế nào?", "dd": ["Biết ơn sâu sắc và xót xa trước những vất vả của mẹ"], "lg": "Thể hiện đạo lý uống nước nhớ nguồn."}],
-                "bt_nang_cao": [{"de": "Ý nghĩa hình ảnh người mẹ trong thơ ca?", "dd": ["Biểu tượng của sự hy sinh và tình yêu thương vô bờ bến"], "lg": "Là nguồn cội nuôi dưỡng tâm hồn con người."}]
-            }
-        },
-        "Chương 3: Hành trình tri thức (Nghị luận & Thông tin)": {
-            "Văn bản 1: Tự học - một cuộc du thú trường chinh (Nguyễn Đăng Mạnh)": {
-                "ly_thuyet": "Văn bản nghị luận bàn về tầm quan trọng và phương pháp tự học.",
-                "vi_du": "Tự học giúp con người mở rộng chân trời tri thức không giới hạn.",
-                "cau_hoi": [
-                    {
-                        "nd": "Vấn đề nghị luận chính của văn bản là gì?",
-                        "da": ["Tầm quan trọng của việc tự học", "Cách đọc sách hiệu quả", "Phương pháp học ngoại ngữ", "Vai trò của thầy cô"],
-                        "d": 0
-                    }
-                ],
-                "bt_co_ban": [{"de": "Vì sao tác giả gọi tự học là 'cuộc du thú trường chinh'?", "dd": ["Vì đó là hành trình khám phá tri thức dài lâu, đầy thú vị"], "lg": "Phép ẩn dụ độc đáo của nhà nghiên cứu Nguyễn Đăng Mạnh."}],
-                "bt_nang_cao": [{"de": "Rút ra bài học cho bản thân về phương pháp tự học?", "dd": ["Chủ động, kiên trì và tìm tòi sáng tạo trong học tập"], "lg": "Tự học quyết định thành công của mỗi người."}]
-            }
-        }
-    }
-}
+try:
+    from data_van import VAN
+except ImportError:
+    VAN = {}
 
 DATABASE = {
     "📐 Môn Toán": TOAN,
     "🔬 Môn Vật lý (KHTN)": VATLY,
     "🧪 Môn Hóa học (KHTN)": HOA if HOA else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Hóa": {}}},
-    "📖 Môn Ngữ Văn": VAN,
+    "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
 }
 
-# ==================== DANH MỤC MÔ PHỎNG PHET & NGỮ VĂN TƯƠNG TÁC ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -336,26 +254,36 @@ else:
     """
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ==================== HÀM TIỆN ÍCH ====================
+# ==================== HÀM TIỆN ÍCH CHẤM ĐIỂM SỐ CHÍNH XÁC ====================
 def lam_sach_id(s): return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
 def sap_xep_chuong(ds_chuong):
     def lay_so(ten):
         m = re.search(r'\d+', str(ten))
         return int(m.group(0)) if m else 999
     return sorted(ds_chuong, key=lay_so)
-def chuan_hoi(s):
-    d = str(s).strip().lower().replace(',', '.').replace(';', '.')
-    return re.sub(r'\s+', '', d)
-def so_sanh(nd, ds_dung):
-    x = chuan_hoi(nd)
-    if not x: return False
+
+def so_sanh_so_hoc(nd, ds_dung):
+    """Chấm điểm nghiêm ngặt cho bài tập số học (chỉ đúng khi giá trị số trùng khớp, không dùng chung chuỗi)"""
+    x_raw = str(nd).strip().replace(',', '.')
+    try:
+        val_x = float(x_raw)
+    except (ValueError, TypeError):
+        # Nếu học sinh nhập phân số hoặc ký hiệu, so sánh tuyệt đối chuỗi đã chuẩn hóa
+        x_clean = re.sub(r'\s+', '', x_raw.lower())
+        for d in ds_dung:
+            if x_clean == re.sub(r'\s+', '', str(d).strip().lower().replace(',', '.')):
+                return True
+        return False
+
     for d in ds_dung:
-        y = chuan_hoi(d)
-        if not y: continue
-        if x == y or (len(x) >= 2 and (x in y or y in x)): return True
+        d_raw = str(d).strip().replace(',', '.')
         try:
-            if abs(float(x) - float(y)) < 0.01: return True
-        except (ValueError, TypeError): pass
+            val_d = float(d_raw)
+            if abs(val_x - val_d) < 1e-5:
+                return True
+        except (ValueError, TypeError):
+            if x_raw.lower() == d_raw.lower():
+                return True
     return False
 
 def luu_tien_do(mon, lop, chuong, ten_bai, dung, tong):
@@ -390,18 +318,21 @@ def lam_sach_van_ban_doc(text):
     s = re.sub(r'[^\w\s,.?!:;()+\-*/=<>%àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]', '', s)
     return re.sub(r'\s+', ' ', s).strip()
 
-def trich_xuat_word_docx(file_bytes):
+def doc_to_an_toan(text, autoplay=True):
+    """Bọc gTTS bằng try/except để tránh sập web khi mất mạng hoặc quá tải"""
+    if not HAS_TTS or not text:
+        return
     try:
-        with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
-            xml_content = z.read('word/document.xml')
-        tree = ET.fromstring(xml_content)
-        doan_van = [''.join([t.text for t in p.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t') if t.text]) for p in tree.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p')]
-        return '\n'.join([p for p in doan_van if p])
-    except Exception as e:
-        return f"[Lỗi đọc file Word: {e}]"
+        clean_text = lam_sach_van_ban_doc(text)
+        if clean_text:
+            afp = io.BytesIO()
+            gTTS(text=clean_text, lang='vi').write_to_fp(afp)
+            afp.seek(0)
+            st.audio(afp, format='audio/mp3', autoplay=autoplay)
+    except Exception:
+        pass
 
-# ==================== TỐI ƯU GỌI DOLA ====================
-@st.cache_data(ttl=3600, show_spinner=False)
+# ==================== TỐI ƯU GỌI DOLA (KHÔNG CACHE LỖI) ====================
 def goi_dola_toi_uu(cau_hoi):
     if not DOLA_ENDPOINT or not DOLA_KEY:
         return None
@@ -645,6 +576,7 @@ def hien_thi_tram_nap_du_lieu():
         st.download_button("💾 Tải Code về máy (.py)", data=code_out.encode("utf-8"), file_name="data_moi.py", mime="text/x-python", use_container_width=True)
         st.code(code_out, language="python")
 
+# ==================== HÀM HIỂN THỊ BÀI HỌC (ĐÃ TRỘN ĐÁP ÁN TRẮC NGHIỆM & SỬA CHẤM TỰ LUẬN VĂN) ====================
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     st.markdown(f"### 📖 {ten_bai}")
     lt, vd = data.get("ly_thuyet", "").strip(), data.get("vi_du", "").strip()
@@ -667,10 +599,10 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
         else:
             for i, bt in enumerate(bt_cb, 1):
                 with st.expander(f"Bài {i}: {bt['de']}"):
-                    ans = st.text_input("Nhập kết quả:", key=f"cb_{sid}_{i}")
+                    ans = st.text_input("Nhập kết quả (số học):", key=f"cb_{sid}_{i}")
                     if st.button("Kiểm tra", key=f"btn_cb_{sid}_{i}"):
                         if not ans.strip(): st.warning("⚠️ Nhập đáp án trước!")
-                        elif so_sanh(ans, bt["dd"]): st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
+                        elif so_sanh_so_hoc(ans, bt["dd"]): st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
                         else: st.markdown(f"<p class='sai'>❌ Sai. Đáp án: {bt['dd'][0]}</p>", unsafe_allow_html=True)
                         st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
 
@@ -681,11 +613,17 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                 with st.expander(f"Bài nâng cao {i}: {nc['de'][:60]}..."):
                     st.markdown(f"**Đề bài:** {nc['de']}")
                     if nc.get('hd') or nc.get('goi_y'): st.info(f"💡 **Hướng dẫn:** {nc.get('hd') or nc.get('goi_y')}")
-                    ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
-                    if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
-                        if so_sanh(ans, nc["dd"]): st.success("🎉 Chính xác!")
-                        else: st.error(f"❌ Gợi ý: {nc['dd'][0]}")
-                    if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"): st.success(f"**Lời giải:** {nc.get('lg', '')}")
+                    
+                    # Nếu là môn Văn (tự luận), bỏ nút kiểm tra so khớp chuỗi lỏng lẻo, thay bằng Gợi ý / Gửi Gia sư AI
+                    if "Ngữ Văn" in mon:
+                        if st.button(f"💡 Xem gợi ý đáp án", key=f"btn_goiy_nc_{sid}_{i}"):
+                            st.info(f"📝 **Gợi ý hướng dẫn:** {nc.get('lg', nc.get('dd', [''])[0])}")
+                    else:
+                        ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
+                        if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
+                            if so_sanh_so_hoc(ans, nc["dd"]): st.success("🎉 Chính xác!")
+                            else: st.error(f"❌ Gợi ý: {nc['dd'][0]}")
+                        if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"): st.success(f"**Lời giải:** {nc.get('lg', '')}")
 
     with tab4:
         tong = len(ch_list)
@@ -694,12 +632,28 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
             options = sorted(list(set([n for n in [10, 15, 20, 30] if n <= tong] + [tong])))
             so_cau = st.selectbox("Chọn số lượng câu:", options, key=f"sl_{sid}")
             key_de = f"de_{sid}_{so_cau}"
-            if key_de not in st.session_state: st.session_state[key_de] = random.sample(ch_list, min(so_cau, tong))
+            
+            # TRỘN PHƯƠNG ÁN TRẮC NGHIỆM ĐỂ CHỐNG CHỌN BỪA Ô ĐẦU TIÊN
+            if key_de not in st.session_state:
+                ds_chon = random.sample(ch_list, min(so_cau, tong))
+                de_tron = []
+                for ch in ds_chon:
+                    danh_sach_da = list(ch["da"])
+                    d_dung_goc = danh_sach_da[ch["d"]]
+                    random.shuffle(danh_sach_da)
+                    vi_tri_moi = danh_sach_da.index(d_dung_goc)
+                    de_tron.append({
+                        "nd": ch.get("nd") or ch.get("de"),
+                        "da": danh_sach_da,
+                        "d": vi_tri_moi
+                    })
+                st.session_state[key_de] = de_tron
             de = st.session_state[key_de]
+
             with st.form(f"form_{sid}"):
                 tl = {}
                 for i, ch in enumerate(de, 1):
-                    st.markdown(f"**Câu {i}:** {ch.get('nd') or ch.get('de')}")
+                    st.markdown(f"**Câu {i}:** {ch['nd']}")
                     tl[i] = st.radio(f"Câu {i}:", ch["da"], key=f"radio_{sid}_{so_cau}_{i}", index=None, label_visibility="collapsed")
                     st.divider()
                 if st.form_submit_button("🚀 Nộp bài", type="primary", use_container_width=True):
@@ -730,15 +684,26 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
             for b, data in chuong_dict[c].items(): all_questions.extend(data.get("cau_hoi", []))
         if not all_questions: st.error("❌ Chưa có câu hỏi!")
         else:
-            st.session_state[f"dethi_{mon}_{lop}"] = random.sample(all_questions, min(mapping_cau[loai_de], len(all_questions)))
-            st.session_state[f"ten_dethi_{mon}_{lop}"] = loai_de
+            ds_chon = random.sample(all_questions, min(mapping_cau[loai_de], len(all_questions)))
+            de_tron_thi = []
+            for ch in ds_chon:
+                danh_sach_da = list(ch["da"])
+                d_dung_goc = danh_sach_da[ch["d"]]
+                random.shuffle(danh_sach_da)
+                vi_tri_moi = danh_sach_da.index(d_dung_goc)
+                de_tron_thi.append({
+                    "nd": ch.get("nd") or ch.get("de"),
+                    "da": danh_sach_da,
+                    "d": vi_tri_moi
+                })
+            st.session_state[f"dethi_{mon}_{lop}"] = de_tron_thi
 
     if f"dethi_{mon}_{lop}" in st.session_state:
         de_thi = st.session_state[f"dethi_{mon}_{lop}"]
         with st.form(f"form_thi_{mon}_{lop}"):
             tl_thi = {}
             for i, ch in enumerate(de_thi, 1):
-                st.markdown(f"**Câu {i}:** {ch.get('nd') or ch.get('de')}")
+                st.markdown(f"**Câu {i}:** {ch['nd']}")
                 tl_thi[i] = st.radio(f"Đ/á {i}:", ch["da"], key=f"thi_{mon}_{lop}_{i}", index=None, label_visibility="collapsed")
                 st.divider()
             if st.form_submit_button("🎯 NỘP BÀI", type="primary"):
@@ -820,7 +785,7 @@ else:
             if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI
+# KHU VỰC GIA SƯ AI (ĐÃ SỬA CACHE & TÁCH BIỆT ẢNH ĐỘC LẬP)
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
@@ -853,53 +818,62 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
+    # XỬ LÝ ẢNH ĐỘC LẬP: Chỉ nạp ảnh khi người dùng bấm nút gửi ảnh, tránh dính ảnh cũ ở các câu sau
     img_pil, btn_gui_anh = None, False
     if HAS_PIL:
         with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài / đoạn văn", expanded=False):
-            file_anh = st.file_uploader("Tải ảnh:", type=["png", "jpg", "jpeg"])
+            file_anh = st.file_uploader("Tải ảnh:", type=["png", "jpg", "jpeg"], key="uploader_anh_giasu")
             if file_anh:
                 img_pil = Image.open(file_anh)
                 st.image(img_pil, width=300)
                 btn_gui_anh = st.button("🔍 Gửi ảnh cho Gia sư", type="primary")
 
+    img_gui = img_pil if btn_gui_anh else None
+
     text_from_mic = speech_to_text(language='vi-VN', start_prompt="🔴 NÓI", stop_prompt="⏹️ DỪNG", just_once=True, key='STT') if HAS_MIC else None
     prompt = "Chị xem giúp em bài tập trong ảnh với ạ!" if btn_gui_anh else (text_from_mic or st.chat_input("Em đang mắc kẹt bài nào..."))
 
     if prompt:
-        duoc_phep, giay_cho = kiem_tra_gioi_han_tan_suat(cooldown_seconds=5)
+        duoc_phep, giay_cho = kiem_tra_gioi_han_tan_suat(cooldown_seconds=3)
         if not duoc_phep:
             st.warning(f"⏳ Em thao tác hơi nhanh! Vui lòng chờ **{giay_cho} giây** nữa rồi gửi câu hỏi tiếp theo để hệ thống phân bổ tốt nhất nhé.")
         else:
             with st.chat_message("user"):
-                if img_pil: st.image(img_pil, width=250)
+                if img_gui: st.image(img_gui, width=250)
                 st.markdown(prompt)
             st.session_state.chat_history.append({"role": "user", "content": prompt})
 
             with st.chat_message("assistant"):
                 bo_nho_cache = lay_bo_nho_cache_ai()
-                ma_hash = tao_ma_hash_cau_hoi(mon_hoc_ai, prompt) if not img_pil else None
+                
+                # SỬA CACHE: Chỉ lưu cache khi là câu đầu tiên của cuộc trò chuyện và có kèm bài đang học để không bị nhầm lẫn
+                la_cau_dau = (len(st.session_state.chat_history) == 2)
+                ma_hash = None
+                if la_cau_dau and not img_gui:
+                    chuoi_cache_key = f"{bai_dang_hoc}_{mon_hoc_ai}_{prompt.strip().lower()}"
+                    ma_hash = hashlib.md5(chuoi_cache_key.encode('utf-8')).hexdigest()
 
                 if ma_hash and ma_hash in bo_nho_cache:
                     ans_cached = bo_nho_cache[ma_hash]
                     st.markdown(ans_cached)
                     st.caption("⚡ *Phản hồi tức thì từ Bộ nhớ đệm tri thức*")
                     st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
-                    ans_text_for_tts = ans_cached
+                    doc_to_an_toan(ans_cached, autoplay=tu_dong_doc)
                 else:
                     gemini_history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
                     ans_text_for_tts = ""
                     luu_history = ""
 
-                    if che_do_nguon == "⚡ Ưu tiên Gemini (Nhanh)" or img_pil:
+                    if che_do_nguon == "⚡ Ưu tiên Gemini (Nhanh)" or img_gui:
                         try:
                             with st.spinner("🤖 Gia sư Gemini đang suy nghĩ..."):
-                                payload = [prompt, img_pil] if img_pil else prompt
+                                payload = [prompt, img_gui] if img_gui else prompt
                                 ans_text = goi_gemini_an_toan(payload, system_instruction=SYSTEM_PROMPT, history=gemini_history)
                                 st.markdown(ans_text)
                                 luu_history = ans_text
                                 ans_text_for_tts = ans_text
                         except Exception as err_gemini:
-                            nd_dola = goi_dola_toi_uu(prompt) if not img_pil else None
+                            nd_dola = goi_dola_toi_uu(prompt) if not img_gui else None
                             if nd_dola:
                                 luu_history = f"📚 **Nội dung chuẩn SGK (Từ Dola dự phòng):**\n\n{nd_dola}"
                                 st.info(luu_history)
@@ -907,16 +881,16 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                             elif du_lieu_bai_hien_tai.get("ly_thuyet"):
                                 lt_noi_bo = du_lieu_bai_hien_tai.get("ly_thuyet", "")
                                 luu_history = (
-                                    f"💡 *Hiện tại đường truyền AI đang bận ({err_gemini}), hệ thống gửi em **Kiến thức trọng tâm chuẩn SGK** của bài học hiện tại nhé:*\n\n"
+                                    f"💡 *Hệ thống đang chuyển sang kho tri thức cục bộ của bài học:*\n\n"
                                     f"{lt_noi_bo}"
                                 )
                                 st.info(luu_history)
                                 ans_text_for_tts = lt_noi_bo
                             else:
-                                st.error(f"⚠️ Đường truyền AI đang bận hoặc khóa API cần kiểm tra lại. Chi tiết kỹ thuật: {err_gemini}")
+                                st.error("⚠️ Hệ thống AI đang bận. Em vui lòng thử lại sau vài giây nhé!")
 
                     elif che_do_nguon == "📚 Ưu tiên Dola (Chuẩn SGK)":
-                        with st.spinner("📚 Đang tra cứu nhanh Dola (tối đa 4s)..."):
+                        with st.spinner("📚 Đang tra cứu nhanh Dola..."):
                             nd_dola = goi_dola_toi_uu(prompt)
                         if nd_dola:
                             luu_history = f"✅ **Nội dung chuẩn theo SGK (Dola):**\n\n{nd_dola}"
@@ -929,14 +903,14 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                                     st.markdown(ans_text)
                                     luu_history = ans_text
                                     ans_text_for_tts = ans_text
-                            except Exception as err_gemini:
-                                st.error(f"⚠️ Tạm thời chưa kết nối được AI. Chi tiết kỹ thuật: {err_gemini}")
+                            except Exception:
+                                st.error("⚠️ Tạm thời chưa kết nối được hệ thống AI.")
 
                     else:
-                        with st.spinner("🔍 Bước 1: Kiểm tra nhanh nội dung Dola (tối đa 4s)..."):
+                        with st.spinner("🔍 Đang tra cứu dữ liệu chuẩn..."):
                             nd_dola = goi_dola_toi_uu(prompt)
                         try:
-                            with st.spinner("🤖 Bước 2: Gia sư Gemini đang diễn giải..."):
+                            with st.spinner("🤖 Gia sư Gemini đang diễn giải..."):
                                 if nd_dola:
                                     cau_truyen = f"Nội dung chuẩn SGK:\n{nd_dola}\n\nHãy diễn giải thật dễ hiểu cho học sinh lớp 7 câu hỏi: {prompt}"
                                     ans_text = goi_gemini_an_toan(cau_truyen, system_instruction=SYSTEM_PROMPT, history=gemini_history)
@@ -954,23 +928,19 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                                     st.markdown(ans_text)
                                     luu_history = ans_text
                                     ans_text_for_tts = ans_text
-                        except Exception as err_gemini:
+                        except Exception:
                             if nd_dola:
                                 luu_history = f"✅ **Nội dung chuẩn SGK (Dola):**\n\n{nd_dola}"
                                 st.info(luu_history)
                                 ans_text_for_tts = nd_dola
                             else:
-                                st.error(f"⚠️ Đường truyền AI đang bận. Chi tiết kỹ thuật: {err_gemini}")
+                                st.error("⚠️ Đường truyền AI đang bận, em thử lại nhé.")
 
                     if luu_history:
                         st.session_state.chat_history.append({"role": "assistant", "content": luu_history})
-                        if ma_hash:
+                        # Giới hạn kích thước bộ nhớ đệm tối đa 100 mục để không bị phình RAM
+                        if ma_hash and len(bo_nho_cache) < 100:
                             bo_nho_cache[ma_hash] = luu_history
 
                 if HAS_TTS and ans_text_for_tts:
-                    clean_text = lam_sach_van_ban_doc(ans_text_for_tts)
-                    if clean_text:
-                        afp = io.BytesIO()
-                        gTTS(text=clean_text, lang='vi').write_to_fp(afp)
-                        afp.seek(0)
-                        st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
+                    doc_to_an_toan(ans_text_for_tts, autoplay=tu_dong_doc)
