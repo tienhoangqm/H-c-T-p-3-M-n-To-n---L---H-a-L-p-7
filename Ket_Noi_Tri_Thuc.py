@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Hoàn thiện Cuối cùng: Đồng bộ thẻ Trang chủ + Tự động Retry chống lỗi 429 + Quản lý trạng thái tính năng + Dark/Light Mode
+Phiên bản Toàn diện: Toán, Lý, Hóa & Ngữ Văn + Tìm Kiếm + Dark/Light Mode + AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
@@ -35,7 +35,7 @@ with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, b
 # Mở "két sắt" lấy chìa khóa kết nối AI
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# ==================== IMPORT DỮ LIỆU TỪ 3 FILE ====================
+# ==================== IMPORT DỮ LIỆU TỪ CÁC FILE ====================
 try:
     from data_toan import TOAN
 except ImportError:
@@ -48,14 +48,19 @@ try:
     from data_hoa import HOA
 except ImportError:
     HOA = {}
+try:
+    from data_van import VAN
+except ImportError:
+    VAN = {}
 
 DATABASE = {
     "📐 Môn Toán": TOAN,
     "🔬 Môn Vật lý (KHTN)": VATLY,
     "🧪 Môn Hóa học (KHTN)": HOA if HOA else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Hóa": {}}},
+    "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
 }
 
-# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET (ĐANG PHÁT TRIỂN / HOÀN THIỆN) ====================
+# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -65,6 +70,9 @@ DANH_MUC_THI_NGHIEM = {
     },
     "🧪 Môn Hóa học (KHTN)": {
         "⚛️ Cấu tạo Nguyên tử (Đang phát triển)": "",
+    },
+    "📖 Môn Ngữ Văn": {
+        "📖 Sơ đồ tư duy Tác phẩm & Phân tích văn học": "",
     }
 }
 
@@ -78,7 +86,7 @@ st.set_page_config(
 
 dark_mode = st.sidebar.checkbox("🌙 Chế độ Ban đêm (Dark Mode)", value=False)
 
-# ==================== CẤU HÌNH CSS ĐỒNG BỘ CHIỀU CAO THẺ & GIAO DIỆN ====================
+# ==================== CẤU HÌNH CSS ====================
 if dark_mode:
     CSS = """
     <style>
@@ -98,7 +106,6 @@ if dark_mode:
         .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
         
-        /* Đồng bộ chiều cao card và căn đều khoảng cách */
         .card-home {
             background-color: #1E293B; border: 1px solid #334155;
             padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
@@ -133,7 +140,6 @@ else:
         .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
         
-        /* Đồng bộ chiều cao card và căn đều khoảng cách */
         .card-home {
             background-color: #F8FAFC; border: 1px solid #E2E8F0;
             padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
@@ -152,7 +158,7 @@ else:
     """
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ==================== HÀM TIỆN ÍCH & GỌI AI THÔNG MINH (CÓ RETRY CHỐNG LỖI 429) ====================
+# ==================== HÀM TIỆN ÍCH & GỌI AI THÔNG MINH ====================
 def lam_sach_id(s):
     return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
 
@@ -240,7 +246,6 @@ def trich_xuat_word_docx(file_bytes):
         return f"[Lỗi đọc file Word: {e}]"
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
-    """Hàm gọi AI tự động retry thông minh khi gặp lỗi Quota/429 (ResourceExhausted)"""
     ds_models = [
         "gemini-3.5-flash",
         "gemini-3.5-pro",
@@ -270,7 +275,7 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                     break
     raise last_err
 
-# ==================== TÍNH NĂNG TÌM KIẾM THÔNG MINH (GLOBAL SEARCH) ====================
+# ==================== TÍNH NĂNG TÌM KIẾM THÔNG MINH ====================
 def hien_thi_tim_kiem_toan_dien():
     st.markdown("""
     <div class="hero-banner">
@@ -311,12 +316,12 @@ def hien_thi_tim_kiem_toan_dien():
                         st.session_state["search_jump"] = item
                         st.rerun()
 
-# ==================== HÀM TRANG CHỦ / GIỚI THIỆU (CÂN ĐỐI & GỌN GÀNG) ====================
+# ==================== HÀM TRANG CHỦ ====================
 def hien_thi_trang_chu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile, chống quá tải AI & Giao diện Ban đêm</p>
+        <p class="hero-sub">Toàn diện các môn: Toán, Vật lý, Hóa học & Ngữ Văn lớp 7</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -325,7 +330,7 @@ def hien_thi_trang_chu():
         st.markdown("""
         <div class="card-home">
             <h3>🌟 Giới thiệu Hệ thống</h3>
-            <p>Không gian học tập trực tuyến bám sát sách <b>Kết Nối Tri Thức</b> lớp 7 gồm Toán, Vật lý, Hóa học.</p>
+            <p>Không gian học tập trực tuyến bám sát sách <b>Kết Nối Tri Thức</b> lớp 7 gồm đầy đủ Toán, Lý, Hóa và Ngữ Văn.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -339,8 +344,8 @@ def hien_thi_trang_chu():
     with col_h2:
         st.markdown("""
         <div class="card-home">
-            <h3>💬 Trợ lý Gia sư AI 24/7 (Có Retry)</h3>
-            <p>Hỗ trợ giải đáp thông minh, tự động thử lại khi quá tải (lỗi 429), giúp học sinh học tập không bị gián đoạn.</p>
+            <h3>💬 Trợ lý Gia sư AI 24/7 (Đa môn)</h3>
+            <p>Hỗ trợ giải đáp thông minh, phương pháp Socratic, tự động thử lại khi quá tải, đồng hành cùng học sinh mọi lúc mọi nơi.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -351,7 +356,7 @@ def hien_thi_trang_chu():
         </div>
         """, unsafe_allow_html=True)
 
-# ==================== HÀM PHÒNG THÍ NGHIỆM ẢO (CÓ THÔNG BÁO ĐANG PHÁT TRIỂN) ====================
+# ==================== HÀM PHÒNG THÍ NGHIỆM ẢO ====================
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
     st.markdown("#### 🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác (PhET Colorado)")
     ds_tn_mon = DANH_MUC_THI_NGHIEM.get(mon_hien_tai, {})
@@ -371,7 +376,7 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         st.components.v1.iframe(url_tn, height=580, scrolling=True)
         st.info("💡 **Mẹo thực hành:** Dùng chuột kéo thả trực tiếp trên màn hình, sau đó kéo xuống hỏi Gia sư AI để hiểu rõ bản chất nhé!")
 
-# ==================== HÀM TRẠM NẠP DỮ LIỆU (AUTO-PARSER) ====================
+# ==================== HÀM TRẠM NẠP DỮ LIỆU ====================
 def hien_thi_tram_nap_du_lieu():
     st.markdown("""
     <div class="hero-banner">
@@ -611,16 +616,16 @@ else:
             if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (CÓ HỖ TRỢ RETRY TỰ ĐỘNG)
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (HỖ TRỢ ĐA MÔN TOÁN, LÝ, HÓA, VĂN)
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
     st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
-    idx_mon_ai = 1 if "Vật lý" in mon else (2 if "Hóa học" in mon else 0)
+    idx_mon_ai = 1 if "Vật lý" in mon else (2 if "Hóa học" in mon else (3 if "Ngữ Văn" in mon else 0))
     col_ai1, col_ai2, col_ai3 = st.columns([2.5, 1.2, 1])
     with col_ai1:
-        mon_hoc_ai = st.radio("Ngữ cảnh môn:", ["Toán", "Vật Lý", "Hóa Học", "Chuyện ngoài lề"], index=idx_mon_ai, horizontal=True, label_visibility="collapsed")
+        mon_hoc_ai = st.radio("Ngữ cảnh môn:", ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn", "Chuyện ngoài lề"], index=idx_mon_ai, horizontal=True, label_visibility="collapsed")
     with col_ai2:
         tu_dong_doc = st.checkbox("🔊 Đọc to", value=True)
     with col_ai3:
@@ -628,7 +633,10 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
             st.session_state.chat_history = []
             st.rerun()
 
-    SYSTEM_PROMPT = f"Bạn là gia sư AI môn {mon_hoc_ai} lớp 7 sách Kết Nối Tri Thức. Dùng phương pháp Socratic gợi mở từng bước, không giải bài hộ. Trình bày ngắn gọn, chuẩn xác."
+    if mon_hoc_ai == "Ngữ Văn":
+        SYSTEM_PROMPT = f"Bạn là giáo viên Ngữ Văn AI nhiệt tình, sâu sắc chuyên kèm môn Ngữ Văn lớp 7 sách Kết Nối Tri Thức. Học sinh đang học: '{mon}' ({bai_dang_hoc}). Hướng dẫn học sinh phân tích tác phẩm, cảm thụ văn học và lập dàn ý đoạn văn, không viết văn mẫu hộ."
+    else:
+        SYSTEM_PROMPT = f"Bạn là gia sư AI môn {mon_hoc_ai} lớp 7 sách Kết Nối Tri Thức. Dùng phương pháp Socratic gợi mở từng bước, không giải bài hộ. Trình bày ngắn gọn, chuẩn xác."
 
     if "chat_history" not in st.session_state: st.session_state.chat_history = []
     for msg in st.session_state.chat_history:
@@ -636,7 +644,7 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
 
     img_pil, btn_gui_anh = None, False
     if HAS_PIL:
-        with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài", expanded=False):
+        with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài / đoạn văn", expanded=False):
             file_anh = st.file_uploader("Tải ảnh:", type=["png", "jpg", "jpeg"])
             if file_anh:
                 img_pil = Image.open(file_anh)
