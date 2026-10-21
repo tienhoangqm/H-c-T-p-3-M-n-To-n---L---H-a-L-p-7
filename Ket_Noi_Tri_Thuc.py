@@ -425,8 +425,9 @@ Nguyên tắc:
 
 # Khởi tạo bộ não AI
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-3.5-flash",
     system_instruction=SYSTEM_PROMPT
+)
 )
 
 # 2. Tạo bộ nhớ để AI nhớ các câu chat trước đó
