@@ -408,26 +408,29 @@ def hien_thi_phong_thí_nghiệm():
         
     st.info("💡 **Mẹo thực hành:** Học sinh có thể dùng chuột kéo thả các linh kiện, thay đổi thông số trực tiếp ngay trên khung thí nghiệm phía trên, sau đó đặt câu hỏi cho Gia sư AI ở khung chat bên dưới để hiểu sâu bản chất hiện tượng!")
 
-# ==================== GIAO DIỆN CHÍNH ====================
+# ==================== GIAO DIỆN CHÍNH (SIDEBAR) ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     st.caption("Hệ thống Ôn luyện & Kiểm tra THCS")
     st.divider()
+    
     che_do = st.radio(
         "⚙️ Chế độ học tập:", 
         [
+            "🎪 Phòng Thí Nghiệm Ảo",
             "📖 Học theo chuyên đề", 
-            "📝 Phòng thi / Kiểm tra",
-            "🎪 Phòng Thí Nghiệm Ảo"
+            "📝 Phòng thi / Kiểm tra"
         ]
     )
     st.divider()
+    
     if che_do != "🎪 Phòng Thí Nghiệm Ảo":
         mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
         hien_thi_tien_do()
     else:
         st.success("✨ Đang mở Phòng Thí Nghiệm Khoa Học!")
 
+# ==================== ĐIỀU HƯỚNG HIỂN THỊ MÀN HÌNH CHÍNH ====================
 bai_dang_hoc = ""
 
 if che_do == "🎪 Phòng Thí Nghiệm Ảo":
@@ -442,7 +445,7 @@ else:
 
     lop_dict = DATABASE[mon]
     if not lop_dict:
-        st.warning("Đang cập nhật dữ liệu cho môn học này...")
+        st.warning(f"⚠️ Chưa tìm thấy dữ liệu nội dung cho môn **{mon}**. Vui lòng kiểm tra lại xem tệp dữ liệu tương ứng trên GitHub đã có chưa.")
     else:
         ds_lop = list(lop_dict.keys())
         idx_lop = ds_lop.index("Lớp 7") if "Lớp 7" in ds_lop else 0
@@ -499,7 +502,6 @@ with col_ai3:
         st.session_state.chat_history = []
         st.rerun()
 
-# Xác định tên môn ngữ cảnh cho AI thông minh hơn
 ten_mon_ai_hien_tai = "Khoa học Tự nhiên và Toán học" if che_do == "🎪 Phòng Thí Nghiệm Ảo" else mon
 
 SYSTEM_PROMPT = f"""
