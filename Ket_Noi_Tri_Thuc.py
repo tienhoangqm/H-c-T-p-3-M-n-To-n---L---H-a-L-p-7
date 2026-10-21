@@ -253,7 +253,6 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
         "gemini-3.5-flash",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-1.5-flash"
     ]
     max_retries = 3
     last_err = None
