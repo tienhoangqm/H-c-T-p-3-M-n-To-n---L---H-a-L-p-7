@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Toán, Lý, Hóa, Văn + Đếm User Online + Tích hợp Dola & Gemini
+Phiên bản Tối thượng: Toán, Lý, Hóa, Văn + Đếm User Online + Tích hợp Dola & Gemini 3.5
 """
 import streamlit as st
 import google.generativeai as genai
@@ -299,12 +299,16 @@ def goi_dola(cau_hoi):
     except Exception:
         return None
 
-# --- Hàm gọi Gemini (Gia sư diễn giải) ---
+# --- Hàm gọi Gemini (Gia sư diễn giải) VỚI CƠ CHẾ XỬ LÝ LỖI MỚI ---
 def goi_gemini_an_toan(payload, system_instruction, history=None):
+    # Danh sách model ưu tiên Gemini 3.5 theo yêu cầu, có fallback an toàn xuống các model cũ
     ds_models = [
+        "gemini-3.5-flash",
+        "gemini-3.5-pro",
         "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-pro"
     ]
     max_retries = 3
     last_err = None
@@ -321,9 +325,17 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
             except Exception as e:
                 last_err = e
                 error_str = str(e).lower()
-                if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str or "404" in error_str:
+                
+                # XỬ LÝ 1: Lỗi 404 (Model không tồn tại) -> Bỏ qua ngay lập tức để gọi model tiếp theo
+                if "404" in error_str or "not found" in error_str:
+                    break 
+                    
+                # XỬ LÝ 2: Lỗi 429 (Quá tải server) -> Chờ vài giây rồi thử lại model hiện tại
+                elif "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
                     time.sleep(1.5 * (attempt + 1))
                     continue
+                    
+                # XỬ LÝ 3: Các lỗi khác -> Bỏ qua để chuyển model dự phòng
                 else:
                     break
     raise last_err
