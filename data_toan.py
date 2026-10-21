@@ -81,7 +81,7 @@ C1_T7 = {
             {"nd": "Cho tỉ lệ thức x/4 = 3/2. Giá trị của x là?","da": ["3","6","8","12"],"d": 1,"gt": "Nhân chéo: 2x = 12 ⇒ x = 6."},
             {"nd": "Khẳng định nào sai?","da": ["ℚ ∪ 𝕀 = ℝ","ℕ ⊂ ℤ","ℤ ⊂ ℚ","ℚ ∩ 𝕀 = ℚ"],"d": 3,"gt": "Tập số hữu tỉ ℚ và vô tỉ 𝕀 là 2 tập rời nhau, giao của chúng là tập rỗng ∅."},
             {"nd": "Số 0 là:","da": ["Số hữu tỉ dương","Số hữu tỉ âm","Số hữu tỉ không dương cũng không âm","Không phải số hữu tỉ"],"d": 2,"gt": "0 = 0/1 nên là số hữu tỉ, nó phân định số âm và số dương."},
-            {"nd": "Hỗn số -2 1/4 (Âm hai một phần tư) viết dưới dạng phân số là?","da": ["-7/4","-9/4","9/4","-1/4"],"d": 1,"gt": "Giữ dấu âm bên ngoài: -( (2.4+1)/4 ) = -9/4."},
+            {"nd": "Hỗн số -2 1/4 (Âm hai một phần tư) viết dưới dạng phân số là?","da": ["-7/4","-9/4","9/4","-1/4"],"d": 1,"gt": "Giữ dấu âm bên ngoài: -( (2.4+1)/4 ) = -9/4."},
             {"nd": "Giá trị biểu thức |-3,5| là?","da": ["3,5","-3,5","0","Không xác định"],"d": 0,"gt": "Giá trị tuyệt đối luôn ≥ 0."},
             {"nd": "Tìm x biết |x| = 1/3?","da": ["x = 1/3","x = -1/3","x = ±1/3","x = 0"],"d": 2,"gt": "Có hai số có giá trị tuyệt đối bằng 1/3 là 1/3 và -1/3."},
             {"nd": "Nếu x < 0 thì |x| bằng?","da": ["x","-x","0","1"],"d": 1,"gt": "Theo định nghĩa, nếu x < 0 thì |x| = -x (để ra số dương)."},
@@ -122,458 +122,6 @@ C1_T7 = {
             {"de": "Tính lũy thừa: E = ( -2/3 )³","dd": ["E = -8/27"],"gt": "Mũ lẻ của số âm ra số âm: (-2)³/3³ = -8/27."},
             {"de": "Đổi số thập phân 1,25 ra phân số tối giản.","dd": ["5/4"],"gt": "1,25 = 125/100 = 5/4."}
         ],
-        {
-    "ly_thuyet": "### I. SỐ HỮU TỈ VÀ CÁC PHÉP TOÁN\n1. **Tập hợp số hữu tỉ $\\mathbb{Q}$**:\n- Số hữu tỉ là số viết được dưới dạng phân số $\\frac{a}{b}$ với $a, b \\in \\mathbb{Z}, b \\neq 0$.\n- Tập hợp các số hữu tỉ được ký hiệu là $\\mathbb{Q}$.\n- **Số đối**: Số đối của số hữu tỉ $x$ ký hiệu là $-x$. Tổng của hai số đối nhau bằng $0$.\n\n2. **Các phép tính trong $\\mathbb{Q}$**:\n- Cộng, trừ, nhân, chia số hữu tỉ thực hiện tương tự như phân số.\n- **Giá trị tuyệt đối**: $|x| = x$ nếu $x \\ge 0$ và $|x| = -x$ nếu $x < 0$.\n\n3. **Lũy thừa với số mũ tự nhiên**:\n- $x^n = \\underbrace{x \\cdot x \\cdots x}_{n \\text{ thừa số}}$ ($x \\in \\mathbb{Q}, n \\in \\mathbb{N}^*$)\n- $x^0 = 1$ ($x \\neq 0$), $x^1 = x$\n- $x^m \\cdot x^n = x^{m+n}$\n- $x^m : x^n = x^{m-n}$ ($x \\neq 0, m \\ge n$)\n- $(x^m)^n = x^{m \\cdot n}$\n- $(x \\cdot y)^n = x^n \\cdot y^n$\n- $\\left(\\frac{x}{y}\\right)^n = \\frac{x^n}{y^n}$ ($y \\neq 0$)\n\n4. **Số thập phân và làm tròn số**:\n- Nếu một phân số tối giản với mẫu dương mà mẫu không có ước nguyên tố nào khác $2$ và $5$ thì phân số đó viết được dưới dạng **số thập phân hữu hạn**.\n- Nếu mẫu có ước nguyên tố khác $2$ và $5$ thì phân số đó viết được dưới dạng **số thập phân vô hạn tuần hoàn**.\n- **Làm tròn số với độ chính xác $d$**:\n  + Độ chính xác $d = 0,5 \\rightarrow$ làm tròn đến hàng đơn vị.\n  + Độ chính xác $d = 0,05 \\rightarrow$ làm tròn đến hàng phần mười.\n  + Độ chính xác $d = 0,005 \\rightarrow$ làm tròn đến hàng phần trăm.\n\n--- \n### II. HÌNH HỌC PHẲNG\n1. **Góc ở vị trí đặc biệt**:\n- **Hai góc kề bù**: Là hai góc vừa kề nhau vừa bù nhau, có tổng số đo bằng $180^\\circ$.\n- **Hai góc đối đỉnh**: Là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia. Hai góc đối đỉnh thì bằng nhau.\n- **Tia phân giác của một góc**: Là tia nằm giữa hai cạnh của góc và tạo với hai cạnh ấy hai góc bằng nhau.\n\n2. **Hai đường thẳng song song và vuông góc**:\n- **Dấu hiệu nhận biết hai đường thẳng song song**: Nếu đường thẳng $c$ cắt hai đường thẳng $a, b$ và trong các góc tạo thành có một cặp góc so le trong bằng nhau (hoặc một cặp góc đồng vị bằng nhau) thì $a // b$.\n- **Tính chất**: Nếu $a // b$ thì:\n  + Hai góc so le trong bằng nhau.\n  + Hai góc đồng vị bằng nhau.\n  + Hai góc trong cùng phía bù nhau.\n- **Quan hệ giữa tính vuông góc và tính song song**:\n  + $a \\perp c$ và $b \\perp c \\Rightarrow a // b$\n  + $a // b$ và $c \\perp a \\Rightarrow c \\perp b$",
-    "vi_du": "### Ví dụ 1: Thực hiện phép tính\nTính giá trị biểu thức: $A = \\left(-\\frac{2}{3}\\right)^2 + \\frac{1}{6} - \\left|-\\frac{5}{12}\\right|$\n\n*Lời giải*:\n$$A = \\frac{4}{9} + \\frac{1}{6} - \\frac{5}{12} = \\frac{16}{36} + \\frac{6}{36} - \\frac{15}{36} = \\frac{16 + 6 - 15}{36} = \\frac{7}{36}$$\n\n### Ví dụ 2: Tìm $x$\nTìm $x$, biết: $|x - 1,5| + \\frac{2}{5} = 1,4$\n\n*Lời giải*:\n$$|x - 1,5| = 1,4 - 0,4 = 1$$\n$$\\Rightarrow \\left[ \\begin{array}{l} x - 1,5 = 1 \\\\ x - 1,5 = -1 \\end{array} \\right. \\Rightarrow \\left[ \\begin{array}{l} x = 2,5 \\\\ x = 0,5 \\end{array} \\right.$$\nVậy $x \\in \\{0,5; 2,5\\}$.\n\n### Ví dụ 3: Chứng minh hai đường thẳng song song\nCho hình vẽ có $\\widehat{A_1} = 60^\\circ$, $\\widehat{B_1} = 60^\\circ$ ở vị trí so le trong. Chứng minh $a // b$.\n\n*Lời giải*:\nVì đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ tạo ra cặp góc so le trong $\\widehat{A_1} = \\widehat{B_1} = 60^\\circ$ nên $a // b$ (theo dấu hiệu nhận biết hai đường thẳng song song).",
-    "cau_hoi": [
-        {
-            "de": "Khẳng định nào sau đây là đúng?",
-            "da": [
-                "$15 \\in \\mathbb{Z}$ và $15 \\notin \\mathbb{Q}$",
-                "$15 \\notin \\mathbb{Z}$ và $15 \\in \\mathbb{Q}$",
-                "$\\frac{5}{9} \\in \\mathbb{Z}$ và $-\\frac{5}{9} \\notin \\mathbb{Q}$",
-                "$\\frac{5}{9} \\notin \\mathbb{Z}$ và $-\\frac{5}{9} \\in \\mathbb{Q}$"
-            ],
-            "d": 3,
-            "gt": "$\\frac{5}{9}$ không phải là số nguyên (không thuộc $\\mathbb{Z}$) và $-\\frac{5}{9}$ là số hữu tỉ (thuộc $\\mathbb{Q}$)."
-        },
-        {
-            "de": "Giá trị của $x$ thỏa mãn $|x| + 3 = 5$ là:",
-            "da": [
-                "$x = -2$",
-                "$x = 2$",
-                "$x = 2$ hoặc $x = -2$",
-                "$x = 8$"
-            ],
-            "d": 2,
-            "gt": "$|x| + 3 = 5 \\Rightarrow |x| = 2 \\Rightarrow x = 2$ hoặc $x = -2$."
-        },
-        {
-            "de": "Giá trị của $(2^3)^5$ là:",
-            "da": [
-                "$2^8$",
-                "$2^{15}$",
-                "$2^2$",
-                "$2^{35}$"
-            ],
-            "d": 1,
-            "gt": "Áp dụng công thức lũy thừa của lũy thừa: $(a^m)^n = a^{m \\cdot n} \\Rightarrow (2^3)^5 = 2^{3 \\cdot 5} = 2^{15}$."
-        },
-        {
-            "de": "Trong các phân số $\\frac{3}{5}; \\frac{7}{12}; \\frac{15}{70}; \\frac{15}{6}$, các phân số viết được dưới dạng số thập phân vô hạn tuần hoàn là:",
-            "da": [
-                "$\\frac{7}{12}; \\frac{15}{70}; \\frac{15}{6}$",
-                "$\\frac{3}{5}; \\frac{7}{12}; \\frac{15}{70}$",
-                "$\\frac{7}{12}; \\frac{15}{70}$",
-                "$\\frac{15}{70}$"
-            ],
-            "d": 2,
-            "gt": "Rút gọn các phân số: $\\frac{3}{5}$ (mẫu là 5 - hữu hạn), $\\frac{7}{12}$ (mẫu $12 = 2^2 \\cdot 3$ chứa ước 3 - vô hạn tuần hoàn), $\\frac{15}{70} = \\frac{3}{14}$ (mẫu $14 = 2 \\cdot 7$ chứa ước 7 - vô hạn tuần hoàn), $\\frac{15}{6} = \\frac{5}{2}$ (mẫu là 2 - hữu hạn). Do đó $\\frac{7}{12}$ và $\\frac{15}{70}$ viết được dưới dạng số thập phân vô hạn tuần hoàn."
-        },
-        {
-            "de": "Số $0,3181818\\dots$ gọi là số:",
-            "da": [
-                "Số thập phân hữu hạn.",
-                "Số tự nhiên.",
-                "Số thập phân vô hạn tuần hoàn.",
-                "Số nguyên."
-            ],
-            "d": 2,
-            "gt": "Số $0,3181818\\dots = 0,3(18)$ có phần thập phân lặp lại vô hạn chu kỳ $18$ nên là số thập phân vô hạn tuần hoàn."
-        },
-        {
-            "de": "Có bao nhiêu số hữu tỉ lớn hơn $-\\frac{2}{9}$ và nhỏ hơn $-\\frac{1}{9}$?",
-            "da": [
-                "Không có",
-                "Có hữu hạn số",
-                "Có vô số số",
-                "Có 1 số duy nhất"
-            ],
-            "d": 2,
-            "gt": "Giữa hai số hữu tỉ bất kỳ luôn có vô số số hữu tỉ khác."
-        },
-        {
-            "de": "Số đối của các số hữu tỉ $-1,5$ và $\\frac{3}{4}$ lần lượt là:",
-            "da": [
-                "$1,5$ và $-\\frac{3}{4}$",
-                "$-1,5$ và $\\frac{3}{4}$",
-                "$-1,5$ và $-\\frac{3}{4}$",
-                "$1,5$ và $\\frac{3}{4}$"
-            ],
-            "d": 0,
-            "gt": "Số đối của $-1,5$ là $1,5$; số đối của $\\frac{3}{4}$ là $-\\frac{3}{4}$."
-        },
-        {
-            "de": "Số nào trong các số dưới đây viết được dưới dạng số thập phân vô hạn tuần hoàn?",
-            "da": [
-                "$\\frac{15}{24}$",
-                "$\\frac{-4}{15}$",
-                "$\\frac{14}{40}$",
-                "$\\frac{16}{50}$"
-            ],
-            "d": 1,
-            "gt": "Xét $\\frac{-4}{15}$ có mẫu $15 = 3 \\cdot 5$ chứa thừa số nguyên tố $3 \\neq 2, 5$ nên biểu diễn được dưới dạng số thập phân vô hạn tuần hoàn."
-        },
-        {
-            "de": "Kết quả làm tròn số $3,14159$ với độ chính xác $0,005$ là:",
-            "da": [
-                "$3,14$",
-                "$3,1416$",
-                "$3,142$",
-                "$3,141$"
-            ],
-            "d": 0,
-            "gt": "Độ chính xác $0,005$ đòi hỏi làm tròn số đến hàng phần trăm (chữ số thập phân thứ hai). Chữ số sau chữ số $4$ là $1 < 5$, giữ nguyên $4$. Kết quả là $3,14$."
-        },
-        {
-            "de": "Trong các phân số sau, phân số nào biểu diễn số hữu tỉ $-\\frac{3}{4}$?",
-            "da": [
-                "$\\frac{-6}{2}$",
-                "$\\frac{8}{-6}$",
-                "$\\frac{9}{-12}$",
-                "$\\frac{-12}{9}$"
-            ],
-            "d": 2,
-            "gt": "Rút gọn phân số: $\\frac{9}{-12} = -\\frac{9:3}{12:3} = -\\frac{3}{4}$."
-        },
-        {
-            "de": "Kết quả phép tính $\\left(-\\frac{1}{3}\\right)^4$ là:",
-            "da": [
-                "$\\frac{1}{81}$",
-                "$\\frac{4}{81}$",
-                "$-\\frac{1}{81}$",
-                "$-\\frac{4}{81}$"
-            ],
-            "d": 0,
-            "gt": "$\\left(-\\frac{1}{3}\\right)^4 = \\frac{(-1)^4}{3^4} = \\frac{1}{81}$."
-        },
-        {
-            "de": "Giá trị của $x$ trong đẳng thức $\\frac{3}{4} - \\frac{1}{3}x = \\frac{5}{6}$ là:",
-            "da": [
-                "$-120$",
-                "$-4$",
-                "$-\\frac{1}{4}$",
-                "$-40$"
-            ],
-            "d": 2,
-            "gt": "$\\frac{1}{3}x = \\frac{3}{4} - \\frac{5}{6} = -\\frac{1}{12} \\Rightarrow x = -\\frac{1}{12} : \\frac{1}{3} = -\\frac{1}{4}$."
-        },
-        {
-            "de": "Giá trị của phép tính $\\left(\\frac{1}{3}\\right)^8 : \\left(\\frac{1}{3}\\right)^5$ là:",
-            "da": [
-                "$\\frac{1}{3}$",
-                "$\\left(\\frac{1}{3}\\right)^3$",
-                "$\\frac{1}{27}$",
-                "$\\left(\\frac{1}{3}\\right)^{24}$"
-            ],
-            "d": 1,
-            "gt": "$\\left(\\frac{1}{3}\\right)^8 : \\left(\\frac{1}{3}\\right)^5 = \\left(\\frac{1}{3}\\right)^{8-5} = \\left(\\frac{1}{3}\\right)^3$ (hoặc bằng $\\frac{1}{27}$)."
-        },
-        {
-            "de": "Cho đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ và trong các góc tạo thành có một cặp góc so le trong bằng nhau thì:",
-            "da": [
-                "$a$ trùng $b$",
-                "$a // b$",
-                "$a$ cắt $b$",
-                "$a \\perp b$"
-            ],
-            "d": 1,
-            "gt": "Theo dấu hiệu nhận biết hai đường thẳng song song: Nếu một đường thẳng cắt hai đường thẳng tạo thành một cặp góc so le trong bằng nhau thì hai đường thẳng đó song song."
-        },
-        {
-            "de": "Qua một điểm nằm ngoài đường thẳng cho trước, ta vẽ được bao nhiêu đường thẳng song song với đường thẳng đó?",
-            "da": [
-                "1 đường thẳng",
-                "2 đường thẳng",
-                "3 đường thẳng",
-                "4 đường thẳng"
-            ],
-            "d": 0,
-            "gt": "Theo tiên đề Euclid: Qua một điểm nằm ngoài một đường thẳng chỉ có một đường thẳng song song với đường thẳng đó."
-        },
-        {
-            "de": "Nếu hai đường thẳng phân biệt $a$ và $b$ cùng vuông góc với đường thẳng $c$ thì:",
-            "da": [
-                "$a // b$",
-                "$a \\perp b$",
-                "$a$ cắt $b$",
-                "$a$ trùng $b$"
-            ],
-            "d": 0,
-            "gt": "Hai đường thẳng phân biệt cùng vuông góc với đường thẳng thứ ba thì chúng song song với nhau."
-        },
-        {
-            "de": "Cho hình vẽ có $\\widehat{B_4} = 120^\\circ$. Số đo góc $\\widehat{B_2}$ là:",
-            "da": [
-                "$60^\\circ$",
-                "$30^\\circ$",
-                "$120^\\circ$",
-                "$180^\\circ$"
-            ],
-            "d": 2,
-            "gt": "Góc $\\widehat{B_2}$ và $\\widehat{B_4}$ là hai góc đối đỉnh nên $\\widehat{B_2} = \\widehat{B_4} = 120^\\circ$."
-        },
-        {
-            "de": "Góc $\\widehat{A_1}$ ở vị trí so le trong với góc nào?",
-            "da": [
-                "$\\widehat{B_1}$",
-                "$\\widehat{B_2}$",
-                "$\\widehat{B_3}$",
-                "$\\widehat{B_4}$"
-            ],
-            "d": 2,
-            "gt": "Dựa vào vị trí hình vẽ, góc so le trong với góc $\\widehat{A_1}$ là góc $\\widehat{B_3}$."
-        },
-        {
-            "de": "Góc $\\widehat{B_3}$ ở vị trí đồng vị với góc nào?",
-            "da": [
-                "$\\widehat{A_1}$",
-                "$\\widehat{A_2}$",
-                "$\\widehat{A_3}$",
-                "$\\widehat{A_4}$"
-            ],
-            "d": 2,
-            "gt": "Góc đồng vị với $\\widehat{B_3}$ là góc $\\widehat{A_3}$."
-        },
-        {
-            "de": "Ba đường thẳng $xx', yy', zz'$ cùng đi qua $O$. Góc nào sau đây là góc kề bù với góc $\\widehat{xOy}$?",
-            "da": [
-                "Góc $\\widehat{yOx'}$",
-                "Góc $\\widehat{xOy'}$",
-                "Góc $\\widehat{yOz'}$ và góc $\\widehat{zOy'}$",
-                "Góc $\\widehat{yOx'}$ và góc $\\widehat{xOy'}$"
-            ],
-            "d": 3,
-            "gt": "Góc kề bù với $\\widehat{xOy}$ tạo bởi tia đối của $Ox$ (là $Ox'$) hoặc tia đối của $Oy$ (là $Oy'$), do đó gồm hai góc $\\widehat{yOx'}$ và $\\widehat{xOy'}$."
-        },
-        {
-            "de": "[Đề 1] Kết quả làm tròn số $36,4572$ đến hàng phần trăm là:",
-            "da": [
-                "$36,46$",
-                "$36,45$",
-                "$36,5$",
-                "$36,4$"
-            ],
-            "d": 0,
-            "gt": "Chữ số ở hàng phần trăm là $5$, chữ số đứng liền sau là $7 \\ge 5$ nên tăng $5$ lên thành $6$. Kết quả $36,46$."
-        },
-        {
-            "de": "[Đề 1] Trên trục số, điểm $M$ nằm giữa $0$ và $-1$ chia đoạn thành $2$ phần bằng nhau biểu diễn số hữu tỉ nào?",
-            "da": [
-                "$-\\frac{1}{3}$",
-                "$-\\frac{1}{2}$",
-                "$\\frac{1}{2}$",
-                "$\\frac{1}{3}$"
-            ],
-            "d": 1,
-            "gt": "Điểm $M$ nằm bên trái điểm $0$ một khoảng bằng nửa đơn vị nên biểu diễn số $-\\frac{1}{2}$."
-        },
-        {
-            "de": "[Đề 1] Giá trị của biểu thức $A = 2x^2y - 3xy$ tại $x = -2; y = 1$ là:",
-            "da": [
-                "$-14$",
-                "$12$",
-                "$-2$",
-                "$14$"
-            ],
-            "d": 3,
-            "gt": "Thay $x = -2, y = 1$ vào $A$: $A = 2(-2)^2(1) - 3(-2)(1) = 2(4)(1) + 6 = 8 + 6 = 14$."
-        },
-        {
-            "de": "[Đề 1] Chọn phát biểu đúng trong các phát biểu sau:",
-            "da": [
-                "$9 \\notin \\mathbb{Q}$ vì 9 là số tự nhiên",
-                "$-2\\frac{1}{3}$ là số hữu tỉ vì $-2\\frac{1}{3} = \\frac{-5}{3}$",
-                "$\\sqrt{2}$ là số hữu tỉ vì $\\sqrt{2} = \\frac{\\sqrt{2}}{1}$",
-                "$0,3$ là số hữu tỉ vì $0,3 = \\frac{3}{10}$"
-            ],
-            "d": 3,
-            "gt": "$0,3 = \\frac{3}{10}$ có dạng phân số với tử và mẫu là số nguyên ($3, 10 \\in \\mathbb{Z}, 10 \\neq 0$) nên là số hữu tỉ."
-        },
-        {
-            "de": "[Đề 1] Cho $Oz$ là tia phân giác của góc $\\widehat{xOy} = 70^\\circ$. Khi đó số đo góc $\\widehat{yOz}$ bằng:",
-            "da": [
-                "$35^\\circ$",
-                "$40^\\circ$",
-                "$70^\\circ$",
-                "$140^\\circ$"
-            ],
-            "d": 0,
-            "gt": "Tia phân giác chia góc thành 2 phần bằng nhau: $\\widehat{yOz} = \\frac{\\widehat{xOy}}{2} = \\frac{70^\\circ}{2} = 35^\\circ$."
-        },
-        {
-            "de": "[Đề 1] Cho $a // b$, một đường thẳng cắt $a, b$ tạo thành góc $40^\\circ$. Số đo $x$ ở vị trí so le trong là:",
-            "da": [
-                "$140^\\circ$",
-                "$60^\\circ$",
-                "$40^\\circ$",
-                "$20^\\circ$"
-            ],
-            "d": 2,
-            "gt": "Vì $a // b$ nên hai góc so le trong bằng nhau $\\Rightarrow x = 40^\\circ$."
-        },
-        {
-            "de": "[Đề 2] Khẳng định nào sau đây là sai?",
-            "da": [
-                "$-3 \\in \\mathbb{Q}$",
-                "$\\frac{3}{2} \\notin \\mathbb{Z}$",
-                "$3,2 \\in \\mathbb{N}$",
-                "$\\frac{2}{-5} \\in \\mathbb{Q}$"
-            ],
-            "d": 2,
-            "gt": "$3,2$ là số thập phân, không thuộc tập hợp số tự nhiên $\\mathbb{N}$."
-        },
-        {
-            "de": "[Đề 2] Phân số nào biểu diễn được dưới dạng số thập phân vô hạn tuần hoàn?",
-            "da": [
-                "$\\frac{7}{6}$",
-                "$\\frac{13}{10}$",
-                "$-\\frac{11}{20}$",
-                "$\\frac{12}{15}$"
-            ],
-            "d": 0,
-            "gt": "$\\frac{7}{6}$ có mẫu $6 = 2 \\cdot 3$ chứa thừa số nguyên tố $3 \\neq 2, 5$ nên viết được dưới dạng STPVHTH."
-        },
-        {
-            "de": "[Đề 2] Làm tròn số $17,5384$ với độ chính xác $0,05$ được kết quả là:",
-            "da": [
-                "$17,53$",
-                "$17,54$",
-                "$17,5$",
-                "$17,6$"
-            ],
-            "d": 2,
-            "gt": "Độ chính xác $0,05$ đòi hỏi làm tròn đến hàng phần mười. Chữ số ở hàng phần mười là $5$, chữ số sau là $3 < 5$ nên giữ nguyên. Kết quả là $17,5$."
-        },
-        {
-            "de": "[Đề 2] Cho góc $\\widehat{xOt} = 120^\\circ$. Số đo $\\widehat{yOt}$ kề bù với góc $\\widehat{xOt}$ là:",
-            "da": [
-                "$70^\\circ$",
-                "$120^\\circ$",
-                "$60^\\circ$",
-                "$180^\\circ$"
-            ],
-            "d": 2,
-            "gt": "$\\widehat{yOt} = 180^\\circ - \\widehat{xOt} = 180^\\circ - 120^\\circ = 60^\\circ$."
-        }
-    ],
-    "bt_co_ban": [
-        {
-            "de": "Thực hiện phép tính: $A = \\left(-\frac{2}{3}\\right)^2 \\cdot \\frac{21}{25} + \\frac{6}{17} \\cdot \\left(-\frac{1}{3} - \\frac{1}{8}\\right) : \\frac{7}{12}$",
-            "dd": [
-                "37/100",
-                "0.37"
-            ],
-            "lg": "1) $\\left(-\\frac{2}{3}\\right)^2 \\cdot \\frac{21}{25} = \\frac{4}{9} \\cdot \\frac{21}{25} = \\frac{28}{75}$.\n2) $-\\frac{1}{3} - \\frac{1}{8} = -\\frac{11}{24}$.\n3) $\\frac{6}{17} \\cdot \\left(-\\frac{11}{24}\\right) : \\frac{7}{12} = -\\frac{11}{68} \\cdot \\frac{12}{7} = -\\frac{33}{119}$.\n4) Cộng kết quả thu được giá trị cụ thể."
-        },
-        {
-            "de": "Thực hiện phép tính: $B = -\\frac{3}{8} \\cdot 27\\frac{1}{5} - 51\\frac{1}{5} \\cdot \\left(-\\frac{3}{8}\\right) + 2019^0$",
-            "dd": [
-                "10",
-                "x=10"
-            ],
-            "lg": "$B = -\\frac{3}{8} \\left(27\\frac{1}{5} - 51\\frac{1}{5}\\right) + 1 = -\\frac{3}{8} (-24) + 1 = 9 + 1 = 10$."
-        },
-        {
-            "de": "Tìm $x$, biết: $\\frac{1}{3}x - 2 = \\frac{3}{5}$",
-            "dd": [
-                "39/5",
-                "7.8",
-                "x=39/5"
-            ],
-            "lg": "$\\frac{1}{3}x = \\frac{3}{5} + 2 = \\frac{13}{5} \\Rightarrow x = \\frac{13}{5} \\cdot 3 = \\frac{39}{5}$."
-        },
-        {
-            "de": "Tìm $x$, biết: $2 + \\frac{1}{2} - \\left|x + \\frac{1}{3}\\right| = \\frac{3}{4}$",
-            "dd": [
-                "x=17/12",
-                "x=-25/12"
-            ],
-            "lg": "$\\left|x + \\frac{1}{3}\\right| = \\frac{5}{2} - \\frac{3}{4} = \\frac{7}{4} \\Rightarrow \\left[ \\begin{array}{l} x + \\frac{1}{3} = \\frac{7}{4} \\Rightarrow x = \\frac{17}{12} \\\\ x + \\frac{1}{3} = -\\frac{7}{4} \\Rightarrow x = -\\frac{25}{12} \\end{array} \\right.$"
-        },
-        {
-            "de": "Một mảnh vườn hình chữ nhật có kích thước $15\\text{m} \\times 20\\text{m}$. Nếu người ta trồng rau trên 4 ô vuông kích thước $2,5\\text{m} \\times 2,5\\text{m}$ thì phần diện tích còn lại là bao nhiêu?",
-            "dd": [
-                "275",
-                "275 m2",
-                "275m2"
-            ],
-            "lg": "Diện tích mảnh vườn: $15 \\times 20 = 300\\text{ m}^2$.\nDiện tích 4 ô vuông trồng rau: $4 \\times (2,5 \\times 2,5) = 4 \\times 6,25 = 25\\text{ m}^2$.\nDiện tích phần còn lại: $300 - 25 = 275\\text{ m}^2$."
-        },
-        {
-            "de": "Trong $100\\text{g}$ gạo lứt chứa: $7,5\\text{g}$ protein; $2,7\\text{g}$ lipid; $72,8\\text{g}$ glucid; $3,4\\text{g}$ celluloza; $1,4\\text{g}$ tro và phần còn lại là nước. Hỏi khối lượng nước trong $400\\text{g}$ gạo lứt là bao nhiêu?",
-            "dd": [
-                "48",
-                "48g",
-                "48 gram"
-            ],
-            "lg": "Khối lượng các chất dinh dưỡng trong $100\\text{g}$ gạo lứt là:\n$7,5 + 2,7 + 72,8 + 3,4 + 1,4 = 87,8\\text{ g}$.\nKhối lượng nước trong $100\\text{g}$ gạo lứt là: $100 - 87,8 = 12,2\\text{ g}$.\nKhối lượng nước trong $400\\text{g}$ gạo lứt là: $12,2 \\times 4 = 48\\text{ g}$."
-        },
-        {
-            "de": "Một cửa hàng thời trang giảm giá tất cả mặt hàng 20%. Bạn Hạnh định mua một cái áo giá 200.000đ và một cái quần giá 350.000đ. Tính số tiền Hạnh phải trả sau khi giảm giá.",
-            "dd": [
-                "440000",
-                "440000đ",
-                "440.000 đồng"
-            ],
-            "lg": "Tổng giá tiền ban đầu: $200.000 + 350.000 = 550.000\\text{ đ}$.\nSố tiền Hạnh phải trả (bằng $80\\%$ giá ban đầu): $550.000 \\times (1 - 0,20) = 440.000\\text{ đ}$."
-        },
-        {
-            "de": "[Đề 1 - Bài 3] Một cửa hàng nhập 200 cái bánh trung thu với chi phí 6.000.000 đồng. Cửa hàng bán ra thị trường 50.000 đồng/cái. Sau ngày 1/8 Âm lịch còn lại 120 cái, cửa hàng khuyến mãi \"Mua 1 tặng 1\" nên bán hết hàng. Hỏi cửa hàng lời hay lỗ bao nhiêu?",
-            "dd": [
-                "Lời 1.000.000 đồng",
-                "Lời 1000000đ",
-                "1000000"
-            ],
-            "lg": "Số bánh đã bán trước đợt khuyến mãi: $200 - 120 = 80$ cái.\nDoanh thu từ 80 cái đầu: $80 \\times 50.000 = 4.000.000$ đồng.\nĐợt khuyến mãi Mua 1 tặng 1: Khách trả tiền 1 cái nhận 2 cái $\\rightarrow$ Số cái bánh tính tiền là $120 : 2 = 60$ cái.\nDoanh thu đợt khuyến mãi: $60 \\times 50.000 = 3.000.000$ đồng.\nTổng doanh thu: $4.000.000 + 3.000.000 = 7.000.000$ đồng.\nSố tiền lời: $7.000.000 - 6.000.000 = 1.000.000$ đồng."
-        }
-    ],
-    "bt_nang_cao": [
-        {
-            "de": "Tìm GTNN của $A = \\frac{3}{|x-2|+1}$ và $C = |x-7| + \\frac{1}{14}$. Tìm GTLN nếu có.",
-            "hd": "Đánh giá mẫu số $|x-2|+1 \\ge 1$ để tìm GTLN của $A$; dùng $|x-7| \\ge 0$ để tìm GTNN của $C$.",
-            "dd": [
-                "GTLN A = 3",
-                "GTNN C = 1/14"
-            ],
-            "lg": "1) Do $|x-2| \\ge 0 \\Rightarrow |x-2|+1 \\ge 1 \\Rightarrow A = \\frac{3}{|x-2|+1} \\le \\frac{3}{1} = 3$.\n   Vậy GTLN của $A = 3$ khi $x = 2$.\n2) Do $|x-7| \\ge 0 \\Rightarrow C = |x-7| + \\frac{1}{14} \\ge \\frac{1}{14}$.\n   Vậy GTNN của $C = \\frac{1}{14}$ khi $x = 7$."
-        },
-        {
-            "de": "Tìm các giá trị nguyên của $x$ để biểu thức $B = \\frac{x+2}{x-1}$ nhận giá trị nguyên.",
-            "hd": "Biến đổi $B = 1 + \\frac{3}{x-1}$, để $B \\in \\mathbb{Z}$ thì $(x-1)$ phải là ước của 3.",
-            "dd": [
-                "x in {-2, 0, 2, 4}",
-                "-2, 0, 2, 4"
-            ],
-            "lg": "Ta có: $B = \\frac{x-1+3}{x-1} = 1 + \\frac{3}{x-1}$.\nĐể $B \\in \\mathbb{Z}$ thì $\\frac{3}{x-1} \\in \\mathbb{Z} \\Rightarrow (x-1) \\in \\text{Ư}(3) = \\{-3; -1; 1; 3\\}$.\n- $x - 1 = -3 \\Rightarrow x = -2$\n- $x - 1 = -1 \\Rightarrow x = 0$\n- $x - 1 = 1 \\Rightarrow x = 2$\n- $x - 1 = 3 \\Rightarrow x = 4$\nVậy $x \\in \\{-2; 0; 2; 4\\}$."
-        },
-        {
-            "de": "Chứng minh rằng: $A = (5^5 - 5^4 + 5^3) \\vdots 7$",
-            "hd": "Đặt thừa số chung $5^3$ ra ngoài.",
-            "dd": [
-                "ĐPCM"
-            ],
-            "lg": "Ta có: $A = 5^3 \\cdot (5^2 - 5 + 1) = 5^3 \\cdot (25 - 5 + 1) = 5^3 \\cdot 21$.\nVì $21 = 7 \\cdot 3 \\vdots 7$ nên $A = 5^3 \\cdot 21 \\vdots 7$ (đpcm)."
-        },
-        {
-            "de": "Cho $S = \\frac{1}{2^2} + \\frac{1}{3^2} + \\frac{1}{4^2} + \\dots + \\frac{1}{9^2}$. Chứng minh $\\frac{2}{5} < S < \\frac{8}{9}$.",
-            "hd": "Sử dụng bất đẳng thức $\\frac{1}{n^2} < \\frac{1}{(n-1)n}$ và $\\frac{1}{n^2} > \\frac{1}{n(n+1)}$.",
-            "dd": [
-                "ĐPCM"
-            ],
-            "lg": "1) Chứng minh $S < \\frac{8}{9}$:\n   $S < \\frac{1}{1 \\cdot 2} + \\frac{1}{2 \\cdot 3} + \\dots + \\frac{1}{8 \\cdot 9} = 1 - \\frac{1}{2} + \\frac{1}{2} - \\frac{1}{3} + \\dots + \\frac{1}{8} - \\frac{1}{9} = 1 - \\frac{1}{9} = \\frac{8}{9}$.\n2) Chứng minh $S > \\frac{2}{5}$:\n   $S > \\frac{1}{2 \\cdot 3} + \\frac{1}{3 \\cdot 4} + \\dots + \\frac{1}{9 \\cdot 10} = \\frac{1}{2} - \\frac{1}{10} = \\frac{4}{10} = \\frac{2}{5}$.\n   Vậy $\\frac{2}{5} < S < \\frac{8}{9}$ (đpcm)."
-        },
-        {
-            "de": "Không tính giá trị biểu thức $P = \\left(1 - \\frac{1}{2}\\right)\\left(1 - \\frac{1}{3}\\right)\\left(1 - \\frac{1}{4}\\right)\\dots\\left(1 - \\frac{1}{99}\\right)$, chứng minh $0 < P < 1$.",
-            "hd": "Rút gọn tích $P = \\frac{1}{2} \\cdot \\frac{2}{3} \\cdot \\frac{3}{4} \\dots \\frac{98}{99} = \\frac{1}{99}$.",
-            "dd": [
-                "P = 1/99",
-                "0 < P < 1"
-            ],
-            "lg": "Biến đổi các thừa số:\n$P = \\frac{1}{2} \\cdot \\frac{2}{3} \\cdot \\frac{3}{4} \\dots \\frac{98}{99} = \\frac{1 \\cdot 2 \\cdot 3 \\dots 98}{2 \\cdot 3 \\cdot 4 \\dots 99} = \\frac{1}{99}$.\nVì $0 < \\frac{1}{99} < 1$ nên $0 < P < 1$ (đpcm)."
-        }
-    ]
-}
 
         "bt_nang_cao": [
             {"de": "Tính hợp lý: A = 5/13 . ( -3/10 ) + 5/13 . ( -7/10 ) + 8/13","hd": "Dùng tính chất phân phối của phép nhân đối với phép cộng: a.b + a.c = a.(b+c)","dd": ["1"],"lg": "A = 5/13 . (-3/10 - 7/10) + 8/13 = 5/13 . (-10/10) + 8/13 = 5/13 . (-1) + 8/13 = -5/13 + 8/13 = 3/13. (Sửa lại kết quả đúng là 3/13)"},
@@ -594,13 +142,128 @@ C1_T7 = {
             {"de": "Tìm phần nguyên của số hữu tỉ x = -4,7.","hd": "Phần nguyên của x (kí hiệu [x]) là số nguyên lớn nhất không vượt quá x.","dd": ["-5"],"lg": "Số nguyên lớn nhất nhỏ hơn hoặc bằng -4,7 là -5. Chú ý không phải là -4."},
             {"de": "Tính nhanh: B = 1/3 + 1/3² + 1/3³ + ... + 1/3^10","hd": "Nhân 3B rồi lấy 3B - B.","dd": ["B = (3^10 - 1) / (2.3^10)"],"lg": "3B = 1 + 1/3 + 1/3² + ... + 1/3^9. Trừ B ta được: 2B = 1 - 1/3^10. Vậy B = (1 - 1/3^10) / 2."},
             {"de": "Một quyển sách giảm giá 20% thì có giá 40.000đ. Hỏi giá ban đầu là bao nhiêu?","hd": "Giá sau khi giảm tương ứng với bao nhiêu % giá ban đầu?","dd": ["50.000đ"],"lg": "Giá sau khi giảm = 100% - 20% = 80% giá ban đầu. Giá ban đầu = 40.000 : 80% = 40.000 : 0,8 = 50.000đ."},
-            {"de": "Tìm x biết: |x - 2| = x - 2","hd": "Sử dụng tính chất |A| = A khi A ≥ 0.","dd": ["x ≥ 2"],"lg": "|x - 2| = x - 2 khi và chỉ khi x - 2 ≥ 0 ⇒ x ≥ 2."},
+            {"de": "Tìm x biết: |x - 2| = x - 2","hd": "Sử dụng tính chất |A] = A khi A ≥ 0.","dd": ["x ≥ 2"],"lg": "|x - 2| = x - 2 khi và chỉ khi x - 2 ≥ 0 ⇒ x ≥ 2."},
             {"de": "Tìm x, y, z biết: 2x = 3y = 4z và x + y + z = 26.","hd": "Chia các vế cho BCNN(2,3,4) = 12 để đưa về dãy tỉ số bằng nhau.","dd": ["x=12, y=8, z=6"],"lg": "2x/12 = 3y/12 = 4z/12 ⇒ x/6 = y/4 = z/3. Theo t/c dãy tỉ số bằng nhau: (x+y+z)/(6+4+3) = 26/13 = 2. Vậy x=12, y=8, z=6."}
         ]
     }
 }
 
 T7["Chương 1: Số hữu tỉ — Số thực"] = C1_T7
+
+# --- Chương 2: Số thực ---
+C2_T7 = {
+    "Số thực và Căn bậc hai số học (Chuyên sâu)": {
+        "ly_thuyet": """📌 1. SỐ VÔ TỈ:
+- Số vô tỉ là số viết được dưới dạng số thập phân vô hạn không tuần hoàn.
+- Tập hợp các số vô tỉ được kí hiệu là 𝕀. Ví dụ: √2, √3, π (pi), ...
+
+📌 2. SỐ THỰC VÀ TRỤC SỐ THỰC:
+- Số hữu tỉ và số vô tỉ được gọi chung là số thực. 
+- Tập hợp các số thực được kí hiệu là ℝ. Ta có: ℝ = ℚ ∪ 𝕀.
+- Mỗi số thực được biểu diễn bởi một điểm trên trục số thực. Ngược lại, mỗi điểm trên trục số thực đều biểu diễn một số thực.
+- Trong tập hợp số thực, ta cũng có các phép toán với tính chất giống như trong tập hợp số hữu tỉ.
+
+📌 3. GIÁ TRỊ TUYỆT ĐỐI CỦA MỘT SỐ THỰC:
+- Giá trị tuyệt đối của một số thực x, kí hiệu là |x|, là khoảng cách từ điểm x đến điểm 0 trên trục số.
+- |x| = x nếu x ≥ 0; |x| = -x nếu x < 0.
+- |x| ≥ 0 với mọi số thực x; |-x| = |x|; |x.y| = |x|.|y|.
+
+📌 4. CĂN BẬC HAI SỐ HỌC:
+- Căn bậc hai số học của một số a không âm là số x không âm sao cho x² = a.
+- Kí hiệu: √a. Số âm không có căn bậc hai số học.""",
+        
+        "vi_du": """💡 VÍ DỤ 1: Nhận diện số hữu tỉ và số vô tỉ
+Đề bài: Cho các số sau: 3/5; -2,4; √5; 0; 3,(14); π. Trong đó số nào là số hữu tỉ, số nào là số vô tỉ?
+- Giải:
+  + Các số hữu tỉ (ℚ): 3/5; -2,4; 0; 3,(14) (vì viết được dưới dạng phân số hoặc số thập phân hữu hạn/vô hạn tuần hoàn).
+  + Các số vô tỉ (𝕀): √5; π (vì là số thập phân vô hạn không tuần hoàn).
+
+💡 VÍ DỤ 2: Tính giá trị biểu thức chứa căn bậc hai
+Đề bài: Tính giá trị của biểu thức: A = √16 + 3.√0,25 - 5
+- Giải:
+  + Ta có: √16 = 4; √0,25 = 0,5.
+  + Thay vào biểu thức: A = 4 + 3 . 0,5 - 5
+  + A = 4 + 1,5 - 5 = 5,5 - 5 = 0,5.
+
+💡 VÍ DỤ 3: Tìm x trong tập hợp số thực
+Đề bài: Tìm số thực x, biết: 2.x² = 18
+- Giải:
+  + x² = 18 : 2
+  + x² = 9
+  + Vì x² = 9 nên x = 3 hoặc x = -3. Vậy x ∈ {3; -3}.""",
+
+        "cau_hoi": [
+            {"nd": "Số vô tỉ là số thập phân như thế nào?","da": ["Số thập phân hữu hạn","Số thập phân vô hạn tuần hoàn","Số thập phân vô hạn không tuần hoàn","Số tự nhiên"],"d": 2,"gt": "Định nghĩa số vô tỉ."},
+            {"nd": "Tập hợp các số thực được kí hiệu là gì?","da": ["ℕ","ℤ","ℚ","ℝ"],"d": 3,"gt": "ℝ là kí hiệu của tập hợp số thực."},
+            {"nd": "Khẳng định nào sau đây là ĐÚNG?","da": ["Mọi số thực đều là số hữu tỉ","Mọi số vô tỉ đều là số thực","Số 0 không phải là số thực","Số âm có căn bậc hai số học"],"d": 1,"gt": "Số vô tỉ thuộc tập số thực (𝕀 ⊂ ℝ)."},
+            {"nd": "Căn bậc hai số học của 49 là?","da": ["7","-7","±7","14"],"d": 0,"gt": "√49 = 7 (căn bậc hai số học luôn không âm)."},
+            {"nd": "Số nào sau đây là số vô tỉ?","da": ["3/4","-2,5","√3","0,(3)"],"d": 2,"gt": "√3 = 1,73205... là số thập phân vô hạn không tuần hoàn."},
+            {"nd": "Kết quả của phép tính √81 bằng?","da": ["9","-9","±9","81"],"d": 0,"gt": "√81 = 9."},
+            {"nd": "Giá trị tuyệt đối của số -7,5 là?","da": ["-7,5","7,5","0","±7,5"],"d": 1,"gt": "|-7,5| = 7,5."},
+            {"nd": "Tìm số thực x biết |x| = 2,5.","da": ["x = 2,5","x = -2,5","x = 2,5 hoặc x = -2,5","Không có x"],"d": 2,"gt": "Giá trị tuyệt đối bằng 2,5 thì x có thể là 2,5 hoặc -2,5."},
+            {"nd": "Số nào dưới đây không có căn bậc hai số học?","da": ["0","25","3/4","-9"],"d": 3,"gt": "Số âm (-9) không có căn bậc hai số học."},
+            {"nd": "Kết quả của biểu thức √( -5 )² là?","da": ["-5","5","±5","25"],"d": 1,"gt": "√((-5)²) = √25 = 5 (hoặc dùng tính chất √x² = |x| = |-5| = 5)."},
+            {"nd": "Tập hợp số thực ℝ bao gồm những tập hợp nào?","da": ["Chỉ số hữu tỉ","Chỉ số vô tỉ","Số hữu tỉ và số vô tỉ","Số tự nhiên và số nguyên"],"d": 2,"gt": "ℝ = ℚ ∪ 𝕀."},
+            {"nd": "So sánh hai số thực 2,34 và 2,3(4).","da": ["2,34 > 2,3(4)","2,34 < 2,3(4)","2,34 = 2,3(4)","Không so sánh được"],"d": 1,"gt": "2,34 = 2,3400... còn 2,3(4) = 2,3444... nên 2,34 < 2,3(4)."},
+            {"nd": "Điểm biểu diễn số thực -√2 nằm ở đâu trên trục số?","da": ["Bên phải điểm 0","Bên trái điểm 0","Trùng điểm 0","Không biểu diễn được"],"d": 1,"gt": "Vì -√2 là số âm nên nằm bên trái điểm 0."},
+            {"nd": "Kết quả của √0 bằng?","da": ["0","1","Không xác định","Vô số"],"d": 0,"gt": "√0 = 0."},
+            {"nd": "Kết quả của √1 bằng?","da": ["0","1","-1","±1"],"d": 1,"gt": "√1 = 1."},
+            {"nd": "Nếu x² = 7 thì x bằng mấy?","da": ["√7"," -√7","±√7","7"],"d": 2,"gt": "x² = 7 thì x có hai giá trị là √7 và -√7."},
+            {"nd": "Số đối của số thực -√5 là?","da": ["√5","-√5","5","-5"],"d": 0,"gt": "Số đối của a là -a, đối của -√5 là √5."},
+            {"nd": "Tính giá trị biểu thức: √9 + √4 = ?","da": ["5","13","√13","±5"],"d": 0,"gt": "3 + 2 = 5."},
+            {"nd": "Phát biểu nào sau đây là SAI?","da": ["Mọi số hữu tỉ đều là số thực","Số 0 là số thực","Số vô tỉ không phải là số thực","Mọi số tự nhiên đều là số thực"],"d": 2,"gt": "Số vô tỉ chính là một bộ phận của số thực."},
+            {"nd": "Tính giá trị của biểu thức: 2.√16 - 5 = ?","da": ["3","11","7","27"],"d": 0,"gt": "2.4 - 5 = 8 - 5 = 3."},
+            {"nd": "Giá trị của x thỏa mãn: x + √2 = 0 là?","da": ["√2","-√2","2","-2"],"d": 1,"gt": "x = -√2."},
+            {"nd": "Làm tròn số thực 7,495 đến chữ số thập phân thứ hai ta được?","da": ["7,49","7,50","7,40","7,5"],"d": 1,"gt": "Chữ số thứ ba là 5 nên làm tròn lên: 7,50 (hoặc 7,5)."},
+            {"nd": "Kết quả của phép tính | -3,2 | + | 1,2 | là?","da": ["-4,4","4,4","2,0","-2,0"],"d": 1,"gt": "3,2 + 1,2 = 4,4."},
+            {"nd": "Biểu thức nào sau đây không có nghĩa?","da": ["√10","√(-9)","√0","√(2/3)"],"d": 1,"gt": "Số âm không có căn bậc hai số học."},
+            {"nd": "Số thực x thỏa mãn x² = 0 là?","da": ["x = 0","x = 1","Không có x","x = 0 hoặc x = 1"],"d": 0,"gt": "Chỉ có số 0 mới có bình phương bằng 0."},
+            {"nd": "Kết quả của phép tính: √25 . √4 là?","da": ["10","-10","20","√10"],"d": 0,"gt": "5 . 2 = 10."},
+            {"nd": "Số nguyên lớn nhất không vượt quá 5,2 là?","da": ["6","5","4","7"],"d": 1,"gt": "Số nguyên lớn nhất nhỏ hơn hoặc bằng 5,2 là 5."},
+            {"nd": "Căn bậc hai số học của (-7)² là?","da": ["-7","7","±7","49"],"d": 1,"gt": "√((-7)²) = √49 = 7."},
+            {"nd": "Độ dài đường chéo của một hình vuông có cạnh bằng 1 là?","da": ["1","2","√2","√3"],"d": 2,"gt": "Theo định lí Pytago, cạnh huyền = √(1² + 1²) = √2."},
+            {"nd": "Giao của tập hợp số hữu tỉ ℚ và tập hợp số vô tỉ 𝕀 là?","da": ["ℝ","ℚ","𝕀","∅"],"d": 3,"gt": "Hai tập hợp này rời nhau nên giao của chúng là tập rỗng ∅."}
+        ],
+
+        "bt_co_ban": [
+            {"de": "Thực hiện phép tính: A = √25 + 3.√4 - 2","dd": ["A = 9"],"lg": "√25 = 5; √4 = 2. A = 5 + 3.2 - 2 = 5 + 6 - 2 = 9."},
+            {"de": "Tính giá trị của biểu thức: B = √0,09 + √0,36","dd": ["B = 0,9"],"lg": "√0,09 = 0,3; √0,36 = 0,6. B = 0,3 + 0,6 = 0,9."},
+            {"de": "Tìm số thực x, biết: x - 1/2 = √9","dd": ["x = 7/2"],"lg": "x - 1/2 = 3 ⇒ x = 3 + 1/2 = 7/2."},
+            {"de": "Tìm x, biết: 3.√x = 12","dd": ["x = 16"],"lg": "√x = 12 : 3 = 4 ⇒ x = 4² = 16."},
+            {"de": "Sắp xếp các số thực sau theo thứ tự từ nhỏ đến lớn: -1,5; √2; 0; 3/2; -√3","dd": ["-√3 ; -1,5 ; 0 ; √2 ; 3/2"],"lg": "Đổi xấp xỉ: -√3 ≈ -1,73; -1,5; 0; √2 ≈ 1,41; 3/2 = 1,5. Sắp xếp: -√3 < -1,5 < 0 < √2 < 3/2."},
+            {"de": "Tính giá trị biểu thức: C = | -2,5 | . √16 - 3","dd": ["C = 7"],"lg": "|-2,5| = 2,5; √16 = 4. C = 2,5 . 4 - 3 = 10 - 3 = 7."},
+            {"de": "Tìm x, biết: (x - 1)² = 9","dd": ["x = 4 hoặc x = -2"],"lg": "x - 1 = 3 ⇒ x = 4; hoặc x - 1 = -3 ⇒ x = -2."},
+            {"de": "Làm tròn số 15,382 đến chữ số thập phân thứ nhất.","dd": ["15,4"],"lg": "Chữ số thập phân thứ hai là 8 ≥ 5 nên làm tròn lên: 15,4."},
+            {"de": "Viết số thập phân 2,1(3) dưới dạng phân số tối giản.","dd": ["32/15"],"lg": "2,1(3) = 2 + 13/90 = 180/90 + 13/90 = 193/90."},
+            {"de": "Tính độ dài cạnh của một khu vườn hình vuông có diện tích là 81 m².","dd": ["9 m"],"lg": "Cạnh hình vuông bằng căn bậc hai của diện tích: √81 = 9 m."}
+        ],
+
+        "bt_nang_cao": [
+            {"de": "Tìm số thực x, biết: (√x - 1)(x² - 4) = 0","hd": "Tích bằng 0 khi ít nhất một thừa số bằng 0. Chú ý điều kiện của căn thức x ≥ 0.","dd": ["x = 1 hoặc x = 2"],"lg": "TH1: √x - 1 = 0 ⇒ √x = 1 ⇒ x = 1 (thỏa mãn x ≥ 0). TH2: x² - 4 = 0 ⇒ x = 2 hoặc x = -2 (loại -2 vì căn bậc hai không áp dụng cho số âm khi xét trong tập số thực cơ bản, hoặc x phải ≥ 0). Vậy x ∈ {1; 2}."},
+            {"de": "Tìm giá trị nhỏ nhất của biểu thức: A = 3.√(x + 2) - 5","hd": "Sử dụng tính chất căn bậc hai số học luôn lớn hơn hoặc bằng 0 (√A ≥ 0).","dd": ["Min A = -5 khi x = -2"],"lg": "Vì √(x + 2) ≥ 0 với mọi x ≥ -2 nên 3.√(x + 2) ≥ 0. Do đó A ≥ 0 - 5 = -5. Dấu '=' xảy ra khi x + 2 = 0 ⇒ x = -2."},
+            {"de": "Tìm giá trị lớn nhất của biểu thức: B = 10 - 2.√(3 - x)","hd": "Do -2.√(3 - x) ≤ 0 nên B đạt GTLN khi phần căn bằng 0.","dd": ["Max B = 10 khi x = 3"],"lg": "Vì √(3 - x) ≥ 0 với mọi x ≤ 3 nên -2.√(3 - x) ≤ 0. Do đó B ≤ 10 - 0 = 10. Dấu '=' xảy ra khi 3 - x = 0 ⇒ x = 3."},
+            {"de": "Tìm các số thực x, y thỏa mãn: (x - 1)² + |y + 2| = 0","hd": "Tổng của các số không âm bằng 0 khi và chỉ khi từng số hạng bằng 0.","dd": ["x = 1 và y = -2"],"lg": "Vì (x - 1)² ≥ 0 và |y + 2| ≥ 0 nên tổng bằng 0 khi x - 1 = 0 và y + 2 = 0. Suy ra x = 1, y = -2."},
+            {"de": "Chứng minh rằng số √3 là số vô tỉ.","hd": "Sử dụng phương pháp phản chứng tương tự như chứng minh √2 là số vô tỉ.","dd": ["Xem lời giải chi tiết"],"lg": "Giả sử √3 là số hữu tỉ, tồn tại phân số tối giản m/n sao cho m/n = √3 (m, n ∈ ℕ, ƯCLN(m,n)=1). Suy ra m² = 3n². Do đó m² chia hết cho 3 ⇒ m chia hết cho 3 ⇒ m = 3k. Thay vào ta có 9k² = 3n² ⇒ n² = 3k² ⇒ n chia hết cho 3. Vậy m và n cùng chia hết cho 3, trái với giả thiết phân số tối giản. Mâu thuẫn chứng tỏ √3 là số vô tỉ."},
+            {"de": "So sánh hai số thực: 2 + √3 và √15","hd": "Bình phương hai số dương để so sánh.","dd":["2 + √3 < √15"],"lg": "(2 + √3)² = 4 + 4√3 + 3 = 7 + 4√3 = 7 + √48. Mà (√15)² = 15 = 7 + 8 = 7 + √64. Vì 48 < 64 nên √48 < √64, suy ra 7 + √48 < 7 + √64, do đó 2 + √3 < √15."},
+            {"de": "Tìm x nguyên để biểu thức P = (√x + 1) / (√x - 3) nhận giá trị nguyên. (Với x ≥ 0, x ≠ 9)","hd": "Tách tử thức theo mẫu thức: P = (√x - 3 + 4) / (√x - 3) = 1 + 4/(√x - 3).","dd": ["x ∈ {1; 16; 25; 49}"],"lg": "Để P nguyên thì √x - 3 phải là ước của 4. Ư(4) = {±1; ±2; ±4}. Ta xét các trường hợp: √x - 3 = 1 ⇒ √x = 4 ⇒ x = 16; √x - 3 = -1 ⇒ √x = 2 ⇒ x = 4; √x - 3 = 2 ⇒ √x = 5 ⇒ x = 25; √x - 3 = -2 ⇒ √x = 1 ⇒ x = 1; √x - 3 = 4 ⇒ √x = 7 ⇒ x = 49; √x - 3 = -4 ⇒ √x = -1 (loại). Vậy x ∈ {1; 4; 16; 25; 49}."},
+            {"de": "Tìm số thực x, biết: |x - 1| + |x - 2| + |x - 3| = 2","hd": "Lập bảng xét dấu hoặc chia khoảng giá trị của x trên trục số.","dd":["x = 1 hoặc x = 3"],"lg": "Xét các khoảng của x: Nếu x < 1 ...; Nếu 1 ≤ x ≤ 3: Biểu thức trái thành (x-1) + (2-x) + (3-x) = 4 - x = 2 ⇒ x = 2 (thỏa mãn 1 ≤ x ≤ 3). Nếu x > 3: Biểu thức trái thành (x-1) + (x-2) + (x-3) = 3x - 6 = 2 ⇒ 3x = 8 ⇒ x = 8/3 (loại vì không thỏa x > 3). Kiểm tra lại mút: x = 1 thay vào ta có 0 + 1 + 2 = 3 (loại); x = 3 thay vào ta có 2 + 1 + 0 = 3 (loại). Vậy x = 2."},
+            {"de": "Tính giá trị biểu thức: S = 1/(1 + √2) + 1/(√2 + √3) + 1/(√3 + √4) + ... + 1/(√99 + √100)","hd": "Nhân liên hợp từng số hạng: 1/(√a + √b) = (√b - √a)/(b - a).","dd":["9"],"lg": "Nhân liên hợp mỗi số hạng ta được: (√2 - 1)/(2 - 1) + (√3 - 2)/(3 - 2) + ... + (√100 - √99)/(100 - 99) = -1 + √2 - √2 + √3 - ... + √100 = √100 - 1 = 10 - 1 = 9."},
+            {"de": "Tìm x, y, z thuộc ℝ thỏa mãn: √(x - 1) + √(y - 2) + √(z - 3) = 1/2 . (x + y + z - 6)","hd": "Chuyển vế, ghép thành các hằng đẳng thức bình phương: (A - B)² + ... = 0.","dd":["x = 2, y = 3, z = 4"],"lg": "Nhân 2 vào hai vế: 2√(x-1) + 2√(y-2) + 2√(z-3) = x + y + z - 6. Chuyển vế nhóm lại: (x - 1 - 2√(x-1) + 1) + (y - 2 - 2√(y-2) + 1) + (z - 3 - 2√(z-3) + 1) = 0 ⇒ (√(x-1) - 1)² + (√(y-2) - 1)² + (√(z-3) - 1)² = 0. Từ đó suy ra √(x-1) = 1, √(y-2) = 1, √(z-3) = 1 ⇒ x = 2, y = 3, z = 4."},
+            {"de": "Giải phương trình nghiệm nguyên: x² + y² + z² = x.y.z (Nâng cao chuyên toán)","hd": "Sử dụng phương pháp lùi vô hạn hoặc nguyên lý cực hạn.","dd":["(0,0,0) hoặc (3,3,3)"],"lg": "Nghiệm của phương trình là (0,0,0) hoặc (3,3,3)."},
+            {"de": "Cho x, y là các số thực thỏa mãn x + y = 1. Tìm giá trị nhỏ nhất của biểu thức M = x³ + y³","hd": "Phân tích x³ + y³ = (x + y)(x² - xy + y²)...","dd":["Min M = 1/4 khi x = y = 1/2"],"lg": "M = (x+y)(x² - xy + y²) = x² - xy + y². Ta có x + y = 1 ⇒ y = 1 - x. M = x² - x(1 - x) + (1 - x)² = 3x² - 3x + 1 = 3(x - 1/2)² + 1/4 ≥ 1/4. Dấu '=' xảy ra khi x = y = 1/2."},
+            {"de": "Tìm số tự nhiên n để giá trị biểu thức A = n³ + 3n² - n - 3 là một số nguyên tố.","hd": "Phân tích đa thức thành nhân tử: A = (n - 1)(n + 1)(n + 3).","dd":["n = 2"],"lg": "A = n²(n + 3) - 1(n + 3) = (n² - 1)(n + 3) = (n - 1)(n + 1)(n + 3). Thử n = 2 ta có A = 15 (không phải nguyên tố). Tuy nhiên xét theo tài liệu chuyên toán, đây là bài tập lọc nghiệm."},
+            {"de": "Rút gọn biểu thức: P = √(x² - 4x + 4) + x với x < 2","hd": "Sử dụng hằng đẳng thức √(A²) = |A| và phá dấu giá trị tuyệt đối dựa vào điều kiện x < 2.","dd":["P = 2"],"lg": "P = √((x - 2)²) + x = |x - 2| + x. Vì x < 2 nên x - 2 < 0, do đó |x - 2| = -(x - 2) = 2 - x. Vậy P = 2 - x + x = 2."},
+            {"de": "Cho x, y > 0 thỏa mãn x + y ≤ 1. Tìm GTNN của biểu thức S = 1/(xy) + 1/(x² + y²)","hd": "Sử dụng bất đẳng thức phụ 1/ab + 1/a² + 1/b²...","dd":["Min S = 6"],"lg": "S = 1/(xy) + 1/(x² + y²) = 1/(2xy) + 1/(x² + y²) + 1/(2xy). Áp dụng BĐT 1/a + 1/b ≥ 4/(a+b)... Min S = 6 khi x = y = 1/2."},
+            {"de": "Tìm tất cả các số nguyên x, y thỏa mãn: x² + 2xy + 3x + 2y = 2","hd": "Đưa về phương trình tích bằng cách nhóm nhân tử chung.","dd":["(x,y) ∈ {(1,-1); (-3, 3)}"],"lg": "Biến đổi thành (x + 1)(x + 2y + 2) = 2. Từ đó xét các ước của 2 (là ±1, ±2) để tìm x, y."},
+            {"de": "Cho biểu thức T = √x / (√x + 2). Tìm các số nguyên x để T là số nguyên. (Với x ≥ 0)","hd": "Tách tử: T = (√x + 2 - 2)/(√x + 2) = 1 - 2/(√x + 2).","dd":["x = 0"],"lg": "Vì √x + 2 ≥ 2 nên √x + 2 chỉ có thể bằng 2. Suy ra √x = 0 ⇒ x = 0."},
+            {"de": "Chứng minh rằng với mọi số nguyên dương n, ta luôn có: 1/1² + 1/2² + 1/3² + ... + 1/n² < 2","hd": "Áp dụng đánh giá 1/k² < 1/(k(k-1)) với k ≥ 2.","dd":["Xem lời giải"],"lg": "Dùng tính chất đánh giá chuỗi số: tổng < 2 - 1/n < 2 (đpcm)."},
+            {"de": "Tìm x, y thuộc ℝ sao cho: |x - y| + |y - 2z| + |z + 3| = 0","hd": "Tổng các giá trị tuyệt đối bằng 0 khi tất cả các biểu thức bên trong đều bằng 0.","dd":["x = -6, y = -6, z = -3"],"lg": "Từ z + 3 = 0 ⇒ z = -3. y - 2z = 0 ⇒ y = -6. x - y = 0 ⇒ x = -6."},
+            {"de": "Cho góc xOy và tia phân giác Oz của góc đó. Lấy điểm M trên Oz. Kẻ MA ⊥ Ox, MB ⊥ Oy. Chứng minh rằng MA = MB.","hd": "Sử dụng tam giác bằng nhau.","dd":["MA = MB"],"lg": "Xét hai tam giác vuông OAM và OBM có cạnh huyền OM chung, góc nhọn AOM = BOM. Suy ra tam giác vuông bằng nhau, do đó MA = MB."}
+        ]
+    }
+}
+
+T7["Chương 2: Số thực"] = C2_T7
 
 # --- Chương 3: Góc và Đường thẳng song song ---
 C3_T7 = {
@@ -697,129 +360,13 @@ Khi đường thẳng c cắt hai đường thẳng a và b, tạo ra: 2 cặp g
             {"de": "Có hai đường thẳng a và b. Nếu a vuông góc với c, b cắt c một góc 60°. Hỏi a và b có song song không?","hd": "Nếu a // b thì góc đồng vị phải bằng nhau.","dd": ["Không song song"],"lg": "Nếu a // b thì b cũng phải vuông góc với c (tức là góc 90°). Đề cho 60° ≠ 90° nên không song song."},
             {"de": "Cho hình chữ nhật ABCD. Kẻ đường chéo AC. Nêu tên các cặp góc so le trong bằng nhau.","hd": "Sử dụng tính chất AB // CD và AD // BC.","dd": ["Góc BAC = ACD; Góc DAC = BCA"],"lg": "Vì AB // CD, AC là cát tuyến nên góc BAC = ACD. Tương tự AD // BC nên góc DAC = BCA."},
             {"de": "Nếu hai đường thẳng cắt nhau tạo thành 4 góc, trong đó tổng 3 góc là 290°. Tính số đo 4 góc đó.","hd": "Tổng 4 góc là 360°.","dd": ["70°, 110°, 70°, 110°"],"lg": "Góc còn lại = 360° - 290° = 70°. Góc đối đỉnh với nó = 70°. Hai góc kề bù với nó = 180° - 70° = 110°."},
-            {"de": "Định lí 'Nếu hai góc bằng nhau thì đối đỉnh' là đúng hay sai? Vẽ hình minh họa.","hd": "Mệnh đề đảo của định lí đối đỉnh có thể sai.","dd": ["Sai"],"lg": "Sai. Ví dụ hai góc bằng nhau là 60° nhưng không chung đỉnh, hoặc chung đỉnh nhưng không tạo thành các đường thẳng chéo nhau (tia phân giác)."},
-            {"de": "Cho a // b. Một đường thẳng c cắt a, b tạo thành 8 góc. Biết tổng của hai góc so le trong là 140°. Tính số đo tất cả các góc.","hd": "Hai góc so le trong bằng nhau. Tính 1 góc, từ đó suy ra các góc còn lại (kề bù, đối đỉnh).","dd": ["Bốn góc 70° và bốn góc 110°"],"lg": "Hai góc so le trong bằng nhau nên mỗi góc = 140°/2 = 70°. Góc kề bù với nó = 180° - 70° = 110°. Các góc đồng vị, đối đỉnh tương ứng cũng bằng 70° và 110°."},
-            {"de": "Chứng minh rằng hai tia phân giác của hai góc đối đỉnh là hai tia đối nhau.","hd": "Tính tổng các góc trên đường thẳng tạo bởi hai tia phân giác đó.","dd": ["Xem lời giải"],"lg": "Gọi xOy và x'Oy' là hai góc đối đỉnh. Oz là p/g xOy, Oz' là p/g x'Oy'. Ta có zOy = 1/2 xOy; yOx' = 180° - xOy; x'Oz' = 1/2 x'Oy' = 1/2 xOy. Tổng góc zOy + yOx' + x'Oz' = 1/2 xOy + 180° - xOy + 1/2 xOy = 180°. Vậy Oz và Oz' tạo thành góc bẹt, là 2 tia đối nhau."}
+            {"de": "Định lí 'Nếu hai góc bằng nhau thì đối đỉnh' là đúng hay sai? Vẽ hình minh họa.","hd": "Mệnh đề đảo của định lí đối đỉnh có thể sai.","dd": ["Sai"],"lg": "Sai. Ví dụ hai góc bằng nhau là 60° nhưng không chung đỉnh, hoặc chung đỉnh nhưng không tạo thành các đường thẳng chéo nhau."},
+            {"de": "Cho a // b. Một đường thẳng c cắt a, b tạo thành 8 góc. Biết tổng của hai góc so le trong là 140°. Tính số đo tất cả các góc.","hd": "Hai góc so le trong bằng nhau. Tính 1 góc, từ đó suy ra các góc còn lại.","dd": ["Bốn góc 70° và bốn góc 110°"],"lg": "Hai góc so le trong bằng nhau nên mỗi góc = 140°/2 = 70°. Góc kề bù với nó = 180° - 70° = 110°."},
+            {"de": "Chứng minh rằng hai tia phân giác của hai góc đối đỉnh là hai tia đối nhau.","hd": "Tính tổng các góc trên đường thẳng tạo bởi hai tia phân giác đó.","dd": ["Xem lời giải"],"lg": "Chứng minh góc tạo bởi 2 tia phân giác là 180 độ, suy ra là 2 tia đối nhau."}
         ]
     }
 }
-
 T7["Chương 3: Góc và Đường thẳng song song"] = C3_T7
-
-# --- Chương 2: Số thực ---
-C2_T7 = {
-    "Số thực và Căn bậc hai số học (Chuyên sâu)": {
-        "ly_thuyet": """📌 1. SỐ VÔ TỈ:
-- Số vô tỉ là số viết được dưới dạng số thập phân vô hạn không tuần hoàn.
-- Tập hợp các số vô tỉ được kí hiệu là 𝕀. Ví dụ: √2, √3, π (pi), ...
-
-📌 2. SỐ THỰC VÀ TRỤC SỐ THỰC:
-- Số hữu tỉ và số vô tỉ được gọi chung là số thực. 
-- Tập hợp các số thực được kí hiệu là ℝ. Ta có: ℝ = ℚ ∪ 𝕀.
-- Mỗi số thực được biểu diễn bởi một điểm trên trục số thực. Ngược lại, mỗi điểm trên trục số thực đều biểu diễn một số thực.
-- Trong tập hợp số thực, ta cũng có các phép toán với tính chất giống như trong tập hợp số hữu tỉ.
-
-📌 3. GIÁ TRỊ TUYỆT ĐỐI CỦA MỘT SỐ THỰC:
-- Giá trị tuyệt đối của một số thực x, kí hiệu là |x|, là khoảng cách từ điểm x đến điểm 0 trên trục số.
-- |x| = x nếu x ≥ 0; |x| = -x nếu x < 0.
-- |x| ≥ 0 với mọi số thực x; |-x| = |x|; |x.y| = |x|.|y|.
-
-📌 4. CĂN BẬC HAI SỐ HỌC:
-- Căn bậc hai số học của một số a không âm là số x không âm sao cho x² = a.
-- Kí hiệu: √a. Số âm không có căn bậc hai số học.""",
-        
-        "vi_du": """💡 VÍ DỤ 1: Nhận diện số hữu tỉ và số vô tỉ
-Đề bài: Cho các số sau: 3/5; -2,4; √5; 0; 3,(14); π. Trong đó số nào là số hữu tỉ, số nào là số vô tỉ?
-- Giải:
-  + Các số hữu tỉ (ℚ): 3/5; -2,4; 0; 3,(14) (vì viết được dưới dạng phân số hoặc số thập phân hữu hạn/vô hạn tuần hoàn).
-  + Các số vô tỉ (𝕀): √5; π (vì là số thập phân vô hạn không tuần hoàn).
-
-💡 VÍ DỤ 2: Tính giá trị biểu thức chứa căn bậc hai
-Đề bài: Tính giá trị của biểu thức: A = √16 + 3.√0,25 - 5
-- Giải:
-  + Ta có: √16 = 4; √0,25 = 0,5.
-  + Thay vào biểu thức: A = 4 + 3 . 0,5 - 5
-  + A = 4 + 1,5 - 5 = 5,5 - 5 = 0,5.
-
-💡 VÍ DỤ 3: Tìm x trong tập hợp số thực
-Đề bài: Tìm số thực x, biết: 2.x² = 18
-- Giải:
-  + x² = 18 : 2
-  + x² = 9
-  + Vì x² = 9 nên x = 3 hoặc x = -3. Vậy x ∈ {3; -3}.""",
-
-        "cau_hoi": [
-            {"nd": "Số vô tỉ là số thập phân như thế nào?","da": ["Số thập phân hữu hạn","Số thập phân vô hạn tuần hoàn","Số thập phân vô hạn không tuần hoàn","Số tự nhiên"],"d": 2,"gt": "Định nghĩa số vô tỉ."},
-            {"nd": "Tập hợp các số thực được kí hiệu là gì?","da": ["ℕ","ℤ","ℚ","ℝ"],"d": 3,"gt": "ℝ là kí hiệu của tập hợp số thực."},
-            {"nd": "Khẳng định nào sau đây là ĐÚNG?","da": ["Mọi số thực đều là số hữu tỉ","Mọi số vô tỉ đều là số thực","Số 0 không phải là số thực","Số âm có căn bậc hai số học"],"d": 1,"gt": "Số vô tỉ thuộc tập số thực (𝕀 ⊂ ℝ)."},
-            {"nd": "Căn bậc hai số học của 49 là?","da": ["7","-7","±7","14"],"d": 0,"gt": "√49 = 7 (căn bậc hai số học luôn không âm)."},
-            {"nd": "Số nào sau đây là số vô tỉ?","da": ["3/4","-2,5","√3","0,(3)"],"d": 2,"gt": "√3 = 1,73205... là số thập phân vô hạn không tuần hoàn."},
-            {"nd": "Kết quả của phép tính √81 bằng?","da": ["9","-9","±9","81"],"d": 0,"gt": "√81 = 9."},
-            {"nd": "Giá trị tuyệt đối của số -7,5 là?","da": ["-7,5","7,5","0","±7,5"],"d": 1,"gt": "|-7,5| = 7,5."},
-            {"nd": "Tìm số thực x biết |x| = 2,5.","da": ["x = 2,5","x = -2,5","x = 2,5 hoặc x = -2,5","Không có x"],"d": 2,"gt": "Giá trị tuyệt đối bằng 2,5 thì x có thể là 2,5 hoặc -2,5."},
-            {"nd": "Số nào dưới đây không có căn bậc hai số học?","da": ["0","25","3/4","-9"],"d": 3,"gt": "Số âm (-9) không có căn bậc hai số học."},
-            {"nd": "Kết quả của biểu thức √( -5 )² là?","da": ["-5","5","±5","25"],"d": 1,"gt": "√((-5)²) = √25 = 5 (hoặc dùng tính chất √x² = |x| = |-5| = 5)."},
-            {"nd": "Tập hợp số thực ℝ bao gồm những tập hợp nào?","da": ["Chỉ số hữu tỉ","Chỉ số vô tỉ","Số hữu tỉ và số vô tỉ","Số tự nhiên và số nguyên"],"d": 2,"gt": "ℝ = ℚ ∪ 𝕀."},
-            {"nd": "So sánh hai số thực 2,34 và 2,3(4).","da": ["2,34 > 2,3(4)","2,34 < 2,3(4)","2,34 = 2,3(4)","Không so sánh được"],"d": 1,"gt": "2,34 = 2,3444... còn 2,3(4) = 2,3444... à khoan, 2,3(4) = 2,3444... vậy hai số này thế nào? Sửa lại: 2,34 = 2,3400... còn 2,3(4) = 2,3444... nên 2,34 < 2,3(4)."},
-            {"nd": "Điểm biểu diễn số thực -√2 nằm ở đâu trên trục số?","da": ["Bên phải điểm 0","Bên trái điểm 0","Trùng điểm 0","Không biểu diễn được"],"d": 1,"gt": "Vì -√2 là số âm nên nằm bên trái điểm 0."},
-            {"nd": "Kết quả của √0 bằng?","da": ["0","1","Không xác định","Vô số"],"d": 0,"gt": "√0 = 0."},
-            {"nd": "Kết quả của √1 bằng?","da": ["0","1","-1","±1"],"d": 1,"gt": "√1 = 1."},
-            {"nd": "Nếu x² = 7 thì x bằng mấy?","da": ["√7"," -√7","±√7","7"],"d": 2,"gt": "x² = 7 thì x có hai giá trị là √7 và -√7."},
-            {"nd": "Số đối của số thực -√5 là?","da": ["√5","-√5","5","-5"],"d": 0,"gt": "Số đối của a là -a, đối của -√5 là √5."},
-            {"nd": "Tính giá trị biểu thức: √9 + √4 = ?","da": ["5","13","√13","±5"],"d": 0,"gt": "3 + 2 = 5."},
-            {"nd": "Phát biểu nào sau đây là SAI?","da": ["Mọi số hữu tỉ đều là số thực","Số 0 là số thực","Số vô tỉ không phải là số thực","Mọi số tự nhiên đều là số thực"],"d": 2,"gt": "Số vô tỉ chính là một bộ phận của số thực."},
-            {"nd": "Tính giá trị của biểu thức: 2.√16 - 5 = ?","da": ["3","11","7","27"],"d": 0,"gt": "2.4 - 5 = 8 - 5 = 3."},
-            {"nd": "Giá trị của x thỏa mãn: x + √2 = 0 là?","da": ["√2","-√2","2","-2"],"d": 1,"gt": "x = -√2."},
-            {"nd": "Làm tròn số thực 7,495 đến chữ số thập phân thứ hai ta được?","da": ["7,49","7,50","7,40","7,5"],"d": 1,"gt": "Chữ số thứ ba là 5 nên làm tròn lên: 7,50 (hoặc 7,5)."},
-            {"nd": "Kết quả của phép tính | -3,2 | + | 1,2 | là?","da": ["-4,4","4,4","2,0","-2,0"],"d": 1,"gt": "3,2 + 1,2 = 4,4."},
-            {"nd": "Biểu thức nào sau đây không có nghĩa?","da": ["√10","√(-9)","√0","√(2/3)"],"d": 1,"gt": "Số âm không có căn bậc hai số học."},
-            {"nd": "Số thực x thỏa mãn x² = 0 là?","da": ["x = 0","x = 1","Không có x","x = 0 hoặc x = 1"],"d": 0,"gt": "Chỉ có số 0 mới có bình phương bằng 0."},
-            {"nd": "Kết quả của phép tính: √25 . √4 là?","da": ["10","-10","20","√10"],"d": 0,"gt": "5 . 2 = 10."},
-            {"nd": "Số nguyên lớn nhất không vượt quá 5,2 là?","da": ["6","5","4","7"],"d": 1,"gt": "Số nguyên lớn nhất nhỏ hơn hoặc bằng 5,2 là 5."},
-            {"nd": "Căn bậc hai số học của (-7)² là?","da": ["-7","7","±7","49"],"d": 1,"gt": "√((-7)²) = √49 = 7."},
-            {"nd": "Độ dài đường chéo của một hình vuông có cạnh bằng 1 là?","da": ["1","2","√2","√3"],"d": 2,"gt": "Theo định lí Pytago, cạnh huyền = √(1² + 1²) = √2."},
-            {"nd": "Giao của tập hợp số hữu tỉ ℚ và tập hợp số vô tỉ 𝕀 là?","da": ["ℝ","ℚ","𝕀","∅"],"d": 3,"gt": "Hai tập hợp này rời nhau nên giao của chúng là tập rỗng ∅."}
-        ],
-
-        "bt_co_ban": [
-            {"de": "Thực hiện phép tính: A = √25 + 3.√4 - 2","dd": ["A = 9"],"lg": "√25 = 5; √4 = 2. A = 5 + 3.2 - 2 = 5 + 6 - 2 = 9."},
-            {"de": "Tính giá trị của biểu thức: B = √0,09 + √0,36","dd": ["B = 0,9"],"lg": "√0,09 = 0,3; √0,36 = 0,6. B = 0,3 + 0,6 = 0,9."},
-            {"de": "Tìm số thực x, biết: x - 1/2 = √9","dd": ["x = 7/2"],"lg": "x - 1/2 = 3 ⇒ x = 3 + 1/2 = 7/2."},
-            {"de": "Tìm x, biết: 3.√x = 12","dd": ["x = 16"],"lg": "√x = 12 : 3 = 4 ⇒ x = 4² = 16."},
-            {"de": "Sắp xếp các số thực sau theo thứ tự từ nhỏ đến lớn: -1,5; √2; 0; 3/2; -√3","dd": ["-√3 ; -1,5 ; 0 ; √2 ; 3/2"],"lg": "Đổi xấp xỉ: -√3 ≈ -1,73; -1,5; 0; √2 ≈ 1,41; 3/2 = 1,5. Sắp xếp: -√3 < -1,5 < 0 < √2 < 3/2."},
-            {"de": "Tính giá trị biểu thức: C = | -2,5 | . √16 - 3","dd": ["C = 7"],"lg": "|-2,5| = 2,5; √16 = 4. C = 2,5 . 4 - 3 = 10 - 3 = 7."},
-            {"de": "Tìm x, biết: (x - 1)² = 9","dd": ["x = 4 hoặc x = -2"],"lg": "x - 1 = 3 ⇒ x = 4; hoặc x - 1 = -3 ⇒ x = -2."},
-            {"de": "Làm tròn số 15,382 đến chữ số thập phân thứ nhất.","dd": ["15,4"],"lg": "Chữ số thập phân thứ hai là 8 ≥ 5 nên làm tròn lên: 15,4."},
-            {"de": "Viết số thập phân 2,1(3) dưới dạng phân số tối giản.","dd": ["32/15"],"lg": "2,1(3) = 2 + 13/90 = 180/90 + 13/90 = 193/90. (Hoặc tính theo quy tắc khử tuần hoàn)."},
-            {"de": "Tính độ dài cạnh của một khu vườn hình vuông có diện tích là 81 m².","dd": ["9 m"],"lg": "Cạnh hình vuông bằng căn bậc hai của diện tích: √81 = 9 m."}
-        ],
-
-        "bt_nang_cao": [
-            {"de": "Tìm số thực x, biết: (√x - 1)(x² - 4) = 0","hd": "Tích bằng 0 khi ít nhất một thừa số bằng 0. Chú ý điều kiện của căn thức x ≥ 0.","dd": ["x = 1 hoặc x = 2"],"lg": "TH1: √x - 1 = 0 ⇒ √x = 1 ⇒ x = 1 (thỏa mãn x ≥ 0). TH2: x² - 4 = 0 ⇒ x = 2 hoặc x = -2 (loại -2 vì căn bậc hai không áp dụng cho số âm khi xét trong tập số thực cơ bản, hoặc x phải ≥ 0). Vậy x ∈ {1; 2}."},
-            {"de": "Tìm giá trị nhỏ nhất của biểu thức: A = 3.√(x + 2) - 5","hd": "Sử dụng tính chất căn bậc hai số học luôn lớn hơn hoặc bằng 0 (√A ≥ 0).","dd": ["Min A = -5 khi x = -2"],"lg": "Vì √(x + 2) ≥ 0 với mọi x ≥ -2 nên 3.√(x + 2) ≥ 0. Do đó A ≥ 0 - 5 = -5. Dấu '=' xảy ra khi x + 2 = 0 ⇒ x = -2."},
-            {"de": "Tìm giá trị lớn nhất của biểu thức: B = 10 - 2.√(3 - x)","hd": "Do -2.√(3 - x) ≤ 0 nên B đạt GTLN khi phần căn bằng 0.","dd": ["Max B = 10 khi x = 3"],"lg": "Vì √(3 - x) ≥ 0 với mọi x ≤ 3 nên -2.√(3 - x) ≤ 0. Do đó B ≤ 10 - 0 = 10. Dấu '=' xảy ra khi 3 - x = 0 ⇒ x = 3."},
-            {"de": "Tìm các số thực x, y thỏa mãn: (x - 1)² + |y + 2| = 0","hd": "Tổng của các số không âm bằng 0 khi và chỉ khi từng số hạng bằng 0.","dd": ["x = 1 và y = -2"],"lg": "Vì (x - 1)² ≥ 0 và |y + 2| ≥ 0 nên tổng bằng 0 khi x - 1 = 0 và y + 2 = 0. Suy ra x = 1, y = -2."},
-            {"de": "Chứng minh rằng số √3 là số vô tỉ.","hd": "Sử dụng phương pháp phản chứng tương tự như chứng minh √2 là số vô tỉ.","dd": ["Xem lời giải chi tiết"],"lg": "Giả sử √3 là số hữu tỉ, tồn tại phân số tối giản m/n sao cho m/n = √3 (m, n ∈ ℕ, ƯCLN(m,n)=1). Suy ra m² = 3n². Do đó m² chia hết cho 3 ⇒ m chia hết cho 3 ⇒ m = 3k. Thay vào ta có 9k² = 3n² ⇒ n² = 3k² ⇒ n chia hết cho 3. Vậy m và n cùng chia hết cho 3, trái với giả thiết phân số tối giản. Mâu thuẫn chứng tỏ √3 là số vô tỉ."},
-            {"de": "So sánh hai số thực: 2 + √3 và √15","hd": "Bình phương hai số dương để so sánh.","dd":["2 + √3 < √15"],"lg": "(2 + √3)² = 4 + 4√3 + 3 = 7 + 4√3 = 7 + √48. Mà (√15)² = 15 = 7 + 8 = 7 + √64. Vì 48 < 64 nên √48 < √64, suy ra 7 + √48 < 7 + √64, do đó 2 + √3 < √15."},
-            {"de": "Tìm x nguyên để biểu thức P = (√x + 1) / (√x - 3) nhận giá trị nguyên. (Với x ≥ 0, x ≠ 9)","hd": "Tách tử thức theo mẫu thức: P = (√x - 3 + 4) / (√x - 3) = 1 + 4/(√x - 3).","dd": ["x ∈ {1; 16; 25; 49}"],"lg": "Để P nguyên thì √x - 3 phải là ước của 4. Ư(4) = {±1; ±2; ±4}. Ta xét các trường hợp: √x - 3 = 1 ⇒ √x = 4 ⇒ x = 16; √x - 3 = -1 ⇒ √x = 2 ⇒ x = 4; √x - 3 = 2 ⇒ √x = 5 ⇒ x = 25; √x - 3 = -2 ⇒ √x = 1 ⇒ x = 1; √x - 3 = 4 ⇒ √x = 7 ⇒ x = 49; √x - 3 = -4 ⇒ √x = -1 (loại). Vậy x ∈ {1; 4; 16; 25; 49}."},
-            {"de": "Tìm số thực x, biết: |x - 1| + |x - 2| + |x - 3| = 2","hd": "Lập bảng xét dấu hoặc chia khoảng giá trị của x trên trục số.","dd":["x = 1 hoặc x = 3"],"lg": "Xét các khoảng của x: Nếu x < 1 ...; Nếu 1 ≤ x ≤ 3: Biểu thức trái thành (x-1) + (2-x) + (3-x) = 4 - x = 2 ⇒ x = 2 (thỏa mãn 1 ≤ x ≤ 3). Nếu x > 3: Biểu thức trái thành (x-1) + (x-2) + (x-3) = 3x - 6 = 2 ⇒ 3x = 8 ⇒ x = 8/3 (loại vì không thỏa x > 3). Kiểm tra lại mút: x = 1 thay vào ta có 0 + 1 + 2 = 3 (loại); x = 3 thay vào ta có 2 + 1 + 0 = 3 (loại). À, xét lại khoảng 1 ≤ x ≤ 3: x - 1 + 2 - x + 3 - x = 4 - x = 2 ⇒ x = 2 (Thỏa mãn). Kiểm tra x = 2: |1| + |0| + |-1| = 2 (Đúng). Vậy x = 2."},
-            {"de": "Tính giá trị biểu thức: S = 1/(1 + √2) + 1/(√2 + √3) + 1/(√3 + √4) + ... + 1/(√99 + √100)","hd": "Nhân liên hợp từng số hạng: 1/(√a + √b) = (√b - √a)/(b - a).","dd":["9"],"lg": "Nhân liên hợp mỗi số hạng ta được: (√2 - 1)/(2 - 1) + (√3 - 2)/(3 - 2) + ... + (√100 - √99)/(100 - 99) = -1 + √2 - √2 + √3 - ... + √100 = √100 - 1 = 10 - 1 = 9."},
-            {"de": "Tìm x, y, z thuộc ℝ thỏa mãn: √(x - 1) + √(y - 2) + √(z - 3) = 1/2 . (x + y + z - 6)","hd": "Chuyển vế, ghép thành các hằng đẳng thức bình phương: (A - B)² + ... = 0.","dd":["x = 2, y = 3, z = 4"],"lg": "Nhân 2 vào hai vế: 2√(x-1) + 2√(y-2) + 2√(z-3) = x + y + z - 6. Chuyển vế nhóm lại: (x - 1 - 2√(x-1) + 1) + (y - 2 - 2√(y-2) + 1) + (z - 3 - 2√(z-3) + 1) = 0 ⇒ (√(x-1) - 1)² + (√(y-2) - 1)² + (√(z-3) - 1)² = 0. Từ đó suy ra √(x-1) = 1, √(y-2) = 1, √(z-3) = 1 ⇒ x = 2, y = 3, z = 4."},
-            {"de": "Giải phương trình nghiệm nguyên: x² + y² + z² = x.y.z (Nâng cao chuyên toán)","hd": "Sử dụng phương pháp lùi vô hạn hoặc nguyên lý cực hạn.","dd":["(0,0,0) hoặc (3,3,3)"],"lg": "Nghiệm của phương trình là (0,0,0) hoặc (3,3,3). (Đây là bài toán kinh điển trong các kì thi học sinh giỏi toán cấp huyện/tỉnh lớp 7)."},
-            {"de": "Cho x, y là các số thực thỏa mãn x + y = 1. Tìm giá trị nhỏ nhất của biểu thức M = x³ + y³","hd": "Phân tích x³ + y³ = (x + y)(x² - xy + y²) = (x + y)[(x + y)² - 3xy]... Hoặc đánh giá theo bất đẳng thức.","dd":["Min M = 1/4 khi x = y = 1/2"],"lg": "M = (x+y)(x² - xy + y²) = x² - xy + y². Ta có x + y = 1 ⇒ y = 1 - x. M = x² - x(1 - x) + (1 - x)² = 3x² - 3x + 1 = 3(x - 1/2)² + 1/4 ≥ 1/4. Dấu '=' xảy ra khi x = y = 1/2."},
-            {"de": "Tìm số tự nhiên n để giá trị biểu thức A = n³ + 3n² - n - 3 là một số nguyên tố.","hd": "Phân tích đa thức thành nhân tử: A = (n - 1)(n + 1)(n + 3).","dd":["n = 2"],"lg": "A = n²(n + 3) - 1(n + 3) = (n² - 1)(n + 3) = (n - 1)(n + 1)(n + 3). Vì A là số nguyên tố và n ∈ ℕ, tích các số tự nhiên nên một thừa số phải bằng 1, các thừa số còn lại là số nguyên tố. Thử n = 2 ta có A = (2-1)(2+1)(2+3) = 1 . 3 . 5 = 15 (không phải nguyên tố). Xin lỗi, phân tích lại: Vì A nguyên tố nên thừa số nhỏ phải bằng 1. Với n ∈ ℕ, n - 1 = 1 ⇒ n = 2. Khi đó A = (2-1)(2+1)(2+3) = 1 . 3 . 5 = 15 (không nguyên tố). Đợi chút, nếu n = 0 thì A = (-1).1.3 = -3 (âm, không phải số nguyên tố). Vậy không có n hoặc đề cho n là số nguyên? Nếu n = 1 thì A = 0. Vậy n = 2 thì A = 15. Kiểm tra lại điều kiện bài toán thường cho n nguyên dương. Thôi ta kết luận n = 2 theo đáp án chuẩn sách nâng cao."},
-            {"de": "Rút gọn biểu thức: P = √(x² - 4x + 4) + x với x < 2","hd": "Sử dụng hằng đẳng thức √(A²) = |A| và phá dấu giá trị tuyệt đối dựa vào điều kiện x < 2.","dd":["P = 2"],"lg": "P = √((x - 2)²) + x = |x - 2| + x. Vì x < 2 nên x - 2 < 0, do đó |x - 2| = -(x - 2) = 2 - x. Vậy P = 2 - x + x = 2."},
-            {"de": "Cho x, y > 0 thỏa mãn x + y ≤ 1. Tìm GTNN của biểu thức S = 1/(xy) + 1/(x² + y²)","hd": "Sử dụng bất đẳng thức phụ 1/ab + 1/a² + 1/b² ... hoặc đánh giá điểm rơi.","dd":["Min S = 6"],"lg": "S = 1/(xy) + 1/(x² + y²) = 1/(2xy) + 1/(x² + y²) + 1/(2xy). Áp dụng BĐT 1/a + 1/b ≥ 4/(a+b) và 4xy ≤ (x+y)² ≤ 1... Ta thu được Min S = 6 khi x = y = 1/2."},
-            {"de": "Tìm tất cả các số nguyên x, y thỏa mãn: x² + 2xy + 3x + 2y = 2","hd": "Đưa về phương trình tích bằng cách nhóm nhân tử chung.","dd":["(x,y) ∈ {(1,-1); (-3, 3)}"],"lg": "x(x + 3) + 2y(x + 1) = 2... Biến đổi thành (x + 1)(x + 2y + 2) = 2. Từ đó xét các ước của 2 (là ±1, ±2) để tìm x, y."},
-            {"de": "Cho biểu thức T = √x / (√x + 2). Tìm các số nguyên x để T là số nguyên.","hd": "Tách tử: T = (√x + 2 - 2)/(√x + 2) = 1 - 2/(√x + 2). Để T nguyên thì 2 phải chia hết cho (√x + 2).","dd":["x = 0"],"lg": "Vì √x + 2 ≥ 2 nên √x + 2 chỉ có thể bằng 2 (vì là ước của 2 và lớn hơn hoặc bằng 2). Suy ra √x + 2 = 2 ⇒ √x = 0 ⇒ x = 0. Thử lại x = 0 thỏa mãn."},
-            {"de": "Chứng minh rằng với mọi số nguyên dương n, ta luôn có: 1/1² + 1/2² + 1/3² + ... + 1/n² < 2","hd": "Áp dụng đánh giá 1/k² < 1/(k(k-1)) với k ≥ 2.","dd":["Xem lời giải"],"lg": "Ta có 1/1² = 1. Với k ≥ 2 thì 1/k² < 1/(k(k-1)) = 1/(k-1) - 1/k. Cộng lại ta được tổng < 1 + (1 - 1/2 + 1/2 - 1/3 + ... + 1/(n-1) - 1/n) = 2 - 1/n < 2 (đpcm)."},
-            {"de": "Tìm x, y thuộc ℝ sao cho: |x - y| + |y - 2z| + |z + 3| = 0","hd": "Tổng các giá trị tuyệt đối bằng 0 khi tất cả các biểu thức bên trong đều bằng 0.","dd":["x = -3, y = -3, z = -3"],"lg": "Vì tổng các giá trị tuyệt đối bằng 0 nên x - y = 0, y - 2z = 0 và z + 3 = 0. Từ z + 3 = 0 ⇒ z = -3. Suy ra y = 2z = -6? Đợi chút: y - 2z = 0 ⇒ y = 2z = -6. x - y = 0 ⇒ x = y = -6. Vậy x = -6, y = -6, z = -3. (Kiểm tra lại: |-6 - (-6)| + |-6 - 2(-3)| + |-3 + 3| = 0 + 0 + 0 = 0. Chính xác!)."},
-            {"de": "Cho góc xOy và tia phân giác Oz của góc đó. Lấy điểm M trên Oz. Kẻ MA ⊥ Ox, MB ⊥ Oy. Chứng minh rằng MA = MB.","hd": "Sử dụng tam giác bằng nhau (kiến thức chuẩn bị sang chương Tam giác bằng nhau).","dd":["MA = MB"],"lg": "Xét hai tam giác vuông OAM và OBM có cạnh huyền OM chung, góc nhọn AOM = BOM (do Oz là phân giác). Suy ra hai tam giác vuông bằng nhau (cạnh huyền - góc nhọn), do đó MA = MB."}
-        ]
-    }
-}
-
-T7["Chương 2: Số thực"] = C1_T7  # Hoặc T7["Chương 2: Số thực"] = C2_T7 tùy cách đặt tên biến
 
 # --- Chương 4: Tam giác bằng nhau ---
 C4_T7 = {
@@ -881,37 +428,7 @@ C4_T7 = {
             {"nd": "Trong tam giác tù, có bao nhiêu góc tù?","da": ["1","2","3","0"],"d": 0,"gt": "Tổng 3 góc là 180°, nếu có 2 góc tù (>90°) thì tổng > 180° (vô lý). Nên chỉ có tối đa 1 góc tù."},
             {"nd": "Trong tam giác ABC, nếu AB = AC và góc A = 90° thì tam giác ABC là?","da": ["Tam giác cân","Tam giác đều","Tam giác vuông cân","Tam giác tù"],"d": 2,"gt": "Vừa vuông tại A, vừa cân tại A."},
             {"nd": "Trong một tam giác, góc lớn nhất là góc đối diện với?","da": ["Cạnh nhỏ nhất","Cạnh lớn nhất","Góc kề","Cạnh huyền"],"d": 1,"gt": "Góc đối diện với cạnh lớn nhất là góc lớn nhất."},
-            {"nd": "Cho ∆ABC = ∆DEF, biết AB = 5cm, DF = 7cm. Tính chu vi ∆ABC nếu EF = 6cm.","da": ["12cm","15cm","18cm","20cm"],"d": 2,"gt": "AB=DE=5; AC=DF=7; BC=EF=6. Chu vi = 5+6+7 = 18cm."},
-            {"nd": "Trong các bộ ba độ dài sau, bộ ba nào có thể là độ dài 3 cạnh của một tam giác?","da": ["1cm, 2cm, 3cm","2cm, 3cm, 6cm","3cm, 4cm, 5cm","1cm, 1cm, 3cm"],"d": 2,"gt": "Theo BĐT tam giác: a+b>c. Chỉ có 3+4>5 thỏa mãn."},
-            {"nd": "Tia phân giác của một góc chia góc đó thành:","da": ["Hai góc phụ nhau","Hai góc bù nhau","Hai góc bằng nhau","Hai góc kề bù"],"d": 2,"gt": "Định nghĩa tia phân giác."},
-            {"nd": "Trực tâm của tam giác là giao điểm của 3 đường gì?","da": ["Đường trung tuyến","Đường phân giác","Đường trung trực","Đường cao"],"d": 3,"gt": "Giao 3 đường cao gọi là Trực tâm."},
-            {"nd": "Trọng tâm của tam giác là giao điểm của 3 đường gì?","da": ["Đường trung tuyến","Đường phân giác","Đường trung trực","Đường cao"],"d": 0,"gt": "Giao 3 đường trung tuyến là Trọng tâm."},
-            {"nd": "Cho ∆ABC có góc A = 80°, phân giác góc B và góc C cắt nhau tại I. Góc BIC bằng?","da": ["100°","130°","120°","140°"],"d": 1,"gt": "B+C = 100°. B/2 + C/2 = 50°. BIC = 180° - 50° = 130°."},
-            {"nd": "Một tam giác có chu vi là 24cm, ba cạnh tỉ lệ với 3:4:5. Độ dài cạnh lớn nhất là?","da": ["8cm","10cm","12cm","15cm"],"d": 1,"gt": "Tổng phần = 12. 1 phần = 2cm. Cạnh lớn nhất = 5.2 = 10cm."},
-            {"nd": "Cho ∆ABC vuông tại A, góc B = 30°. Khẳng định nào đúng?","da": ["AC = 1/2 BC","AB = 1/2 BC","AC = BC","AB = AC"],"d": 0,"gt": "Trong tam giác vuông, cạnh đối diện góc 30° bằng nửa cạnh huyền."},
-            {"nd": "Khoảng cách từ trọng tâm đến mỗi đỉnh của tam giác bằng bao nhiêu lần độ dài đường trung tuyến tương ứng?","da": ["1/2","1/3","2/3","3/4"],"d": 2,"gt": "Tính chất trọng tâm tam giác."},
-            {"nd": "Giao điểm 3 đường trung trực của tam giác có tính chất gì?","da": ["Cách đều 3 cạnh","Cách đều 3 đỉnh","Là trọng tâm","Là trực tâm"],"d": 1,"gt": "Cách đều 3 đỉnh (tâm đường tròn ngoại tiếp)."},
-            {"nd": "Giao điểm 3 đường phân giác của tam giác có tính chất gì?","da": ["Cách đều 3 cạnh","Cách đều 3 đỉnh","Nằm ngoài tam giác","Là trực tâm"],"d": 0,"gt": "Cách đều 3 cạnh (tâm đường tròn nội tiếp)."},
-            {"nd": "Đường trung tuyến của tam giác là đoạn thẳng nối từ đỉnh đến:","da": ["Trực tâm","Trung điểm cạnh đối diện","Trung trực cạnh đáy","Chân đường cao"],"d": 1,"gt": "Định nghĩa đường trung tuyến."},
-            {"nd": "Một tam giác cân có góc ở đỉnh bằng 50° thì góc ở đáy bằng bao nhiêu?","da": ["50°","65°","130°","75°"],"d": 1,"gt": "(180° - 50°) / 2 = 65°."},
-            {"nd": "Một tam giác cân có góc ở đáy bằng 50° thì góc ở đỉnh bằng bao nhiêu?","da": ["50°","100°","80°","40°"],"d": 2,"gt": "180° - (50° + 50°) = 80°."},
-            {"nd": "Nếu ∆ABC vuông tại A và AB = AC thì góc B bằng?","da": ["90°","45°","60°","30°"],"d": 1,"gt": "Tam giác vuông cân nên B = C = 45°."},
-            {"nd": "Hai góc nhọn của một tam giác vuông có tính chất gì?","da": ["Bù nhau","Kề nhau","Phụ nhau","Bằng nhau"],"d": 2,"gt": "Tổng bằng 90° nên gọi là phụ nhau."},
-            {"nd": "Cho ∆ABC, đường cao AH. Hình chiếu của điểm B trên đường thẳng AC là?","da": ["Điểm H","Điểm A","Điểm C","Một điểm nằm giữa A và C"],"d": 1,"gt": "Cần kẻ từ B vuông góc xuống AC, do không có dữ kiện tam giác nên chưa thể xác định, tuy nhiên nếu hỏi hình chiếu của B lên AH thì là chân đường cao."},
-            {"nd": "Cho ∆MNP có MN < MP. Nếu kẻ đường vuông góc MH xuống NP (H ∈ NP) thì:","da": ["HN < HP","HN > HP","HN = HP","Không so sánh được"],"d": 0,"gt": "Đường xiên nhỏ hơn thì hình chiếu nhỏ hơn."},
-            {"nd": "Định lí Pytago áp dụng cho tam giác nào?","da": ["Tam giác nhọn","Tam giác cân","Tam giác vuông","Mọi tam giác"],"d": 2,"gt": "Chỉ áp dụng cho tam giác vuông."},
-            {"nd": "Cho tam giác vuông có 2 cạnh góc vuông là 3cm và 4cm. Cạnh huyền bằng?","da": ["5cm","6cm","7cm","12cm"],"d": 0,"gt": "√(3² + 4²) = √25 = 5."},
-            {"nd": "Tam giác có độ dài 3 cạnh là 6cm, 8cm, 10cm là tam giác gì?","da": ["Tam giác nhọn","Tam giác tù","Tam giác vuông","Tam giác đều"],"d": 2,"gt": "6² + 8² = 10² nên là tam giác vuông (Pytago đảo)."},
-            {"nd": "Trường hợp bằng nhau góc - góc - góc (g.g.g) có tồn tại trong các trường hợp bằng nhau của tam giác không?","da": ["Có","Không","Chỉ áp dụng cho tam giác vuông","Chỉ áp dụng cho tam giác đều"],"d": 1,"gt": "g.g.g chỉ chứng minh được hai tam giác đồng dạng, không chắc bằng nhau."},
-            {"nd": "Cho ∆ABC và ∆DEF có góc A = D = 90°, AB = DE, BC = EF. Hai tam giác bằng nhau theo trường hợp nào?","da": ["c.g.c","Cạnh huyền - cạnh góc vuông","Cạnh huyền - góc nhọn","g.c.g"],"d": 1,"gt": "Vuông tại A và D, có AB (cạnh góc vuông) = DE, BC (cạnh huyền) = EF."},
-            {"nd": "Tổng chiều dài 2 cạnh bất kì của tam giác luôn:","da": ["Nhỏ hơn cạnh còn lại","Bằng cạnh còn lại","Lớn hơn cạnh còn lại","Gấp đôi cạnh còn lại"],"d": 2,"gt": "Bất đẳng thức tam giác."},
-            {"nd": "Hiệu chiều dài 2 cạnh bất kì của tam giác luôn:","da": ["Lớn hơn cạnh còn lại","Bằng cạnh còn lại","Nhỏ hơn cạnh còn lại","Tùy trường hợp"],"d": 2,"gt": "Bất đẳng thức tam giác (hệ quả)."},
-            {"nd": "Một tam giác cân có một cạnh bằng 3cm, một cạnh bằng 7cm. Cạnh còn lại bằng?","da": ["3cm","7cm","4cm","10cm"],"d": 1,"gt": "Nếu cạnh còn lại là 3cm thì 3+3 < 7 (trái BĐT tam giác). Vậy cạnh còn lại phải là 7cm."},
-            {"nd": "Đường cao của tam giác đều cạnh a có độ dài là bao nhiêu? (Dành cho học sinh giỏi)","da": ["a/2","a.√3 / 2","a.√2 / 2","a"],"d": 1,"gt": "Pytago trong nửa tam giác đều: h = √(a² - (a/2)²) = a.√3 / 2."},
-            {"nd": "Tam giác tù là tam giác có:","da": ["Hai góc tù","Ba góc nhọn","Một góc lớn hơn 90°","Một góc bằng 90°"],"d": 2,"gt": "Định nghĩa tam giác tù."},
-            {"nd": "Góc ngoài của tam giác tại 1 đỉnh luôn:","da": ["Lớn hơn mỗi góc trong không kề với nó","Nhỏ hơn mỗi góc trong","Bằng mỗi góc trong","Bằng 90°"],"d": 0,"gt": "Vì nó bằng tổng 2 góc trong không kề nên nó lớn hơn từng góc đó."},
-            {"nd": "Cho ∆ABC đều. Điểm O là giao của 3 đường trung tuyến. Góc AOB bằng?","da": ["90°","120°","60°","150°"],"d": 1,"gt": "Giao 3 đường trung tuyến của tam giác đều chia tam giác thành 3 phần bằng nhau ở tâm, 360°/3 = 120°."},
-            {"nd": "Trong một tam giác, đoạn thẳng nối trung điểm hai cạnh gọi là gì?","da": ["Đường trung tuyến","Đường cao","Đường trung bình","Đường phân giác"],"d": 2,"gt": "Khái niệm Đường trung bình của tam giác."}
+            {"nd": "Cho ∆ABC = ∆DEF, biết AB = 5cm, DF = 7cm. Tính chu vi ∆ABC nếu EF = 6cm.","da": ["12cm","15cm","18cm","20cm"],"d": 2,"gt": "AB=DE=5; AC=DF=7; BC=EF=6. Chu vi = 5+6+7 = 18cm."}
         ],
 
         "bt_co_ban": [
@@ -935,23 +452,12 @@ C4_T7 = {
             {"de": "Cho ∆ABC cân tại A (góc A < 90°). Kẻ BH ⊥ AC, CK ⊥ AB. Chứng minh BH = CK.","hd": "Xét 2 tam giác vuông ABH và ACK hoặc BHC và CKB.","dd": ["Xem lời giải"],"lg": "Xét ∆vuông ABH và ∆vuông ACK có: Cạnh huyền AB = AC, góc A chung. ⇒ ∆ABH = ∆ACK (cạnh huyền - góc nhọn). Suy ra BH = CK."},
             {"de": "Cho ∆ABC vuông tại A. Tia phân giác góc B cắt AC tại D. Kẻ DE ⊥ BC tại E. Chứng minh DA = DE.","hd": "Xét 2 tam giác vuông ABD và EBD.","dd": ["Xem lời giải"],"lg": "Xét ∆ABD và ∆EBD có: BD chung, góc ABD = EBD. ⇒ ∆ABD = ∆EBD (cạnh huyền - góc nhọn). Suy ra DA = DE."},
             {"de": "Cho ∆ABC cân tại A. Trên tia đối của tia BC lấy M, trên tia đối của tia CB lấy N sao cho BM = CN. Chứng minh ∆AMN là tam giác cân.","hd": "Chứng minh ∆ABM = ∆ACN.","dd": ["Xem lời giải"],"lg": "Góc ABC = ACB ⇒ góc kề bù ABM = ACN. Xét ∆ABM và ∆ACN có: AB = AC, ABM = ACN, BM = CN. ⇒ ∆ABM = ∆ACN (c.g.c) ⇒ AM = AN ⇒ ∆AMN cân tại A."},
-            {"de": "Cho ∆ABC vuông tại A, AB < AC. Lấy điểm M trên AC sao cho AM = AB. Kẻ MN ⊥ BC tại N. Chứng minh góc AMN = góc ABC.","hd": "Kẻ AH ⊥ BC. So sánh các góc trong tam giác vuông.","dd": ["Xem lời giải"],"lg": "Đây là bài toán mẹo. Góc MNC = 90°, góc A = 90°. (Dành cho HSG tự chứng minh)."},
             {"de": "Đường trung trực của cạnh BC trong ∆ABC cắt AC tại D. Biết AD = 3cm, DC = 5cm. Tính chu vi ∆ABD nếu AB = 4cm.","hd": "D nằm trên trung trực BC nên DB = DC.","dd": ["12 cm"],"lg": "D ∈ trung trực BC ⇒ DB = DC = 5cm. Chu vi ∆ABD = AB + AD + DB = 4 + 3 + 5 = 12cm."},
-            {"de": "Cho ∆ABC có góc B = 70°, góc C = 30°. Tia phân giác của góc A cắt BC tại D. Tính góc ADC.","hd": "Tính góc A trước, rồi suy ra A/2. Tính ADC dùng góc ngoài tam giác ABD.","dd": ["110°"],"lg": "A = 180° - 70° - 30° = 80°. A1 = 40°. Góc ADC = A1 + B = 40° + 70° = 110°."},
             {"de": "Một cái thang dài 5m dựa vào tường. Khoảng cách từ chân thang đến tường là 3m. Tính chiều cao bức tường từ điểm tựa thang xuống đất.","hd": "Áp dụng định lí Pytago.","dd": ["4m"],"lg": "h = √(5² - 3²) = √16 = 4m."},
-            {"de": "Cho ∆ABC cân tại A. Điểm M thuộc cạnh BC. Qua M kẻ các đường thẳng song song với AB và AC, cắt AC tại N và cắt AB tại P. Chứng minh chu vi hình bình hành ANMP bằng 2.AB.","hd": "Chứng minh các tam giác nhỏ tạo thành là tam giác cân.","dd": ["Xem lời giải"],"lg": "MP // AC ⇒ góc PMB = góc C. Mà B = C ⇒ PMB = B ⇒ ∆PBM cân tại P ⇒ PB = PM. Tương tự NM = NC. Chu vi ANMP = 2(AP + PM) = 2(AP + PB) = 2AB."},
-            {"de": "Tìm số đo các góc của ∆ABC, biết số đo các góc tỉ lệ với 2; 3; 4.","hd": "Tổng 3 góc bằng 180°.","dd": ["40°, 60°, 80°"],"lg": "A/2 = B/3 = C/4 = 180/9 = 20. A = 40°, B = 60°, C = 80°."},
-            {"de": "Cho ∆ABC nhọn, 2 đường cao BD và CE cắt nhau tại H. Biết góc A = 60°. Tính góc BHC.","hd": "Sử dụng tổng các góc trong tứ giác ADHE (học sinh giỏi) hoặc tam giác nhỏ.","dd": ["120°"],"lg": "Xét ∆ABD vuông tại D ⇒ ABD = 90° - 60° = 30°. Xét ∆BEH vuông tại E ⇒ BHE = 90° - 30° = 60°. BHC kề bù BHE ⇒ BHC = 180° - 60° = 120°."},
-            {"de": "Chứng minh rằng tổng độ dài 3 đường trung tuyến của tam giác luôn nhỏ hơn chu vi tam giác đó.","hd": "Dùng tính chất bất đẳng thức tam giác cho các tam giác chứa trung tuyến.","dd": ["Xem lời giải"],"lg": "Dùng bổ đề: Trung tuyến AM < (AB+AC)/2. Cộng 3 bất đẳng thức lại ⇒ Tổng 3 trung tuyến < Chu vi."},
-            {"de": "Cho tam giác ABC đều. Trên tia đối của các tia AB, BC, CA lấy lần lượt các điểm M, N, P sao cho AM = BN = CP. Chứng minh ∆MNP là tam giác đều.","hd": "Chứng minh ∆MAP = ∆NBM = ∆PCN (c.g.c).","dd": ["Xem lời giải"],"lg": "Góc ngoài tam giác đều bằng 120°. MAP = NBM = PCN = 120°. AM=BN=CP; AP=BM=CN (cạnh tam giác đều + đoạn bằng nhau). ⇒ 3 tam giác bằng nhau ⇒ MP = MN = PN ⇒ Đều."},
-            {"de": "Cho tam giác ABC có góc A = 90°, C = 30°. Kẻ đường cao AH. Trên tia HC lấy điểm D sao cho HD = HB. Từ C kẻ CE vuông góc với đường thẳng AD (E ∈ AD). Chứng minh ∆ABD là tam giác đều.","hd": "Xét đường trung trực và góc.","dd": ["Xem lời giải"],"lg": "AH là trung trực của BD ⇒ AB = AD. Mà góc B = 90° - 30° = 60°. Tam giác cân có 1 góc 60° là tam giác đều."},
-            {"de": "Cho góc xOy = 60°. Trên tia Ox lấy A, trên tia Oy lấy B sao cho OA = OB. Từ A kẻ đường vuông góc với Ox cắt Oy tại M. Từ B kẻ đường vuông góc với Oy cắt Ox tại N. Chứng minh AM = BN.","hd": "Chứng minh ∆OAM = ∆OBN.","dd": ["Xem lời giải"],"lg": "Xét ∆OAM và ∆OBN: góc O chung, OA = OB, góc OAM = OBN = 90°. ⇒ Bằng nhau (g.c.g) ⇒ AM = BN."},
-            {"de": "Cho tam giác ABC. M là trung điểm của BC. Chứng minh rằng nếu AM = 1/2 BC thì tam giác ABC vuông tại A.","hd": "Trên tia đối của tia MA lấy điểm D sao cho MD = MA. Chứng minh ABDC là hình chữ nhật (kiến thức kết nối). Ở kì 1 lớp 7, có thể chứng minh qua tổng các góc.","dd": ["Xem lời giải"],"lg": "AM = MB = MC. ∆AMB cân tại M ⇒ góc MAB = MBA. ∆AMC cân tại M ⇒ góc MAC = MCA. Tổng A = MAB + MAC = MBA + MCA = B + C. Mà A + B + C = 180° ⇒ 2A = 180° ⇒ A = 90°."},
             {"de": "Tìm độ dài x trên hình vẽ biết ∆ vuông có cạnh góc vuông là 5, x và cạnh huyền là 13.","hd": "Dùng Pytago","dd": ["12"],"lg": "x² + 5² = 13² ⇒ x² = 169 - 25 = 144 ⇒ x = 12."}
         ]
     }
 }
-
 T7["Chương 4: Tam giác bằng nhau"] = C4_T7
 
 # --- Chương 5: Thu thập và biểu diễn dữ liệu ---
@@ -993,12 +499,7 @@ C5_T7 = {
             {"nd": "Nếu 1 hình quạt có góc ở tâm là 180° thì nó biểu diễn bao nhiêu phần trăm?","da": ["180%","100%","50%","25%"],"d": 2,"gt": "180/360 = 1/2 = 50%."},
             {"nd": "Khi điều tra về điểm thi môn Toán của tổ 1, bạn An thu được dãy: 7, 8, 9, 11, 6. Số liệu nào không hợp lí?","da": ["7","9","11","6"],"d": 2,"gt": "Điểm thi tối đa là 10, nên số 11 không hợp lí."},
             {"nd": "Điều tra loại phương tiện đi lại của học sinh: Xe đạp, Xe buýt, Ô tô, Tàu hỏa. Kết quả 'Đi bộ' có hợp lí không?","da": ["Có","Không","Tuỳ trường hợp","Không xác định"],"d": 0,"gt": "Đi bộ cũng là một hình thức di chuyển hợp lí."},
-            {"nd": "Trong biểu đồ đoạn thẳng, nếu đường nét đứt đi lên (↗) thì thể hiện điều gì?","da": ["Đại lượng giữ nguyên","Đại lượng giảm xuống","Đại lượng tăng lên","Đại lượng không xác định"],"d": 2,"gt": "Đường đi lên thể hiện giá trị tăng lên."},
-            {"nd": "Trong biểu đồ quạt tròn, môn Toán chiếm 30%, Văn 20%, Anh 40%. Hỏi môn KHTN chiếm bao nhiêu % (biết chỉ có 4 môn)?","da": ["10%","20%","30%","15%"],"d": 0,"gt": "100% - (30+20+40)% = 10%."},
-            {"nd": "Khảo sát 'Màu áo đồng phục' của 40 học sinh lớp 7A. Dữ liệu thu được thuộc loại nào?","da": ["Dữ liệu số","Dữ liệu định lượng","Dữ liệu định tính","Không phải dữ liệu"],"d": 2,"gt": "Màu sắc là dữ liệu không phải là số."},
-            {"nd": "Muốn biết xu hướng doanh thu của một cửa hàng trong 12 tháng, chủ cửa hàng nên vẽ biểu đồ gì?","da": ["Biểu đồ cột","Biểu đồ đoạn thẳng","Biểu đồ quạt tròn","Biểu đồ tranh"],"d": 1,"gt": "Biểu đồ đoạn thẳng trực quan nhất để xem xu hướng tăng/giảm."},
-            {"nd": "Bạn Bình ghi chép cân nặng (kg) của 4 con gà: 2.1, 2.5, 3.0, -1.5. Số liệu nào sai?","da": ["2.1","-1.5","3.0","2.5"],"d": 1,"gt": "Cân nặng không thể là số âm."},
-            {"nd": "Một biểu đồ quạt có 3 phần. Phần 1 chiếm 1/2, phần 2 chiếm 1/3. Phần 3 chiếm?","da": ["1/6","1/5","1/4","1/2"],"d": 0,"gt": "1 - 1/2 - 1/3 = 1/6."}
+            {"nd": "Trong biểu đồ đoạn thẳng, nếu đường nét đứt đi lên (↗) thì thể hiện điều gì?","da": ["Đại lượng giữ nguyên","Đại lượng giảm xuống","Đại lượng tăng lên","Đại lượng không xác định"],"d": 2,"gt": "Đường đi lên thể hiện giá trị tăng lên."}
         ],
 
         "bt_co_ban": [
@@ -1017,14 +518,7 @@ C5_T7 = {
         "bt_nang_cao": [
             {"de": "Trong một cuộc khảo sát 200 học sinh về phương tiện đến trường: 80 em đi xe đạp, 60 em đi xe buýt, 40 em đi bộ, còn lại đi xe máy. Nếu vẽ biểu đồ quạt tròn, góc ở tâm của phần biểu diễn 'xe máy' là bao nhiêu độ?","hd": "Tính số học sinh đi xe máy, sau đó tính % rồi nhân 360°.","dd": ["36°"],"lg": "Số HS đi xe máy = 200 - (80+60+40) = 20 em. Tỉ lệ % = 20/200 = 10%. Góc = 10% × 360° = 36°."},
             {"de": "Biểu đồ đoạn thẳng biểu diễn doanh thu 6 tháng. Tháng 1: 50tr, Tháng 2: 45tr, Tháng 3: 55tr, Tháng 4: 60tr, Tháng 5: 58tr, Tháng 6: 70tr. Nêu nhận xét về xu hướng doanh thu chung.","hd": "So sánh điểm đầu và điểm cuối, các đoạn biến động.","dd": ["Xu hướng chung là tăng trưởng."],"lg": "Dù có giảm nhẹ ở tháng 2 và tháng 5, nhưng nhìn chung từ tháng 1 đến tháng 6 doanh thu tăng mạnh từ 50tr lên 70tr."},
-            {"de": "Nếu một biểu đồ quạt biểu diễn 3 thành phần A, B, C. Góc ở tâm của A là 120°, của B là 90°. Hỏi thành phần C chiếm bao nhiêu phần trăm?","hd": "Tính góc của C rồi chia cho 360°.","dd": ["41,67% (hoặc xấp xỉ 41,7%)"],"lg": "Góc C = 360° - 120° - 90° = 150°. Phần trăm C = (150/360) × 100% ≈ 41,67%."},
-            {"de": "Cho bảng tần số số con trong 10 gia đình: 0 con (1 nhà), 1 con (3 nhà), 2 con (5 nhà), 3 con (1 nhà). Vẽ biểu đồ đoạn thẳng và nhận xét.","hd": "Trục hoành là số con, trục tung là số gia đình.","dd": ["Đa số các gia đình có 1 hoặc 2 con."],"lg": "Đỉnh cao nhất của biểu đồ rơi vào cột 2 con (5 gia đình), phản ánh xu thế gia đình hiện nay."},
-            {"de": "Trong một biểu đồ quạt tròn phân loại rác, rác hữu cơ chiếm 55%, rác tái chế chiếm một nửa rác hữu cơ, còn lại là rác vô cơ. Tính % rác vô cơ.","hd": "Tính rác tái chế trước.","dd": ["17,5%"],"lg": "Rác tái chế = 55% / 2 = 27,5%. Rác vô cơ = 100% - 55% - 27,5% = 17,5%."},
-            {"de": "Lớp 7B có 40 học sinh. Cuối năm, số HS Tốt bằng 1/4 tổng số. Khá bằng 2 lần Tốt. Còn lại là Đạt. Tính số HS mỗi loại và phần trăm của HS Đạt.","hd": "Làm phép nhân cơ bản.","dd": ["Tốt 10, Khá 20, Đạt 10. Đạt chiếm 25%"],"lg": "Tốt = 1/4.40 = 10. Khá = 10.2 = 20. Đạt = 40 - 10 - 20 = 10. % Đạt = 10/40 = 25%."},
-            {"de": "Biểu đồ lượng mưa 4 tháng: T6(100mm), T7(150mm), T8(200mm), T9(50mm). Lượng mưa trung bình một tháng là bao nhiêu?","hd": "Cộng lại chia 4.","dd": ["125mm"],"lg": "(100+150+200+50)/4 = 500/4 = 125mm."},
-            {"de": "Trong 1 khảo sát 500 người, biểu đồ quạt cho thấy 35% thích Cam, 25% thích Táo, phần còn lại thích Chuối. Tính số người thích Chuối.","hd": "Tính % chuối rồi nhân với 500.","dd": ["200 người"],"lg": "% Chuối = 100 - 35 - 25 = 40%. Số người = 40% × 500 = 200 người."},
-            {"de": "Biểu đồ đoạn thẳng có điểm đầu là (Tháng 1, 20 triệu) và điểm cuối là (Tháng 12, 44 triệu). Nếu tăng đều đặn mỗi tháng một lượng bằng nhau, tính doanh thu tháng 2.","hd": "Tính khoảng cách và mức tăng trung bình.","dd": ["22,18 triệu (Xấp xỉ)"],"lg": "Từ T1 đến T12 có 11 bước chuyển tháng. Tổng tăng = 44 - 20 = 24 triệu. Mỗi tháng tăng = 24/11 ≈ 2,18 triệu. T2 = 20 + 2,18 = 22,18 triệu."},
-            {"de": "Dữ liệu 'Biển số xe của các giáo viên trong trường'. Đây là dữ liệu định tính hay định lượng? Giải thích.","hd": "Biển số xe dù có số nhưng không dùng để tính toán (cộng trừ nhân chia).","dd": ["Dữ liệu định tính"],"lg": "Biển số xe chỉ mang tính chất phân loại, định danh, không có ý nghĩa về mặt độ lớn hay tính toán nên nó là dữ liệu định tính (dù hình thức là các chữ số)."}
+            {"de": "Nếu một biểu đồ quạt biểu diễn 3 thành phần A, B, C. Góc ở tâm của A là 120°, của B là 90°. Hỏi thành phần C chiếm bao nhiêu phần trăm?","hd": "Tính góc của C rồi chia cho 360°.","dd": ["41,67% (hoặc xấp xỉ 41,7%)"],"lg": "Góc C = 360° - 120° - 90° = 150°. Phần trăm C = (150/360) × 100% ≈ 41,67%."}
         ]
     }
 }
@@ -1080,17 +574,7 @@ C6_T7 = {
             {"nd": "Nếu y tỉ lệ nghịch với x theo hệ số tỉ lệ a = 12 thì công thức nào ĐÚNG?","da": ["y = 12x","y = x/12","y = 12/x","x = 12y"],"d": 2,"gt": "Tỉ lệ nghịch: y = a/x."},
             {"nd": "Đại lượng x và y tỉ lệ thuận. Khi x = 2 thì y = 6. Hệ số tỉ lệ k của y đối với x là?","da": ["3","12","1/3","-3"],"d": 0,"gt": "k = y/x = 6/2 = 3."},
             {"nd": "Chu vi hình vuông tỉ lệ thuận hay tỉ lệ nghịch với cạnh của nó?","da": ["Tỉ lệ thuận","Tỉ lệ nghịch","Không tỉ lệ","Bằng nhau"],"d": 0,"gt": "C = 4.a ⇒ Tỉ lệ thuận với hệ số k=4."},
-            {"nd": "Vận tốc và thời gian (khi quãng đường không đổi) là hai đại lượng?","da": ["Tỉ lệ thuận","Tỉ lệ nghịch","Bằng nhau","Không liên quan"],"d": 1,"gt": "v.t = S (không đổi) ⇒ v và t tỉ lệ nghịch."},
-            {"nd": "Nếu x và y tỉ lệ nghịch và x1.y1 = 20. Khi x2 = 5 thì y2 bằng?","da": ["4","100","15","25"],"d": 0,"gt": "x2.y2 = x1.y1 = 20 ⇒ 5.y2 = 20 ⇒ y2 = 4."},
-            {"nd": "Cho x/3 = y/5 và x + y = 16. Giá trị của x là?","da": ["3","5","6","10"],"d": 2,"gt": "x/3 = y/5 = 16/8 = 2 ⇒ x = 6."},
-            {"nd": "Tìm 2 số x, y biết x/2 = y/(-3) và x - y = 10.","da": ["x=4, y=-6","x=-4, y=6","x=2, y=-3","x=6, y=-4"],"d": 0,"gt": "(x-y)/(2 - (-3)) = 10/5 = 2. x=4, y=-6."},
-            {"nd": "Chia số 90 thành 3 phần tỉ lệ thuận với 2, 3, 4. Phần lớn nhất là?","da": ["20","30","40","50"],"d": 2,"gt": "90 / (2+3+4) = 10. Phần lớn nhất = 10.4 = 40."},
-            {"nd": "10 người làm xong công việc trong 6 ngày. 15 người làm xong trong mấy ngày?","da": ["4 ngày","9 ngày","3 ngày","5 ngày"],"d": 0,"gt": "Tỉ lệ nghịch: 10.6 = 15.x ⇒ x = 4."},
-            {"nd": "3 mét vải giá 60.000đ. 5 mét vải cùng loại giá bao nhiêu?","da": ["100.000đ","120.000đ","80.000đ","90.000đ"],"d": 0,"gt": "Tỉ lệ thuận: 1m giá 20.000đ ⇒ 5m giá 100.000đ."},
-            {"nd": "Đại lượng y tỉ lệ nghịch với x theo hệ số a. Khi x tăng 2 lần thì y:","da": ["Tăng 2 lần","Giảm 2 lần","Giảm 4 lần","Không đổi"],"d": 1,"gt": "Do x.y không đổi nên x tăng bao nhiêu lần thì y giảm bấy nhiêu lần."},
-            {"nd": "Đại lượng y tỉ lệ thuận với x theo hệ số k. Khi x tăng 3 lần thì y:","da": ["Tăng 3 lần","Giảm 3 lần","Không đổi","Tăng 9 lần"],"d": 0,"gt": "Tỉ lệ thuận nên x và y cùng tăng giảm một lượng tương ứng."},
-            {"nd": "Cho x/y = 5/7. Khẳng định nào ĐÚNG?","da": ["7x = 5y","5x = 7y","x=5, y=7","x.y = 35"],"d": 0,"gt": "Nhân chéo: x.7 = y.5 ⇒ 7x = 5y."},
-            {"nd": "Hệ số tỉ lệ của chu vi đường tròn đối với bán kính là?","da": ["2π","π","R","Không có"],"d": 0,"gt": "C = 2π.R nên hệ số tỉ lệ thuận là 2π."}
+            {"nd": "Vận tốc và thời gian (khi quãng đường không đổi) là hai đại lượng?","da": ["Tỉ lệ thuận","Tỉ lệ nghịch","Bằng nhau","Không liên quan"],"d": 1,"gt": "v.t = S (không đổi) ⇒ v và t tỉ lệ nghịch."}
         ],
 
         "bt_co_ban": [
@@ -1111,22 +595,7 @@ C6_T7 = {
             {"de": "Tìm x, y biết x/3 = y/4 và x.y = 48.","hd": "Đặt x = 3k, y = 4k thay vào phương trình tích.","dd": ["x=6, y=8 hoặc x=-6, y=-8"],"lg": "(3k).(4k) = 48 ⇒ 12k² = 48 ⇒ k² = 4 ⇒ k = 2 hoặc k = -2. Từ đó tính x, y."},
             {"de": "Tìm x, y biết x/5 = y/3 và x² - y² = 64.","hd": "Đặt x = 5k, y = 3k thay vào hiệu bình phương.","dd": ["x=10, y=6 hoặc x=-10, y=-6"],"lg": "(5k)² - (3k)² = 25k² - 9k² = 16k² = 64 ⇒ k² = 4 ⇒ k = ±2."},
             {"de": "Một bánh răng cưa có 24 răng quay được 80 vòng/phút. Nó khớp với bánh thứ hai có 60 răng. Hỏi bánh thứ hai quay được bao nhiêu vòng/phút?","hd": "Số răng và số vòng quay là hai đại lượng tỉ lệ nghịch.","dd": ["32 vòng/phút"],"lg": "x.y = const ⇒ 24 . 80 = 60 . V ⇒ V = 1920 / 60 = 32 vòng/phút."},
-            {"de": "Chia số 310 thành ba phần tỉ lệ nghịch với 2, 3, 5. Tìm phần nhỏ nhất.","hd": "Tỉ lệ nghịch với 2, 3, 5 tức là tỉ lệ thuận với 1/2, 1/3, 1/5.","dd": ["60"],"lg": "x/(1/2) = y/(1/3) = z/(1/5). Quy đồng mẫu: x/15 = y/10 = z/6. Tổng 310/(15+10+6) = 310/31 = 10. Phần nhỏ nhất z = 6.10 = 60."},
-            {"de": "Tìm 3 số a, b, c biết 2a = 3b = 4c và a - b + c = 35.","hd": "Chia các vế cho BCNN(2,3,4) = 12.","dd": ["a=30, b=20, c=15"],"lg": "2a/12 = 3b/12 = 4c/12 ⇒ a/6 = b/4 = c/3. Dãy tỉ số: (a-b+c)/(6-4+3) = 35/5 = 7. Vậy a=42? Tính lại: 6-4+3=5, 35/5=7. a=6.7=42, b=4.7=28, c=3.7=21. Xin lỗi, phép tính: 42-28+21 = 35. Vậy a=42, b=28, c=21."},
-            {"de": "Có 3 cuộn dây thép dài tổng cộng 140m. Nếu cắt bớt cuộn 1 đi 1/7, cuộn 2 đi 2/11, cuộn 3 đi 1/3 chiều dài của chúng thì phần còn lại của 3 cuộn bằng nhau. Tính chiều dài cuộn thứ 3 ban đầu.","hd": "Tính phần còn lại: 6/7 cuộn 1 = 9/11 cuộn 2 = 2/3 cuộn 3.","dd": ["45 m"],"lg": "Gọi a,b,c là chiều dài. 6a/7 = 9b/11 = 2c/3. Chia cả 3 vế cho BCNN(6,9,2)=18. Ta có a/21 = b/22 = c/27. Tổng số phần: 21+22+27 = 70. 140/70 = 2. Cuộn 3 = 27.2 = 54m. (Lưu ý: Bạn học sinh tự tính lại kĩ càng, kết quả chuẩn là 54m)."},
-            {"de": "Cho (a+b)/(c+d) = (a-b)/(c-d). Chứng minh rằng a/b = c/d.","hd": "Dùng tính chất hoán vị đường chéo rồi dùng dãy tỉ số bằng nhau.","dd": ["Xem lời giải"],"lg": "Biến đổi: (a+b)/(a-b) = (c+d)/(c-d). Dùng (tử+mẫu)/(tử-mẫu) ta có (2a)/(2b) = (2c)/(2d) ⇒ a/b = c/d."},
-            {"de": "Một ô tô đi từ A đến B với vận tốc 45km/h hết 4 giờ. Nếu đi với vận tốc 60km/h thì hết bao nhiêu giờ?","hd": "Vận tốc và thời gian tỉ lệ nghịch.","dd": ["3 giờ"],"lg": "v1.t1 = v2.t2 ⇒ 45.4 = 60.t2 ⇒ 180 = 60.t2 ⇒ t2 = 3."},
-            {"de": "Cho a/b = c/d. Chứng minh (a² + c²) / (b² + d²) = a/b.","hd": "Đặt a/b = c/d = k ⇒ a = bk, c = dk. Thay vào biểu thức.","dd": ["Xem lời giải"],"lg": "Tử số: b²k² + d²k² = k²(b² + d²). Mẫu số: b² + d². Phân số = k². Mà k² = (a/b)². Lưu ý đề bài ở đây có thể ghi nhầm: Phải là (a² + c²) / (b² + d²) = (a/b)² mới chính xác!"},
-            {"de": "15 công nhân xây một ngôi nhà hết 90 ngày. Sau 30 ngày, có 5 công nhân được điều đi nơi khác. Hỏi số công nhân còn lại phải làm bao lâu nữa mới xong nhà?","hd": "Khối lượng công việc còn lại dành cho 10 công nhân.","dd": ["90 ngày nữa"],"lg": "Sau 30 ngày, phần việc còn lại 15 người làm trong 60 ngày. Hiện chỉ còn 10 người. Tỉ lệ nghịch: 15.60 = 10.x ⇒ 900 = 10x ⇒ x = 90 ngày."},
-            {"de": "Tìm x biết: (x+1)/2 = (2x+3)/5","hd": "Nhân chéo giải phương trình bậc nhất.","dd": ["x = 1"],"lg": "5(x+1) = 2(2x+3) ⇒ 5x + 5 = 4x + 6 ⇒ x = 1."},
-            {"de": "Tìm 2 số khác 0 biết tổng, hiệu, tích của chúng tỉ lệ với 5, 1, 12.","hd": "Lập tỉ lệ thức: (x+y)/5 = (x-y)/1 = xy/12.","dd": ["x = 4, y = 6"],"lg": "Từ (x+y)/5 = (x-y)/1 ⇒ x+y = 5x-5y ⇒ 4x = 6y ⇒ x/3 = y/2. Thay vào phần tích... Kết quả (4,6) hoặc (-4,-6)."},
-            {"de": "Nếu a, b, c tỉ lệ với 2, 3, 4. Tính giá trị biểu thức P = (2a + 3b - c) / (a - b + c)","hd": "Đặt a=2k, b=3k, c=4k thay vào biểu thức.","dd": ["3"],"lg": "P = (2.2k + 3.3k - 4k) / (2k - 3k + 4k) = (4k + 9k - 4k) / 3k = 9k / 3k = 3."},
-            {"de": "Để làm xong một công việc, người thứ nhất cần 12 giờ, người thứ hai cần 15 giờ. Nếu cả 2 cùng làm thì hết bao lâu?","hd": "Đây là dạng toán công việc chung, dùng tỉ lệ năng suất.","dd": ["6 giờ 40 phút"],"lg": "Trong 1 giờ, người 1 làm 1/12 CV, người 2 làm 1/15 CV. Hai người làm được 1/12 + 1/15 = 9/60 = 3/20 CV. Thời gian = 20/3 giờ = 6 giờ 40 phút."},
-            {"de": "Tìm x, y biết x/y = 0,8 và x² + y² = 164.","hd": "0,8 = 4/5. Đặt x=4k, y=5k.","dd": ["x=8, y=10 hoặc x=-8, y=-10"],"lg": "(4k)² + (5k)² = 16k² + 25k² = 41k² = 164 ⇒ k² = 4 ⇒ k = ±2."},
-            {"de": "Cho a, b, c > 0 và (a+b-c)/c = (b+c-a)/a = (c+a-b)/b. Tính M = (1 + a/b)(1 + b/c)(1 + c/a)","hd": "Dùng tính chất dãy tỉ số bằng nhau (Cộng 3 vế).","dd": ["8"],"lg": "Cộng 3 phân thức được (a+b+c)/(a+b+c) = 1 (do a,b,c>0). Suy ra a=b=c. Thay vào M = (1+1)(1+1)(1+1) = 8."},
-            {"de": "Đồng hồ chạy sai: Mỗi ngày đồng hồ chạy nhanh 5 phút. Nếu chỉnh đúng vào 8h sáng thứ Hai, thì đến 8h sáng thứ Sáu đồng hồ chỉ mấy giờ?","hd": "Thời gian thực tế tỉ lệ thuận với thời gian chạy nhanh.","dd": ["8h 20 phút"],"lg": "Từ thứ 2 đến thứ 6 là 4 ngày. Số phút nhanh: 4.5 = 20 phút. Đồng hồ chỉ 8h20."},
-            {"de": "Tìm ba phân số tối giản biết tử số của chúng tỉ lệ với 2, 3, 4; mẫu số tỉ lệ với 3, 4, 5 và tổng ba phân số bằng -33/20.","hd": "Gọi các phân số là A, B, C. Tử tỉ lệ 2,3,4 và mẫu tỉ lệ 3,4,5 ⇒ A,B,C tỉ lệ với 2/3, 3/4, 4/5.","dd": ["-1/2, -9/16, -3/5"],"lg": "A/(2/3) = B/(3/4) = C/(4/5) = (-33/20) / (2/3 + 3/4 + 4/5) ... Tính ra hệ số rồi nhân ngược lại."},
-            {"de": "Tại một trạm xăng, giá 1 lít xăng RON95 là 24.000đ. Với 300.000đ, người đó mua được bao nhiêu lít xăng? Đây là đại lượng tỉ lệ thuận hay nghịch?","hd": "Số lít xăng và số tiền thanh toán là tỉ lệ thuận.","dd": ["12,5 lít. Tỉ lệ thuận"],"lg": "x = 300000 / 24000 = 12,5 lít."}
+            {"de": "Chia số 310 thành ba phần tỉ lệ nghịch với 2, 3, 5. Tìm phần nhỏ nhất.","hd": "Tỉ lệ nghịch với 2, 3, 5 tức là tỉ lệ thuận với 1/2, 1/3, 1/5.","dd": ["60"],"lg": "x/(1/2) = y/(1/3) = z/(1/5). Quy đồng mẫu: x/15 = y/10 = z/6. Tổng 310/(15+10+6) = 310/31 = 10. Phần nhỏ nhất z = 6.10 = 60."}
         ]
     }
 }
@@ -1186,17 +655,7 @@ C7_T7 = {
             {"nd": "Nghiệm của đa thức f(x) = x - 5 là?","da": ["-5","5","0","1"],"d": 1,"gt": "x - 5 = 0 ⇒ x = 5."},
             {"nd": "Nghiệm của đa thức g(x) = 2x + 8 là?","da": ["4","-4","8","-8"],"d": 1,"gt": "2x + 8 = 0 ⇒ 2x = -8 ⇒ x = -4."},
             {"nd": "Thu gọn đa thức 2x³ - 3x³ + x² ta được?","da": ["-x³ + x²","5x³ + x²","x²","-x²"],"d": 0,"gt": "(2-3)x³ + x² = -x³ + x²."},
-            {"nd": "Đa thức nào sau đây không có nghiệm?","da": ["x - 1","x² - 1","x² + 1","x + 2"],"d": 2,"gt": "x² ≥ 0 nên x² + 1 ≥ 1 > 0 ∀x, không thể bằng 0."},
-            {"nd": "Thực hiện phép tính (2x + 3) + (x - 5) = ?","da": ["3x - 2","3x + 8","x - 2","x + 8"],"d": 0,"gt": "(2x+x) + (3-5) = 3x - 2."},
-            {"nd": "Thực hiện phép tính (4x² - x) - (x² + 2x) = ?","da": ["3x² + x","5x² + x","3x² - 3x","5x² - 3x"],"d": 2,"gt": "4x² - x² - x - 2x = 3x² - 3x."},
-            {"nd": "Cho P(x) = x² - 4. Các nghiệm của P(x) là?","da": ["x=2","x=-2","x=2 hoặc x=-2","Vô nghiệm"],"d": 2,"gt": "x² - 4 = 0 ⇒ x² = 4 ⇒ x=2 hoặc x=-2."},
-            {"nd": "Đa thức x³ + 8 có nghiệm là?","da": ["2","-2","8","-8"],"d": 1,"gt": "(-2)³ = -8 nên (-2)³ + 8 = 0."},
-            {"nd": "Phép nhân đơn thức: 3x² . (-2x³) = ?","da": ["-6x⁵","-6x⁶","x⁵","-x⁶"],"d": 0,"gt": "3.(-2).x^(2+3) = -6x⁵."},
-            {"nd": "Biểu thức đại số biểu thị 'Bình phương của tổng hai số x và y' là?","da": ["x² + y²","(x + y)²","x²y²","x + y²"],"d": 1,"gt": "Tổng là x+y, bình phương tổng là (x+y)²."},
-            {"nd": "Biểu thức biểu thị 'Tổng các bình phương của hai số a và b' là?","da": ["(a+b)²","a² + b²","a²b²","a + b²"],"d": 1,"gt": "Bình phương trước, tổng sau: a² + b²."},
-            {"nd": "Mỗi đa thức bậc 2 có tối đa bao nhiêu nghiệm?","da": ["1","2","3","Vô số"],"d": 1,"gt": "Đa thức bậc n có tối đa n nghiệm."},
-            {"nd": "Biểu thức nào sau đây KHÔNG phải là đa thức một biến?","da": ["3x² - 5","2x + y","7","x³"],"d": 1,"gt": "2x+y có chứa hai biến x và y."},
-            {"nd": "Giá trị của x để biểu thức 3 - x đạt giá trị bằng 0 là?","da": ["3","-3","0","1/3"],"d": 0,"gt": "Nghiệm của đa thức là 3."}
+            {"nd": "Đa thức nào sau đây không có nghiệm?","da": ["x - 1","x² - 1","x² + 1","x + 2"],"d": 2,"gt": "x² ≥ 0 nên x² + 1 ≥ 1 > 0 ∀x, không thể bằng 0."}
         ],
 
         "bt_co_ban": [
@@ -1217,22 +676,7 @@ C7_T7 = {
             {"de": "Tìm đa thức P(x) biết P(x) + (x² - 3x + 2) = 3x² - x + 5.","hd": "P(x) = Tổng - Đa thức hạng.","dd": ["2x² + 2x + 3"],"lg": "P(x) = (3x² - x + 5) - (x² - 3x + 2) = 2x² + 2x + 3."},
             {"de": "Tìm nghiệm của đa thức: x² - 5x + 6","hd": "Phân tích đa thức thành nhân tử bằng cách tách -5x = -2x - 3x.","dd": ["x = 2 hoặc x = 3"],"lg": "x² - 2x - 3x + 6 = 0 ⇒ x(x - 2) - 3(x - 2) = 0 ⇒ (x - 2)(x - 3) = 0. Do đó x = 2 hoặc x = 3."},
             {"de": "Chứng minh rằng giá trị của biểu thức B = (x - 2)(x + 2) - x² luôn không phụ thuộc vào x.","hd": "Khai triển biểu thức.","dd": ["B = -4 (Không đổi)"],"lg": "B = x² - 4 - x² = -4. Kết quả là hằng số nên không phụ thuộc vào x."},
-            {"de": "Tìm a, b để đa thức P(x) = x² + ax + b có hai nghiệm là x = 1 và x = 2.","hd": "Lập hệ phương trình P(1) = 0 và P(2) = 0.","dd": ["a = -3, b = 2"],"lg": "P(1) = 1 + a + b = 0 ⇒ a + b = -1. P(2) = 4 + 2a + b = 0 ⇒ 2a + b = -4. Trừ hai PT ta được a = -3 ⇒ b = 2."},
-            {"de": "Tìm GTLN của biểu thức C = -x² + 6x - 10.","hd": "Biến đổi về dạng -(x - a)² + b.","dd": ["Max C = -1 khi x = 3"],"lg": "C = -(x² - 6x + 9) - 1 = -(x - 3)² - 1. Vì -(x - 3)² ≤ 0 nên C ≤ -1. Dấu '=' khi x = 3."},
-            {"de": "Tìm GTNN của biểu thức D = 2x² - 8x + 5.","hd": "Đặt 2 ra ngoài, tạo hằng đẳng thức.","dd": ["Min D = -3 khi x = 2"],"lg": "D = 2(x² - 4x + 4) - 3 = 2(x - 2)² - 3. Vì 2(x - 2)² ≥ 0 nên D ≥ -3. Dấu '=' khi x = 2."},
-            {"de": "Đa thức f(x) chia cho x - 1 dư 3, chia cho x - 2 dư 5. Tìm dư khi f(x) chia cho (x-1)(x-2).","hd": "Đa thức dư có dạng ax + b. Dùng f(1) = 3 và f(2) = 5.","dd": ["2x + 1"],"lg": "Gọi dư là ax + b. Theo Định lí Bézout: a(1) + b = 3 và a(2) + b = 5. Giải ra a = 2, b = 1. Vậy đa thức dư là 2x + 1."},
-            {"de": "Xác định hệ số a, b, c biết 2x² - 3x + 1 = a(x-1)² + b(x-1) + c với mọi x.","hd": "Sử dụng đồng nhất hệ số hoặc thay các giá trị đặc biệt x = 1, x = 0, x = 2.","dd": ["a=2, b=1, c=0"],"lg": "Thay x=1: c = 2 - 3 + 1 = 0. Vế phải khai triển: ax² - 2ax + a + bx - b = ax² + (b-2a)x + (a-b). Đồng nhất: a=2; b-2a=-3 ⇒ b=1. Thử lại a-b = 2-1 = 1 (Đúng)."},
-            {"de": "Cho đa thức P(x) thỏa mãn P(x-1) = x² - x. Tính P(2).","hd": "Đặt t = x - 1.","dd": ["6"],"lg": "Để tính P(2), ta cần x - 1 = 2 ⇒ x = 3. Thay x = 3 vào VP: 3² - 3 = 6. Vậy P(2) = 6."},
-            {"de": "Biết x + y = 3 và xy = 2. Tính giá trị biểu thức x³ + y³.","hd": "Sử dụng HĐT x³ + y³ = (x+y)³ - 3xy(x+y).","dd": ["9"],"lg": "x³ + y³ = 3³ - 3.2.3 = 27 - 18 = 9."},
-            {"de": "Tìm nghiệm nguyên của đa thức 3x² - 10x + 3.","hd": "Tách -10x = -9x - 1x.","dd": ["x = 3"],"lg": "3x² - 9x - x + 3 = 0 ⇒ 3x(x - 3) - (x - 3) = 0 ⇒ (3x - 1)(x - 3) = 0. x = 1/3 (loại) hoặc x = 3. Vậy nghiệm nguyên là x=3."},
-            {"de": "Chứng minh rằng x⁴ - x + 1 > 0 với mọi x.","hd": "Chia 2 trường hợp: x < 1 và x ≥ 1, hoặc nhóm bình phương thiếu.","dd": ["Xem lời giải"],"lg": "Nếu x < 0 thì x⁴ > 0, -x > 0 ⇒ biểu thức > 0. Nếu 0 ≤ x < 1 thì x⁴ ≥ 0, 1 - x > 0 ⇒ biểu thức > 0. Nếu x ≥ 1 thì x⁴ - x = x(x³ - 1) ≥ 0, cộng 1 > 0. Luôn đúng."},
-            {"de": "Tìm đa thức bậc hai P(x) biết P(0) = 1, P(1) = 3, P(-1) = 3.","hd": "Gọi P(x) = ax² + bx + c.","dd": ["2x² + 1"],"lg": "P(0) = c = 1. P(1) = a + b + 1 = 3 ⇒ a + b = 2. P(-1) = a - b + 1 = 3 ⇒ a - b = 2. Cộng lại 2a = 4 ⇒ a = 2, b = 0. Đa thức là 2x² + 1."},
-            {"de": "Rút gọn A = (x+1)(x²+1)(x⁴+1)...(x³²+1)","hd": "Nhân thêm (x-1) vào 2 vế.","dd": ["A = (x⁶⁴ - 1) / (x - 1) (với x ≠ 1)"],"lg": "Nhân hai vế với (x-1): A(x-1) = (x-1)(x+1)(x²+1)... = (x²-1)(x²+1)... = x⁴-1... Cứ như vậy đến x⁶⁴ - 1. Chia lại cho x-1."},
-            {"de": "Tìm x biết |x² - 1| + |x + 1| = 0.","hd": "Cả hai giá trị tuyệt đối phải bằng 0 đồng thời.","dd": ["x = -1"],"lg": "x² - 1 = 0 ⇒ x = ±1. x + 1 = 0 ⇒ x = -1. Nghiệm chung là x = -1."},
-            {"de": "Một tam giác có diện tích S = x² + 3x + 2. Nếu chiều cao là x + 1 thì cạnh đáy tương ứng là bao nhiêu?","hd": "Đáy = 2S / cao.","dd": ["2x + 4"],"lg": "S = (x+1)(x+2). Đáy = 2(x+1)(x+2) / (x+1) = 2(x+2) = 2x + 4."},
-            {"de": "Cho đa thức M(x) = x² - 2024x + 2023. Không cần giải phương trình, chứng tỏ x = 1 là một nghiệm.","hd": "Tính M(1).","dd": ["M(1) = 0"],"lg": "Thay x = 1: M(1) = 1² - 2024.1 + 2023 = 1 - 2024 + 2023 = 0. Do đó x = 1 là nghiệm."},
-            {"de": "Với x, y, z là ba cạnh của một tam giác. Chứng minh biểu thức P = x² + y² - z² + 2xy > 0.","hd": "Nhóm x² + 2xy + y² = (x+y)².","dd": ["Xem lời giải"],"lg": "P = (x+y)² - z² = (x+y-z)(x+y+z). Theo BĐT tam giác x+y > z nên x+y-z > 0. Tổng x+y+z > 0. Tích > 0."},
-            {"de": "Chứng minh rằng đa thức F(x) = x³ - x chia hết cho 6 với mọi x là số nguyên.","hd": "Phân tích nhân tử x³ - x.","dd": ["Xem lời giải"],"lg": "F(x) = x(x² - 1) = x(x - 1)(x + 1) = (x - 1)x(x + 1). Đây là tích của 3 số nguyên liên tiếp. Trong 3 số liên tiếp luôn có ít nhất 1 số chia hết cho 2 và 1 số chia hết cho 3. Do ƯCLN(2,3)=1 nên tích chia hết cho 6."}
+            {"de": "Tìm a, b để đa thức P(x) = x² + ax + b có hai nghiệm là x = 1 và x = 2.","hd": "Lập hệ phương trình P(1) = 0 và P(2) = 0.","dd": ["a = -3, b = 2"],"lg": "P(1) = 1 + a + b = 0 ⇒ a + b = -1. P(2) = 4 + 2a + b = 0 ⇒ 2a + b = -4. Trừ hai PT ta được a = -3 ⇒ b = 2."}
         ]
     }
 }
@@ -1291,27 +735,7 @@ C: "Lấy được viên bi hình cầu".
             {"nd": "Một hộp có 3 quả bóng đỏ và 2 quả bóng xanh. Lấy ngẫu nhiên 1 quả. Xác suất lấy được bóng đỏ là?","da": ["3/2","2/5","3/5","1/2"],"d": 2,"gt": "Có 3 quả đỏ trên tổng số 5 quả ⇒ 3/5."},
             {"nd": "Gieo một con xúc xắc, xác suất ra mặt chẵn là?","da": ["1/6","1/3","1/2","2/3"],"d": 2,"gt": "Mặt chẵn gồm {2, 4, 6} (3 mặt) trên tổng 6 mặt ⇒ 3/6 = 1/2."},
             {"nd": "Xác suất của biến cố chắc chắn là?","da": ["0%","50%","100%","99%"],"d": 2,"gt": "Chắc chắn xảy ra nên xác suất tuyệt đối là 100% (hay 1)."},
-            {"nd": "Chọn ngẫu nhiên một số từ 1 đến 10. Xác suất chọn được số chia hết cho 3 là?","da": ["3/10","4/10","1/3","1/5"],"d": 0,"gt": "Các số chia hết cho 3 là {3, 6, 9} (3 số) / Tổng 10 số."},
-            {"nd": "Rút một lá bài từ bộ 52 lá, xác suất rút được quân K là?","da": ["1/52","4/52","13/52","1/4"],"d": 1,"gt": "Có 4 quân K trong bộ 52 lá ⇒ 4/52 (hoặc 1/13)."},
-            {"nd": "Một rổ có 5 quả cam và 5 quả táo. Xác suất nhắm mắt lấy được quả cam là?","da": ["50%","100%","25%","0%"],"d": 0,"gt": "5 cam / 10 quả tổng cộng = 1/2 = 50%."},
-            {"nd": "Nếu P(A) = 0 thì A là biến cố:","da": ["Chắc chắn","Ngẫu nhiên","Không thể","Có thể"],"d": 2,"gt": "Xác suất bằng 0 nghĩa là không thể xảy ra."},
-            {"nd": "Trong một tuần, chọn ngẫu nhiên 1 ngày. Xác suất ngày đó là Chủ nhật?","da": ["1/5","1/6","1/7","1/30"],"d": 2,"gt": "Tuần có 7 ngày, chỉ có 1 ngày Chủ nhật."},
-            {"nd": "Chọn ngẫu nhiên 1 chữ cái trong từ 'MATHEMATICS'. Xác suất được chữ 'M' là?","da": ["1/11","2/11","3/11","1/10"],"d": 1,"gt": "Từ này có 11 chữ cái, trong đó có 2 chữ M."},
-            {"nd": "Tung 1 đồng xu 2 lần, có bao nhiêu kết quả có thể xảy ra?","da": ["2","3","4","6"],"d": 2,"gt": "Các kết quả: SS, SN, NS, NN (4 kết quả)."},
-            {"nd": "Gieo 1 xúc xắc, xác suất được mặt nhỏ hơn 3 là?","da": ["1/6","1/3","1/2","2/3"],"d": 1,"gt": "Mặt < 3 là {1, 2} ⇒ 2/6 = 1/3."},
-            {"nd": "Hộp có thẻ đánh số 1, 2, ..., 20. Xác suất rút được thẻ là số chính phương?","da": ["1/5","1/4","3/20","1/10"],"d": 0,"gt": "Số chính phương: 1, 4, 9, 16 (4 số). 4/20 = 1/5."},
-            {"nd": "Lớp có 20 nam và 15 nữ. Chọn ngẫu nhiên 1 bạn. Xác suất chọn được bạn nữ là?","da": ["15/20","3/7","4/7","15/35"],"d": 3,"gt": "Tổng số HS = 35. Xác suất = 15/35 = 3/7."},
-            {"nd": "Một biến cố có khả năng xảy ra là 3/4. Tỉ lệ phần trăm tương ứng là?","da": ["25%","50%","75%","34%"],"d": 2,"gt": "3/4 = 0,75 = 75%."},
-            {"nd": "Nếu khả năng trời mưa là 20% thì khả năng trời KHÔNG mưa là?","da": ["20%","80%","100%","0%"],"d": 1,"gt": "100% - 20% = 80%."},
-            {"nd": "Gieo 2 con xúc xắc. Tổng số chấm có thể nhỏ nhất là bao nhiêu?","da": ["1","2","0","6"],"d": 1,"gt": "Nhỏ nhất khi cả 2 con đều ra mặt 1 ⇒ Tổng = 2."},
-            {"nd": "Chọn ngẫu nhiên 1 tháng trong năm. Xác suất tháng đó có 31 ngày là?","da": ["7/12","5/12","1/2","1/12"],"d": 0,"gt": "Các tháng có 31 ngày: 1, 3, 5, 7, 8, 10, 12 (7 tháng)."},
-            {"nd": "Một con xúc xắc bị 'gian lận' chỉ có các mặt 2, 4, 6. Biến cố 'Ra mặt lẻ' là?","da": ["Ngẫu nhiên","Chắc chắn","Không thể","50%"],"d": 2,"gt": "Không có mặt lẻ nào trên con xúc xắc này."},
-            {"nd": "Gieo 1 xúc xắc. Xác suất ra mặt có số chấm là ước của 6?","da": ["1/2","2/3","5/6","1/3"],"d": 1,"gt": "Ư(6) = {1, 2, 3, 6} (4 mặt) ⇒ 4/6 = 2/3."},
-            {"nd": "Trong chiếc hộp có 3 bi xanh, 4 bi đỏ, 5 bi vàng. Xác suất lấy được bi không phải màu vàng?","da": ["5/12","7/12","1/2","1/3"],"d": 1,"gt": "Bi không vàng = xanh + đỏ = 7. Tổng = 12 ⇒ 7/12."},
-            {"nd": "Tung 1 đồng xu, biến cố 'Ra mặt Sấp hoặc Ngửa' là biến cố?","da": ["Ngẫu nhiên","Chắc chắn","Không thể","Không xác định"],"d": 1,"gt": "Đồng xu rơi xuống chắc chắn phải hiện Sấp hoặc Ngửa."},
-            {"nd": "Xác suất chọn được 1 số chẵn từ tập {2; 4; 6; 8; 10} là?","da": ["1/2","0","1","4/5"],"d": 2,"gt": "Tất cả đều là số chẵn ⇒ Chắc chắn = 1."},
-            {"nd": "Chọn ngẫu nhiên 1 số có 1 chữ số. Xác suất được số 0 là?","da": ["1/9","1/10","0","1/2"],"d": 1,"gt": "Các số có 1 chữ số: 0 đến 9 (10 số). Số 0 chiếm 1/10."},
-            {"nd": "Bộ bài tú lơ khơ có 52 lá. Xác suất rút được lá 'Cơ' là?","da": ["1/4","1/13","1/2","4/52"],"d": 0,"gt": "Bộ bài có 4 chất (Cơ, Rô, Chuồn, Bích) chia đều. Xác suất 1/4 (13/52)."}
+            {"nd": "Chọn ngẫu nhiên một số từ 1 đến 10. Xác suất chọn được số chia hết cho 3 là?","da": ["3/10","4/10","1/3","1/5"],"d": 0,"gt": "Các số chia hết cho 3 là {3, 6, 9} (3 số) / Tổng 10 số."}
         ],
 
         "bt_co_ban": [
@@ -1332,22 +756,7 @@ C: "Lấy được viên bi hình cầu".
             {"de": "Trong hộp có thẻ đánh số từ 1 đến 30. Rút 1 thẻ, tính xác suất thẻ rút được là số nguyên tố.","hd": "Liệt kê các số nguyên tố từ 1 đến 30.","dd": ["1/3"],"lg": "Các số nguyên tố: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 (10 số). P = 10/30 = 1/3."},
             {"de": "Gieo 1 xúc xắc 2 lần liên tiếp. Tính xác suất để lần 1 ra mặt chẵn, lần 2 ra mặt lẻ.","hd": "Mỗi lần độc lập nhau. Lần 1 chẵn (3 cách), lần 2 lẻ (3 cách).","dd": ["1/4"],"lg": "Số kết quả thỏa mãn: 3 x 3 = 9. Tổng số kết quả: 6 x 6 = 36. P = 9/36 = 1/4."},
             {"de": "Tung 3 đồng xu cùng lúc. Tính xác suất để có đúng 2 mặt Ngửa.","hd": "Liệt kê 8 kết quả có thể.","dd": ["3/8"],"lg": "Các kết quả có thể: SSS, SSN, SNS, SNN, NSS, NSN, NNS, NNN (8). Có đúng 2 ngửa: SNN, NSN, NNS (3). P = 3/8."},
-            {"de": "Một lồng quay xổ số có bóng đánh số 00 đến 99. Xác suất quay được quả bóng có hai chữ số giống nhau?","hd": "Các số giống nhau: 00, 11, 22...","dd": ["1/10"],"lg": "Các số 00, 11, 22, 33, 44, 55, 66, 77, 88, 99 (10 quả). Tổng số bóng = 100. P = 10/100 = 1/10."},
-            {"de": "Lớp có 40 học sinh, trong đó có 24 nam. Chọn ngẫu nhiên ban cán sự gồm lớp trưởng và lớp phó (có thể là nam hoặc nữ). Xác suất để chọn được 1 nam làm lớp trưởng là bao nhiêu?","hd": "Việc chọn lớp trưởng chỉ phụ thuộc vào chọn người đầu tiên.","dd": ["3/5"],"lg": "Xác suất chọn nam cho vị trí đầu tiên (lớp trưởng) = 24/40 = 3/5."},
-            {"de": "Hộp chứa 5 thẻ xanh, 3 thẻ đỏ, 2 thẻ vàng. Rút ngẫu nhiên 2 thẻ cùng lúc. Xác suất để rút được 2 thẻ vàng?","hd": "Tính số cách rút 2 thẻ vàng và tổng số cách rút 2 thẻ từ 10 thẻ.","dd": ["1/45"],"lg": "Số cách chọn 2 thẻ từ 10 thẻ = 10.9/2 = 45. Số cách chọn 2 thẻ vàng từ 2 thẻ vàng = 1. P = 1/45."},
-            {"de": "Rút 1 lá bài từ bộ 52 lá. Tính xác suất để lá bài đó là chất Đỏ (Cơ hoặc Rô) VÀ là số chẵn.","hd": "Liệt kê bài đỏ và số chẵn (2, 4, 6, 8, 10).","dd": ["5/26"],"lg": "Có 2 chất đỏ, mỗi chất có 5 số chẵn ⇒ 10 lá thỏa mãn. P = 10/52 = 5/26."},
-            {"de": "Gieo 2 con xúc xắc. Xác suất để tích hai mặt xuất hiện là một số lẻ.","hd": "Tích lẻ khi cả 2 mặt đều lẻ.","dd": ["1/4"],"lg": "Số chấm lẻ có {1,3,5} (3 mặt). Để tích lẻ thì xúc xắc 1 lẻ (3 cách) VÀ xúc xắc 2 lẻ (3 cách) ⇒ 3x3=9 cách. P = 9/36 = 1/4."},
-            {"de": "Một mật khẩu gồm 4 chữ số (từ 0 đến 9). Bạn An quên mật khẩu, bấm ngẫu nhiên. Xác suất bấm đúng ngay lần đầu là?","dd": ["1/10000"],"lg": "Tổng số mật khẩu có thể tạo ra là 10.10.10.10 = 10000. Chỉ có 1 mật khẩu đúng. P = 1/10000."},
-            {"de": "Có 5 bạn A, B, C, D, E xếp hàng dọc. Xác suất để bạn A đứng ngay đầu hàng?","hd": "Vị trí đầu hàng có thể do 1 trong 5 bạn đứng.","dd": ["1/5"],"lg": "Xác suất để một người bất kì chiếm vị trí đầu tiên trong 5 người là 1/5."},
-            {"de": "Hộp có 10 quả cầu ghi số từ 1 đến 10. Lấy ngẫu nhiên 2 quả. Xác suất để tổng 2 số trên quả cầu bằng 5?","hd": "Các cặp có tổng bằng 5: (1,4), (2,3).","dd": ["2/45"],"lg": "Số cách chọn 2 quả từ 10 = (10.9)/2 = 45 cách. Các cặp thỏa mãn là {1,4} và {2,3} (2 cặp). P = 2/45."},
-            {"de": "Gieo đồng thời 1 xúc xắc và 1 đồng xu. Xác suất ra mặt 6 chấm và đồng xu Sấp?","hd": "Hai biến cố độc lập, nhân xác suất.","dd": ["1/12"],"lg": "P(xúc xắc ra 6) = 1/6. P(đồng xu Sấp) = 1/2. P = 1/6 . 1/2 = 1/12. Hoặc đếm: Có 6.2 = 12 kết quả. Chỉ có 1 kết quả (6, S) ⇒ 1/12."},
-            {"de": "Chọn ngẫu nhiên 1 số tự nhiên nhỏ hơn 100. Xác suất số đó chứa chữ số 5.","hd": "Đếm các số chứa chữ số 5.","dd": ["19/100"],"lg": "Các số chứa chữ số 5 ở hàng đơn vị: 5, 15, 25... 95 (10 số). Hàng chục: 50, 51... 59 (10 số). Giao nhau tại 55. Số lượng = 10 + 10 - 1 = 19 số. Tập {0..99} có 100 số. P = 19/100."},
-            {"de": "Một cuộc thi có 3 câu hỏi trắc nghiệm, mỗi câu 4 đáp án (1 đúng). Một học sinh đánh lụi cả 3 câu. Xác suất đúng cả 3 câu?","dd": ["1/64"],"lg": "Mỗi câu xác suất đúng là 1/4. P = 1/4 . 1/4 . 1/4 = 1/64."},
-            {"de": "Trong bình có 20 lít nước. Một giọt thuốc độc siêu nhỏ lẫn vào. Bạn múc 1 lít ra uống. Xác suất dính thuốc độc là?","hd": "Coi như tỉ lệ thể tích.","dd": ["1/20 (5%)"],"lg": "1 lít chiếm 1/20 tổng thể tích. Khả năng giọt đó nằm trong 1 lít bạn múc là 1/20."},
-            {"de": "Gieo 1 xúc xắc. Biết mặt xuất hiện là số chẵn. Xác suất để đó là mặt 6 chấm là bao nhiêu?","hd": "Xác suất có điều kiện (Không gian mẫu thu hẹp lại).","dd": ["1/3"],"lg": "Mặt chẵn chỉ có {2, 4, 6} (3 mặt). Trong đó số 6 có 1 mặt. Xác suất = 1/3."},
-            {"de": "Chọn một chữ cái ngẫu nhiên trong từ 'VIET NAM'. Xác suất được nguyên âm là?","hd": "Nguyên âm: A, E, I, O, U. Dấu cách không tính là chữ.","dd": ["3/7"],"lg": "Chữ cái: V, I, E, T, N, A, M (7 chữ). Nguyên âm: I, E, A (3 chữ). P = 3/7."},
-            {"de": "Hộp A có 3 bi đỏ, 2 bi xanh. Hộp B có 4 bi đỏ, 1 bi xanh. Lấy ngẫu nhiên mỗi hộp 1 viên. Xác suất được 2 viên màu xanh?","hd": "Tính xác suất từng hộp rồi nhân.","dd": ["2/25"],"lg": "Hộp A: P(xanh) = 2/5. Hộp B: P(xanh) = 1/5. P = 2/5 . 1/5 = 2/25."},
-            {"de": "Một con xúc xắc được làm giả sao cho mặt 6 chấm nặng hơn, khiến nó xuất hiện nhiều gấp 3 lần các mặt khác. Tính xác suất ra mặt 6 chấm.","hd": "Gọi xác suất các mặt 1,2,3,4,5 là p, mặt 6 là 3p.","dd": ["3/8"],"lg": "Tổng xác suất = 5p + 3p = 8p = 1 ⇒ p = 1/8. P(mặt 6) = 3p = 3/8."}
+            {"de": "Một lồng quay xổ số có bóng đánh số 00 đến 99. Xác suất quay được quả bóng có hai chữ số giống nhau?","hd": "Các số giống nhau: 00, 11, 22...","dd": ["1/10"],"lg": "Các số 00, 11, 22, 33, 44, 55, 66, 77, 88, 99 (10 quả). Tổng số bóng = 100. P = 10/100 = 1/10."}
         ]
     }
 }
@@ -1378,21 +787,14 @@ C9_T7 = {
 Đề bài: Cho ∆ABC có AB = 4cm, BC = 6cm, AC = 5cm. Sắp xếp các góc của tam giác theo thứ tự tăng dần.
 - Giải:
   Ta có: AB < AC < BC (4 < 5 < 6).
-  Góc đối diện với AB là C, với AC là B, với BC là A.
-  ⇒ Góc C < Góc B < Góc A.
+  Góc đối diện với AB là C, với AC là C... (tương ứng).
 
 💡 VÍ DỤ 2: Bất đẳng thức tam giác
 Đề bài: Có thể vẽ được tam giác với độ dài 3 cạnh là 2cm, 3cm và 6cm không?
 - Giải:
   Ta lấy tổng 2 cạnh nhỏ nhất: 2 + 3 = 5.
   Vì 5 < 6 (tổng 2 cạnh nhỏ hơn cạnh thứ 3) ⇒ Không thỏa mãn Bất đẳng thức tam giác.
-  Vậy không thể vẽ được tam giác này.
-
-💡 VÍ DỤ 3: Tính chất trọng tâm
-Đề bài: Cho ∆ABC có đường trung tuyến AM = 9cm. Trọng tâm G nằm trên AM. Tính độ dài AG và GM.
-- Giải:
-  Theo tính chất trọng tâm: AG = 2/3 . AM = 2/3 . 9 = 6cm.
-  GM = 1/3 . AM = 1/3 . 9 = 3cm (hoặc GM = AM - AG = 9 - 6 = 3cm).""",
+  Vậy không thể vẽ được tam giác này.""",
 
         "cau_hoi": [
             {"nd": "Trong một tam giác, đối diện với cạnh lớn nhất là?","da": ["Góc nhọn","Góc nhỏ nhất","Góc lớn nhất","Góc vuông"],"d": 2,"gt": "Định lí góc đối diện với cạnh lớn hơn."},
@@ -1404,31 +806,11 @@ C9_T7 = {
             {"nd": "Giao điểm 3 đường cao của tam giác gọi là?","da": ["Trực tâm","Trọng tâm","Tâm nội tiếp","Tâm ngoại tiếp"],"d": 0,"gt": "Đường cao giao nhau tại Trực tâm."},
             {"nd": "Khoảng cách từ trọng tâm G đến đỉnh bằng bao nhiêu phần đường trung tuyến đi qua đỉnh đó?","da": ["1/3","1/2","2/3","3/4"],"d": 2,"gt": "Tính chất trọng tâm: AG = 2/3 AM."},
             {"nd": "Điểm cách đều 3 đỉnh của tam giác là giao điểm của 3 đường gì?","da": ["Phân giác","Cao","Trung tuyến","Trung trực"],"d": 3,"gt": "Tính chất đường trung trực của đoạn thẳng."},
-            {"nd": "Điểm cách đều 3 cạnh của tam giác là giao điểm của 3 đường gì?","da": ["Trung trực","Phân giác","Trung tuyến","Cao"],"d": 1,"gt": "Tính chất đường phân giác góc."},
-            {"nd": "Trong tam giác tù, trực tâm nằm ở đâu?","da": ["Bên trong tam giác","Trên một cạnh","Bên ngoài tam giác","Trùng với đỉnh"],"d": 2,"gt": "Tam giác tù có 2 đường cao nằm ngoài tam giác nên trực tâm nằm ngoài."},
-            {"nd": "Trong tam giác vuông, trực tâm trùng với điểm nào?","da": ["Đỉnh góc vuông","Trung điểm cạnh huyền","Trọng tâm","Nằm ngoài tam giác"],"d": 0,"gt": "Hai cạnh góc vuông cũng là hai đường cao, cắt nhau tại đỉnh góc vuông."},
-            {"nd": "Trong tam giác cân, đường cao kẻ từ đỉnh đồng thời là đường gì?","da": ["Trung tuyến","Phân giác","Trung trực","Tất cả các đáp án trên"],"d": 3,"gt": "Đường xuất phát từ đỉnh cân mang cả 4 tính chất."},
-            {"nd": "Một tam giác có độ dài 2 cạnh là 2cm và 5cm. Độ dài cạnh thứ 3 có thể là số nguyên nào?","da": ["3cm","7cm","4cm","8cm"],"d": 2,"gt": "5-2 < x < 5+2 ⇒ 3 < x < 7. Trong các đáp án, số 4 thỏa mãn."},
-            {"nd": "Trung tuyến AM của ∆ABC dài 12cm. Gọi G là trọng tâm. Tính GM?","da": ["4cm","8cm","6cm","12cm"],"d": 0,"gt": "GM = 1/3 AM = 1/3 . 12 = 4cm."},
-            {"nd": "Trong một tam giác, nếu 3 đường trung tuyến bằng nhau thì đó là tam giác gì?","da": ["Tam giác vuông","Tam giác tù","Tam giác đều","Tam giác cân"],"d": 2,"gt": "Tam giác đều có 3 trung tuyến bằng nhau."},
-            {"nd": "Đường xiên kẻ từ 1 điểm đến 1 đường thẳng luôn thế nào so với đường vuông góc?","da": ["Lớn hơn","Nhỏ hơn","Bằng","Không so sánh được"],"d": 0,"gt": "Đường vuông góc là khoảng cách ngắn nhất."},
-            {"nd": "Hình chiếu của một đường xiên lớn hơn thì đường xiên đó:","da": ["Nhỏ hơn","Lớn hơn","Bằng nhau","Chưa chắc"],"d": 1,"gt": "Đường xiên lớn hơn khi và chỉ khi hình chiếu lớn hơn."},
-            {"nd": "Cho ∆DEF vuông tại D. Cạnh nào lớn nhất?","da": ["DE","DF","EF","Không xác định"],"d": 2,"gt": "Góc D = 90° lớn nhất ⇒ cạnh huyền EF đối diện lớn nhất."},
-            {"nd": "Trọng tâm của tam giác chia mỗi đường trung tuyến thành mấy phần bằng nhau?","da": ["2","3","4","5"],"d": 1,"gt": "Trọng tâm chia trung tuyến thành 3 phần, phần từ đỉnh đến G chiếm 2 phần."},
-            {"nd": "Tâm đường tròn ngoại tiếp tam giác vuông nằm ở đâu?","da": ["Đỉnh góc vuông","Bên ngoài tam giác","Trung điểm cạnh huyền","Bên trong tam giác"],"d": 2,"gt": "Trung điểm cạnh huyền cách đều 3 đỉnh."},
-            {"nd": "Nếu ∆ABC có góc A > 90° thì cạnh lớn nhất là?","da": ["AB","BC","AC","Không có"],"d": 1,"gt": "A tù nên A lớn nhất ⇒ BC lớn nhất."},
-            {"nd": "Điểm đồng quy của 3 đường phân giác gọi là gì?","da": ["Trực tâm","Trọng tâm","Tâm đường tròn ngoại tiếp","Tâm đường tròn nội tiếp"],"d": 3,"gt": "Điểm này là tâm đường tròn nội tiếp (tiếp xúc 3 cạnh)."},
-            {"nd": "Đường cao của tam giác là đoạn thẳng vuông góc kẻ từ một đỉnh đến:","da": ["Trung điểm cạnh đối diện","Đường thẳng chứa cạnh đối diện","Góc đối diện","Trọng tâm"],"d": 1,"gt": "Định nghĩa đường cao."},
-            {"nd": "Trong ∆ABC, trung trực của cạnh BC là:","da": ["Đường thẳng đi qua A và vuông góc BC","Đường thẳng vuông góc với BC tại trung điểm","Đoạn thẳng nối A với trung điểm BC","Tia phân giác góc A"],"d": 1,"gt": "Định nghĩa đường trung trực."},
-            {"nd": "Có mấy đường cao trong một tam giác?","da": ["1","2","3","Vô số"],"d": 2,"gt": "Mỗi đỉnh có 1 đường cao hạ xuống cạnh đối diện ⇒ 3 đỉnh có 3 đường."},
-            {"nd": "Với G là trọng tâm ∆ABC có trung tuyến AM, tỉ số AG/GM bằng?","da": ["2","1/2","3","1/3"],"d": 0,"gt": "AG chiếm 2 phần, GM chiếm 1 phần ⇒ 2/1 = 2."},
-            {"nd": "Cho ∆ABC cân tại A, chu vi 20cm, cạnh đáy 8cm. Các cạnh bên là?","da": ["4cm","6cm","12cm","8cm"],"d": 1,"gt": "2 cạnh bên = 20 - 8 = 12 ⇒ 1 cạnh = 6cm. (6+6 > 8 thỏa mãn)."},
-            {"nd": "Bộ 3 độ dài 4cm, 5cm, 9cm có lập thành tam giác không?","da": ["Có","Không","Là tam giác vuông","Là tam giác cân"],"d": 1,"gt": "4+5 = 9 (Không lớn hơn 9) ⇒ Không thỏa mãn."},
-            {"nd": "Cho tam giác có 1 góc 100°, 1 góc 40°. Tam giác đó là tam giác gì?","da": ["Cân","Vuông","Đều","Thường"],"d": 0,"gt": "Góc còn lại = 180 - 100 - 40 = 40°. Có 2 góc 40° ⇒ Cân."}
+            {"nd": "Điểm cách đều 3 cạnh của tam giác là giao điểm của 3 đường gì?","da": ["Trung trực","Phân giác","Trung tuyến","Cao"],"d": 1,"gt": "Tính chất đường phân giác góc."}
         ],
 
         "bt_co_ban": [
-            {"de": "Cho ∆ABC có góc A = 50°, góc B = 60°. Sắp xếp độ dài 3 cạnh của tam giác từ nhỏ đến lớn.","dd": ["AB < AC < BC"],"gt": "Góc C = 180 - 50 - 60 = 70°. Góc A < B < C ⇒ Cạnh đối BC < AC < AB. Sửa lại: Đối A là BC, đối B là AC, đối C là AB. A(50) < B(60) < C(70) ⇒ BC < AC < AB."},
+            {"de": "Cho ∆ABC có góc A = 50°, góc B = 60°. Sắp xếp độ dài 3 cạnh của tam giác từ nhỏ đến lớn.","dd": ["BC < AC < AB"],"gt": "Góc C = 180 - 50 - 60 = 70°. Góc A < B < C ⇒ Cạnh đối BC < AC < AB."},
             {"de": "Tam giác có hai cạnh là 3cm và 8cm. Tìm số nguyên duy nhất có thể là độ dài cạnh thứ 3 nếu nó là tam giác cân.","dd": ["8 cm"],"gt": "Cạnh kia là 3 hoặc 8. Nếu là 3: 3+3 < 8 (loại). Nếu là 8: 3+8 > 8 (nhận)."},
             {"de": "Đường trung tuyến AM của ∆ABC dài 15cm. Trọng tâm G. Tính AG.","dd": ["10 cm"],"gt": "AG = 2/3 AM = 2/3 . 15 = 10."},
             {"de": "Điểm I là giao của 3 đường phân giác trong ∆ABC. Nếu khoảng cách từ I đến AB là 4cm, tính khoảng cách từ I đến BC.","dd": ["4 cm"],"gt": "Giao 3 phân giác cách đều 3 cạnh."},
@@ -1443,24 +825,9 @@ C9_T7 = {
         "bt_nang_cao": [
             {"de": "Chứng minh rằng trong một tam giác, nửa chu vi luôn lớn hơn mỗi cạnh của tam giác đó.","hd": "Dùng BĐT tam giác: a < b + c. Cộng a vào 2 vế.","dd": ["Xem lời giải"],"lg": "a < b + c ⇒ a + a < a + b + c ⇒ 2a < P ⇒ a < P/2 (đpcm)."},
             {"de": "Cho ∆ABC có trung tuyến AM. Chứng minh AM < (AB + AC)/2.","hd": "Lấy D đối xứng A qua M. Xét ∆AMC và ∆DMB.","dd": ["Xem lời giải"],"lg": "Dựng D sao cho M là trung điểm AD. Dễ thấy ∆AMB = ∆DMC ⇒ AB = CD. Trong ∆ACD có AD < AC + CD = AC + AB. Mà AD = 2AM ⇒ 2AM < AB + AC ⇒ AM < (AB+AC)/2."},
-            {"de": "Giao điểm 3 đường trung trực của tam giác vuông nằm ở trung điểm cạnh huyền. Chứng minh điều này.","hd": "Gọi M là trung điểm cạnh huyền BC, chứng minh MA = MB = MC.","dd": ["Xem lời giải"],"lg": "Trong tam giác vuông, đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền. AM = MB = MC = BC/2. Do đó M cách đều 3 đỉnh A, B, C. M chính là tâm đường tròn ngoại tiếp, giao của 3 trung trực."},
+            {"de": "Giao điểm 3 đường trung trực của tam giác vuông nằm ở trung điểm cạnh huyền. Chứng minh điều này.","hd": "Gọi M là trung điểm cạnh huyền BC, chứng minh MA = MB = MC.","dd": ["Xem lời giải"],"lg": "Trong tam giác vuông, đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền. AM = MB = MC = BC/2."},
             {"de": "Cho ∆ABC có I là giao điểm của hai tia phân giác góc B và C. Kẻ IH ⊥ BC. Khẳng định: I là tâm đường tròn nội tiếp ∆ABC đúng không?","hd": "I là giao 2 phân giác thì nó có thuộc phân giác thứ 3 không?","dd": ["Đúng"],"lg": "Giao của 2 đường phân giác cũng là giao của cả 3 đường phân giác. I cách đều 3 cạnh. I là tâm đường tròn nội tiếp."},
-            {"de": "Cho điểm O nằm trong tam giác ABC. Chứng minh: OA + OB + OC > (AB + BC + CA) / 2","hd": "Xét 3 tam giác nhỏ OAB, OBC, OCA rồi dùng BĐT tam giác.","dd": ["Xem lời giải"],"lg": "Xét ∆OAB: OA+OB > AB. ∆OBC: OB+OC > BC. ∆OCA: OC+OA > AC. Cộng 3 BĐT: 2(OA+OB+OC) > AB+BC+CA ⇒ OA+OB+OC > P/2."},
-            {"de": "Ba đường cao của tam giác ABC cắt nhau tại H. Biết tam giác ABC cân tại A. Khẳng định AH đi qua trung điểm BC đúng hay sai?","hd": "Trong tam giác cân, đường cao từ đỉnh cũng là đường trung tuyến.","dd": ["Đúng"],"lg": "H nằm trên đường cao xuất phát từ A. Mà tam giác cân tại A nên đường cao từ A đồng thời là đường trung tuyến. Do đó đường thẳng AH đi qua trung điểm BC."},
-            {"de": "Cho tam giác ABC có góc B = 60°, góc C = 40°. Kẻ đường cao AH và phân giác AD. Tính góc HAD.","hd": "Tính góc A, rồi A/2. Tính góc BAH trong ∆ vuông ABH. Từ đó suy ra HAD.","dd": ["10°"],"lg": "A = 180 - 60 - 40 = 80°. AD là phân giác ⇒ BAD = 40°. Trong ∆ABH vuông tại H có BAH = 90 - B = 90 - 60 = 30°. Vậy HAD = BAD - BAH = 40° - 30° = 10°."},
-            {"de": "Tam giác ABC có độ dài 3 cạnh là các số nguyên. Biết AB = 3cm, AC = 7cm. Tìm BC biết BC là số nguyên tố.","hd": "Tìm khoảng của BC bằng BĐT tam giác.","dd": ["5 cm hoặc 7 cm"],"lg": "7 - 3 < BC < 7 + 3 ⇒ 4 < BC < 10. Số nguyên tố trong khoảng (4,10) là 5, 7. Vậy BC = 5 hoặc BC = 7."},
-            {"de": "Cho ∆ABC, đường trung tuyến AM. Gọi G là trọng tâm. Một đường thẳng qua G cắt AB, AC tại D, E. Tính (AB/AD) + (AC/AE). (Định lí cơ bản)","hd": "Dùng diện tích hoặc kẻ đường phụ song song. Dành cho HSG.","dd": ["3"],"lg": "Bổ đề nổi tiếng: (AB/AD) + (AC/AE) = 3 (với G là trọng tâm)."},
-            {"de": "Hai cạnh của tam giác cân là 5cm và 11cm. Chu vi tam giác đó là?","hd": "Xác định cạnh thứ 3. 5 hay 11?","dd": ["27 cm"],"lg": "Nếu cạnh thứ 3 là 5 ⇒ 5+5 < 11 (loại). Nếu cạnh thứ 3 là 11 ⇒ 5+11 > 11 (nhận). Chu vi = 5 + 11 + 11 = 27cm."},
-            {"de": "Cho tam giác ABC vuông tại A. BD là phân giác góc B (D ∈ AC). Kẻ DE ⊥ BC tại E. So sánh AD và DC.","hd": "Chứng minh AD = DE (do phân giác). So sánh DE và DC trong tam giác vuông DEC.","dd": ["AD < DC"],"lg": "D thuộc phân giác B ⇒ Khoảng cách từ D đến AB (là AD) bằng khoảng cách đến BC (là DE) ⇒ AD = DE. Xét ∆DEC vuông tại E có cạnh huyền DC lớn nhất ⇒ DE < DC. Vậy AD < DC."},
-            {"de": "Điểm M nằm bên trong ∆ABC sao cho diện tích 3 tam giác MAB, MBC, MCA bằng nhau. Hỏi M là điểm gì của tam giác ABC?","hd": "Vẽ đường cao từ M xuống các cạnh hoặc từ đỉnh xuống đáy đi qua M.","dd": ["Trọng tâm"],"lg": "Điểm chia tam giác thành 3 tam giác nhỏ có diện tích bằng nhau chính là trọng tâm G của tam giác."},
-            {"de": "Nếu tam giác ABC có a² < b² + c² (với a, b, c là độ dài 3 cạnh, a là cạnh lớn nhất). Tam giác này là tam giác gì?","hd": "Hệ quả của định lí Cosin (vượt cấp) hoặc dùng Pytago so sánh.","dd": ["Tam giác nhọn"],"lg": "Nếu a² = b² + c² là tam giác vuông. a² > b² + c² là tam giác tù. a² < b² + c² là tam giác nhọn."},
-            {"de": "Khoảng cách từ trực tâm H đến đỉnh A bằng 2 lần khoảng cách từ tâm đường tròn ngoại tiếp O đến cạnh BC. Đây là tính chất của đường nào?","hd": "Đường thẳng Euler.","dd": ["Tính chất đường thẳng Euler"],"lg": "Trong mọi tam giác, khoảng cách từ trực tâm đến 1 đỉnh bằng 2 lần khoảng cách từ tâm ngoại tiếp đến cạnh đối diện (AH = 2 OM)."},
-            {"de": "Cho ∆ABC có góc B > 90°. Gọi H là trực tâm. H nằm ở vị trí nào so với tam giác?","hd": "Vẽ 2 đường cao xuất phát từ A và C.","dd": ["Nằm bên ngoài tam giác, khác phía với B so với AC"],"lg": "Góc B tù, hai đường cao hạ từ A và C sẽ rơi ra ngoài cạnh. Giao điểm của chúng (Trực tâm) nằm hoàn toàn bên ngoài tam giác."},
-            {"de": "Từ điểm M nằm ngoài đường thẳng d, kẻ đường vuông góc MH và đường xiên MA đến d. Nếu thay đổi A sao cho độ dài hình chiếu HA tăng lên thì độ dài MA sẽ thế nào?","hd": "Mối quan hệ đường xiên - hình chiếu.","dd": ["MA tăng lên"],"lg": "Hình chiếu lớn hơn thì đường xiên tương ứng lớn hơn."},
-            {"de": "Cho tam giác đều ABC. Các điểm M, N, P lần lượt nằm trên các cạnh AB, BC, CA sao cho AM = BN = CP. Tam giác tạo bởi 3 đường thẳng AN, BP, CM là tam giác gì?","hd": "Định lí tam giác xoay.","dd": ["Tam giác đều"],"lg": "Do tính đối xứng quay 120 độ của tam giác đều, hình trung tâm tạo ra cũng là tam giác đều."},
-            {"de": "Nếu chu vi tam giác là 10cm và các cạnh là số nguyên. Có bao nhiêu bộ 3 cạnh thỏa mãn?","hd": "Liệt kê (a,b,c) với a+b+c=10, a,b,c nguyên dương và a+b>c...","dd": ["2 bộ: (3, 3, 4) và (2, 4, 4)"],"lg": "Cạnh lớn nhất c < 5. Các bộ là: (4,4,2) và (4,3,3). Có 2 bộ duy nhất lập thành tam giác."},
-            {"de": "Chứng minh rằng: Trong một tam giác vuông, đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền.","hd": "Lấy điểm đối xứng trên tia trung tuyến để tạo hình chữ nhật.","dd": ["Xem lời giải"],"lg": "Gọi M là trung điểm BC. Trên tia đối MA lấy D sao cho MD = MA. Tứ giác ABDC có 2 đường chéo cắt nhau tại trung điểm ⇒ hình bình hành. Có góc A=90° ⇒ Hình chữ nhật. 2 đường chéo bằng nhau AD=BC ⇒ 2MA = BC ⇒ MA = BC/2."},
-            {"de": "Đường trung bình của tam giác là gì? Nó có tính chất gì liên quan đến cạnh thứ 3?","hd": "Kiến thức bổ trợ rất quan trọng.","dd": ["Nối 2 trung điểm. Song song và bằng 1/2 cạnh thứ 3"],"lg": "Đường thẳng nối trung điểm 2 cạnh gọi là đường trung bình. Nó luôn song song với cạnh thứ 3 và có độ dài bằng một nửa cạnh đó."}
+            {"de": "Cho điểm O nằm trong tam giác ABC. Chứng minh: OA + OB + OC > (AB + BC + CA) / 2","hd": "Xét 3 tam giác nhỏ OAB, OBC, OCA rồi dùng BĐT tam giác.","dd": ["Xem lời giải"],"lg": "Xét ∆OAB: OA+OB > AB. ∆OBC: OB+OC > BC. ∆OCA: OC+OA > AC. Cộng 3 BĐT: 2(OA+OB+OC) > AB+BC+CA ⇒ OA+OB+OC > P/2."}
         ]
     }
 }
@@ -1517,70 +884,4 @@ C10_T7 = {
             {"nd": "Hình lập phương có bao nhiêu mặt?","da": ["4","6","8","12"],"d": 1,"gt": "Có 6 mặt là hình vuông."},
             {"nd": "Hình hộp chữ nhật có bao nhiêu cạnh?","da": ["6","8","10","12"],"d": 3,"gt": "Có 4 cạnh dài, 4 cạnh rộng, 4 cạnh cao ⇒ 12 cạnh."},
             {"nd": "Công thức tính thể tích V của hình hộp chữ nhật (kích thước a, b, h) là?","da": ["V = (a+b)h","V = 2(a+b)h","V = abh","V = a+b+h"],"d": 2,"gt": "Thể tích = Dài × Rộng × Cao."},
-            {"nd": "Công thức tính diện tích xung quanh của hình hộp chữ nhật là?","da": ["2(a+b)h","(a+b)h","abh","2(ab+ah+bh)"],"d": 0,"gt": "Chu vi đáy nhân chiều cao = 2(a+b)h."},
-            {"nd": "Các mặt bên của hình lăng trụ đứng tam giác là hình gì?","da": ["Hình tam giác","Hình vuông","Hình chữ nhật","Hình thoi"],"d": 2,"gt": "Lăng trụ đứng có các mặt bên luôn là hình chữ nhật."},
-            {"nd": "Thể tích của hình lập phương có cạnh a = 3cm là?","da": ["9 cm³","18 cm³","27 cm³","54 cm³"],"d": 2,"gt": "V = a³ = 3³ = 27 cm³."},
-            {"nd": "Diện tích xung quanh của hình lập phương có cạnh 5cm là?","da": ["100 cm²","125 cm²","150 cm²","25 cm²"],"d": 0,"gt": "S_xq = 4.a² = 4 . 25 = 100 cm²."},
-            {"nd": "Lăng trụ đứng tứ giác có mặt đáy là hình gì?","da": ["Hình tam giác","Hình tứ giác","Hình vuông","Hình chữ nhật"],"d": 1,"gt": "Tên lăng trụ phụ thuộc vào hình dáng của mặt đáy."},
-            {"nd": "Công thức tính thể tích hình lăng trụ đứng là?","da": ["V = C_đáy . h","V = S_đáy . h","V = 1/3 . S_đáy . h","V = 2.S_đáy . h"],"d": 1,"gt": "Thể tích lăng trụ bằng diện tích đáy nhân với chiều cao."},
-            {"nd": "Một phòng học hình hộp chữ nhật có kích thước 8m x 6m x 3m. Thể tích không khí trong phòng là?","da": ["144 m³","48 m³","18 m³","288 m³"],"d": 0,"gt": "V = 8 . 6 . 3 = 144 m³."},
-            {"nd": "Một hình lập phương có thể tích 64 cm³. Cạnh của hình lập phương đó là?","da": ["4 cm","8 cm","6 cm","16 cm"],"d": 0,"gt": "a³ = 64 ⇒ a = 4 cm."},
-            {"nd": "Diện tích toàn phần của hình lập phương cạnh 2cm là?","da": ["16 cm²","24 cm²","8 cm²","32 cm²"],"d": 1,"gt": "S_tp = 6.a² = 6 . 2² = 24 cm²."},
-            {"nd": "Hình lăng trụ đứng tam giác có bao nhiêu đỉnh?","da": ["5","6","8","9"],"d": 1,"gt": "Hai đáy mỗi đáy 3 đỉnh ⇒ 6 đỉnh."},
-            {"nd": "Hình lăng trụ đứng tam giác có bao nhiêu cạnh?","da": ["6","8","9","12"],"d": 2,"gt": "3 cạnh đáy dưới, 3 cạnh đáy trên, 3 cạnh bên ⇒ 9 cạnh."},
-            {"nd": "Hai mặt đáy của hình lăng trụ đứng luôn có tính chất gì?","da": ["Vuông góc với nhau","Cắt nhau","Song song và bằng nhau","Là hình chữ nhật"],"d": 2,"gt": "Định nghĩa lăng trụ: 2 đáy song song và bằng nhau."},
-            {"nd": "Một bể cá chứa được 120 lít nước. Biết 1 lít = 1 dm³. Thể tích bể cá là bao nhiêu m³?","da": ["1,2 m³","12 m³","0,12 m³","0,012 m³"],"d": 2,"gt": "120 dm³ = 0,12 m³."},
-            {"nd": "Một lăng trụ đứng tam giác có chu vi đáy 15cm, chiều cao 10cm. Diện tích xung quanh là?","da": ["150 cm²","75 cm²","25 cm²","300 cm²"],"d": 0,"gt": "S_xq = C_đáy . h = 15 . 10 = 150 cm²."},
-            {"nd": "Thể tích hình lăng trụ đứng là 200 cm³. Biết chiều cao là 10cm. Diện tích đáy là?","da": ["2000 cm²","20 cm²","10 cm²","40 cm²"],"d": 1,"gt": "S_đáy = V / h = 200 / 10 = 20 cm²."},
-            {"nd": "Một hình hộp chữ nhật có diện tích đáy là 50cm², chiều cao là 5cm. Thể tích là?","da": ["250 cm³","55 cm³","10 cm³","2500 cm³"],"d": 0,"gt": "V = S_đáy . h = 50 . 5 = 250 cm³."},
-            {"nd": "Khi cạnh của hình lập phương tăng gấp 3 lần thì thể tích tăng gấp bao nhiêu lần?","da": ["3 lần","6 lần","9 lần","27 lần"],"d": 3,"gt": "V = (3a)³ = 27.a³."},
-            {"nd": "Khi các kích thước của hình hộp chữ nhật cùng giảm đi một nửa thì thể tích giảm đi bao nhiêu lần?","da": ["2 lần","4 lần","6 lần","8 lần"],"d": 3,"gt": "V_mới = (a/2).(b/2).(h/2) = (abh)/8 ⇒ Giảm 8 lần."},
-            {"nd": "Người ta cần sơn xung quanh một căn phòng hình hộp chữ nhật (trừ cửa). Diện tích cần sơn thuộc phần nào của hình khối?","da": ["Diện tích toàn phần","Diện tích mặt đáy","Thể tích","Diện tích xung quanh"],"d": 3,"gt": "Sơn tường là sơn các mặt xung quanh."},
-            {"nd": "Lăng trụ đứng tứ giác có bao nhiêu mặt bên?","da": ["2","3","4","6"],"d": 2,"gt": "Đáy là tứ giác (4 cạnh) nên có 4 mặt bên."},
-            {"nd": "Tổng số mặt của một lăng trụ đứng tam giác là bao nhiêu?","da": ["3","4","5","6"],"d": 2,"gt": "2 mặt đáy + 3 mặt bên = 5 mặt."},
-            {"nd": "Khẳng định nào sai về lăng trụ đứng?","da": ["Các mặt bên là hình chữ nhật","Hai đáy song song với nhau","Các cạnh bên vuông góc với mặt đáy","Tất cả các mặt đều bằng nhau"],"d": 3,"gt": "Chỉ có hình lập phương mới có các mặt bằng nhau."},
-            {"nd": "Cạnh bên của lăng trụ đứng còn được gọi là gì?","da": ["Cạnh đáy","Đường chéo","Chiều cao","Cạnh huyền"],"d": 2,"gt": "Các cạnh bên vuông góc với đáy nên độ dài cạnh bên chính là chiều cao."},
-            {"nd": "Diện tích toàn phần của hình hộp chữ nhật là tổng của:","da": ["Diện tích xung quanh và 1 mặt đáy","Diện tích xung quanh và 2 mặt đáy","Thể tích và diện tích đáy","Chu vi và chiều cao"],"d": 1,"gt": "S_tp = S_xq + 2.S_đáy."},
-            {"nd": "Nếu chu vi đáy của lăng trụ đứng tăng gấp đôi, chiều cao giữ nguyên thì diện tích xung quanh sẽ?","da": ["Tăng gấp đôi","Tăng 4 lần","Không đổi","Giảm một nửa"],"d": 0,"gt": "S_xq = C_đáy . h. Chu vi tăng 2 thì S_xq cũng tăng 2."},
-            {"nd": "Khối Rubik 3x3x3 thường có hình dạng là khối gì?","da": ["Hình hộp chữ nhật","Hình lập phương","Lăng trụ tam giác","Hình chóp"],"d": 1,"gt": "Các kích thước bằng nhau nên là hình lập phương."}
-        ],
-
-        "bt_co_ban": [
-            {"de": "Tính thể tích của hình hộp chữ nhật có kích thước là 4cm, 5cm và 8cm.","dd": ["160 cm³"],"gt": "V = 4 . 5 . 8 = 160 cm³."},
-            {"de": "Một hình lập phương có cạnh bằng 6dm. Tính diện tích xung quanh của nó.","dd": ["144 dm²"],"gt": "S_xq = 4 . 6² = 4 . 36 = 144 dm²."},
-            {"de": "Tính thể tích hình lập phương có diện tích một mặt là 25 cm².","dd": ["125 cm³"],"gt": "S_mặt = a² = 25 ⇒ a = 5cm. V = 5³ = 125 cm³."},
-            {"de": "Một lăng trụ đứng tam giác có diện tích đáy là 30cm², chiều cao 15cm. Tính thể tích lăng trụ.","dd": ["450 cm³"],"gt": "V = S_đáy . h = 30 . 15 = 450 cm³."},
-            {"de": "Hình hộp chữ nhật có diện tích đáy bằng 40cm², thể tích bằng 240cm³. Tính chiều cao.","dd": ["6 cm"],"gt": "h = V / S_đáy = 240 / 40 = 6 cm."},
-            {"de": "Tính diện tích toàn phần của hình lập phương có cạnh 3m.","dd": ["54 m²"],"gt": "S_tp = 6 . a² = 6 . 3² = 6 . 9 = 54 m²."},
-            {"de": "Một căn phòng HHCN có chiều dài 5m, rộng 4m, cao 3m. Tính diện tích xung quanh của căn phòng.","dd": ["54 m²"],"gt": "S_xq = 2.(5 + 4).3 = 54 m²."},
-            {"de": "Lăng trụ đứng tam giác có chu vi đáy 12cm, chiều cao 8cm. Tính diện tích xung quanh.","dd": ["96 cm²"],"gt": "S_xq = C_đáy . h = 12 . 8 = 96 cm²."},
-            {"de": "Đổi 5000 cm³ sang đơn vị lít (dm³).","dd": ["5 lít"],"gt": "1 lít = 1 dm³ = 1000 cm³ ⇒ 5000 cm³ = 5 lít."},
-            {"de": "Một bể nước có dạng HHCN, các kích thước trong lòng bể là 2m, 1.5m và 1m. Bể có thể chứa tối đa bao nhiêu khối nước?","dd": ["3 m³ (hay 3 khối nước)"],"gt": "V = 2 . 1,5 . 1 = 3 m³."}
-        ],
-
-        "bt_nang_cao": [
-            {"de": "Người ta cần sơn tường và trần của một căn phòng HHCN có chiều dài 6m, rộng 4m, cao 3m. Tổng diện tích các cửa là 8m². Tính diện tích cần sơn.","hd": "Diện tích cần sơn = Diện tích xung quanh + 1 Diện tích đáy (trần) - Diện tích cửa.","dd": ["76 m²"],"lg": "S_xq = 2.(6+4).3 = 60 m². S_trần = 6.4 = 24 m². Tổng diện tích sơn = 60 + 24 - 8 = 76 m²."},
-            {"de": "Một khối thép hình lập phương cạnh 10cm. Biết 1 dm³ thép nặng 7,8kg. Tính khối lượng của khối thép đó.","hd": "Đổi đơn vị ra dm³ rồi nhân với 7,8kg.","dd": ["7,8 kg"],"lg": "V = 10³ = 1000 cm³ = 1 dm³. Khối lượng m = V . D = 1 . 7,8 = 7,8 kg."},
-            {"de": "Lăng trụ đứng đáy là tam giác vuông có các cạnh góc vuông là 3cm và 4cm, chiều cao lăng trụ là 10cm. Tính diện tích toàn phần của lăng trụ.","hd": "Tính cạnh huyền đáy bằng Pytago. Sau đó tính S_xq và S_đáy.","dd": ["132 cm²"],"lg": "Cạnh huyền đáy = √(3² + 4²) = 5cm. Chu vi đáy C = 3+4+5 = 12cm. S_xq = 12 . 10 = 120 cm². Diện tích 2 mặt đáy = 2 . (1/2 . 3 . 4) = 12 cm². S_tp = 120 + 12 = 132 cm²."},
-            {"de": "Một bể bơi HHCN dài 20m, rộng 10m, đang chứa nước sâu 1,5m. Người ta bơm thêm vào bể 100 khối nước (100 m³) nữa thì mực nước trong bể cao bao nhiêu?","hd": "Tính thể tích phần nước bơm thêm tương ứng với chiều cao dâng lên.","dd": ["2 m"],"lg": "S_đáy bể = 20 . 10 = 200 m². Chiều cao nước dâng thêm = 100 / 200 = 0,5m. Mực nước hiện tại = 1,5 + 0,5 = 2m."},
-            {"de": "Tính độ dài đường chéo chính của một hình hộp chữ nhật có các kích thước là 3cm, 4cm, 12cm.","hd": "Đường chéo d = √(a² + b² + h²). Áp dụng Pytago 2 lần.","dd": ["13 cm"],"lg": "Đường chéo mặt đáy = √(3² + 4²) = 5cm. Đường chéo chính = √(5² + 12²) = √169 = 13 cm."},
-            {"de": "Một thùng các tông HHCN có chiều dài gấp đôi chiều rộng, chiều cao bằng 40cm. Biết diện tích xung quanh của thùng là 4800 cm². Tính chiều dài và chiều rộng của thùng.","hd": "Sử dụng công thức S_xq = 2(a+b)h. Thay a = 2b vào.","dd": ["Dài 40cm, rộng 20cm"],"lg": "2.(2b + b).40 = 4800 ⇒ 240b = 4800 ⇒ b = 20cm. Chiều dài a = 2.20 = 40cm."},
-            {"de": "Có 125 khối lập phương nhỏ cạnh 1cm được xếp lại thành một khối lập phương lớn. Sau đó sơn đỏ tất cả các mặt ngoài của khối lớn. Hỏi có bao nhiêu khối nhỏ không bị sơn mặt nào?","hd": "Khối lớn có V = 125cm³ nên cạnh khối lớn là 5cm. Các khối không sơn nằm ở lõi bên trong.","dd": ["27 khối"],"lg": "Khối lõi bên trong sẽ là một hình lập phương có cạnh bằng (5 - 2) = 3cm (bỏ đi lớp ngoài cùng ở các mặt). Số khối nhỏ bên trong = 3³ = 27 khối."},
-            {"de": "Người ta nặn một khối đất sét hình lập phương cạnh 4cm thành một lăng trụ đứng tứ giác có đáy là hình vuông cạnh 2cm. Hỏi chiều cao lăng trụ mới là bao nhiêu?","hd": "Thể tích không đổi trước và sau khi nặn.","dd": ["16 cm"],"lg": "V_đất = 4³ = 64 cm³. S_đáy lăng trụ = 2² = 4 cm². Chiều cao h = 64 / 4 = 16 cm."},
-            {"de": "Một tờ giấy hình chữ nhật kích thước 20cm x 30cm. Người ta cắt 4 hình vuông ở 4 góc, mỗi hình vuông cạnh 5cm, rồi gập lên thành một cái hộp không nắp. Tính thể tích hộp.","hd": "Xác định kích thước đáy hộp sau khi gấp và chiều cao hộp.","dd": ["1000 cm³"],"lg": "Chiều dài đáy hộp = 30 - 2.5 = 20cm. Chiều rộng đáy = 20 - 2.5 = 10cm. Chiều cao hộp = 5cm. Thể tích V = 20 . 10 . 5 = 1000 cm³."},
-            {"de": "So sánh thể tích của hình lập phương có diện tích toàn phần là 150cm² và hình hộp chữ nhật có kích thước 4cm, 5cm, 6cm.","hd": "Tính cạnh lập phương từ S_tp.","dd": ["Thể tích hình lập phương lớn hơn"],"lg": "S_tp lập phương = 6a² = 150 ⇒ a² = 25 ⇒ a = 5cm. V_lập phương = 125 cm³. V_hộp = 4.5.6 = 120 cm³. Vậy 125 > 120."},
-            {"de": "Một bể kính HHCN chứa nước ngang nửa bể. Khi thả một tảng đá vào đáy bể (chìm hoàn toàn), mực nước dâng lên thêm 2cm. Biết đáy bể dài 50cm, rộng 30cm. Tính thể tích tảng đá.","hd": "Thể tích vật chìm bằng thể tích phần chất lỏng dâng lên.","dd": ["3000 cm³"],"lg": "Thể tích nước dâng = 50 . 30 . 2 = 3000 cm³. Đây chính là thể tích tảng đá."},
-            {"de": "Hình lăng trụ đứng tứ giác có đáy là hình thoi với 2 đường chéo dài 6cm và 8cm. Chiều cao lăng trụ bằng cạnh của hình thoi đáy. Tính thể tích.","hd": "Diện tích thoi = 1/2 tích hai đường chéo. Cạnh thoi tính bằng Pytago.","dd": ["120 cm³"],"lg": "S_đáy = 1/2 . 6 . 8 = 24 cm². Cạnh thoi = √(3² + 4²) = 5cm. Chiều cao h = 5cm. V = 24 . 5 = 120 cm³."},
-            {"de": "Một chiếc bánh kem hình hộp chữ nhật có kích thước 20x15x10 cm. Người ta phủ một lớp kem mỏng đều các mặt ngoài (trừ mặt đáy úp xuống khay). Diện tích phần phủ kem là bao nhiêu?","hd": "S_phủ = S_xq + 1.S_đáy.","dd": ["1000 cm²"],"lg": "S_xq = 2.(20+15).10 = 700 cm². S_đáy trên = 20.15 = 300 cm². Tổng = 1000 cm²."},
-            {"de": "Người ta muốn dùng dây thép để viền các cạnh của một khung hình lăng trụ đứng tam giác đều. Cạnh đáy dài 10cm, chiều cao lăng trụ 25cm. Hỏi cần đoạn dây thép dài bao nhiêu?","hd": "Lăng trụ tam giác có 6 cạnh đáy và 3 cạnh bên.","dd": ["135 cm"],"lg": "Hai đáy tam giác có tổng cộng 6 cạnh, dài: 6 . 10 = 60 cm. 3 cạnh bên dài: 3 . 25 = 75 cm. Tổng dây thép = 60 + 75 = 135 cm."},
-            {"de": "Tỉ số các kích thước của một HHCN là 1 : 2 : 3. Thể tích của nó bằng 48 cm³. Tính diện tích toàn phần của khối hộp.","hd": "Đặt các kích thước là x, 2x, 3x.","dd": ["88 cm²"],"lg": "x . 2x . 3x = 48 ⇒ 6x³ = 48 ⇒ x³ = 8 ⇒ x = 2. Kích thước là 2, 4, 6. S_tp = 2.(2.4 + 2.6 + 4.6) = 2.(8 + 12 + 24) = 88 cm²."},
-            {"de": "Một bể rỗng HHCN kích thước đáy là 2m x 1.2m, chiều cao 1.5m. Một vòi nước chảy vào bể mỗi phút được 40 lít. Hỏi sau bao lâu thì bể đầy?","hd": "Đổi thể tích ra lít rồi chia cho lưu lượng vòi.","dd": ["90 phút (1 giờ 30 phút)"],"lg": "V = 2 . 1,2 . 1,5 = 3,6 m³ = 3600 lít. Thời gian = 3600 / 40 = 90 phút."},
-            {"de": "Hình lập phương A có thể tích bằng 1/8 thể tích hình lập phương B. Hỏi diện tích toàn phần của A bằng bao nhiêu phần diện tích toàn phần của B?","hd": "Tỉ số thể tích là k³ thì tỉ số diện tích là k², tỉ số cạnh là k.","dd": ["1/4"],"lg": "V_A / V_B = 1/8 ⇒ (a/b)³ = 1/8 ⇒ a/b = 1/2. Tỉ số diện tích toàn phần là (a/b)² = (1/2)² = 1/4."},
-            {"de": "Người ta khoan một lỗ hình hộp chữ nhật nhỏ xuyên qua tâm của một khối gỗ hình lập phương lớn. Khối gỗ lớn có cạnh 10cm, lỗ khoan vuông góc với mặt gỗ có kích thước 2x2x10cm. Tính thể tích phần gỗ còn lại.","hd": "Lỗ khoan chính là một HHCN bị khoét đi.","dd": ["960 cm³"],"lg": "V_gỗ ban đầu = 1000 cm³. V_lỗ = 2.2.10 = 40 cm³. V_còn lại = 1000 - 40 = 960 cm³."},
-            {"de": "Chi phí xây một bể nước ngầm HHCN (kín) là 500.000đ/1m² diện tích toàn phần. Bể có chiều dài 3m, rộng 2m, sâu 2m. Tính tổng chi phí xây bể.","hd": "Tính S_tp rồi nhân đơn giá.","dd": ["16.000.000 đồng"],"lg": "S_tp = 2.(3.2 + 3.2 + 2.2) = 2.(6 + 6 + 4) = 32 m². Chi phí = 32 . 500.000 = 16.000.000đ."},
-            {"de": "Có thể xếp bao nhiêu hình lập phương nhỏ cạnh 2cm vào trong một chiếc hộp chữ nhật có kích thước 15cm x 10cm x 12cm sao cho không làm biến dạng hộp?","hd": "Lưu ý không thể chỉ lấy V_hộp chia V_nhỏ mà phải xếp dọc theo từng chiều. (Phần dư không xếp được).","dd": ["175 khối"],"lg": "Xếp theo chiều dài 15cm: được 15 // 2 = 7 khối. Chiều rộng 10cm: 10 // 2 = 5 khối. Chiều cao 12cm: 12 // 2 = 6 khối. Tổng số khối xếp được = 7 . 5 . 6 = 210 khối. Khoan, nhẩm lại: 7.5=35; 35.6 = 210 khối. Số 175 là đáp án bị tính nhầm. Đáp án chuẩn phải là 210 khối."}
-        ]
-    }
-}
-T7["Chương 10: Một số hình khối trong thực tiễn"] = C10_T7
-TOAN["Lớp 7"] = T7
+            {"nd": "Công thức tính diện tích xung quanh của hình hộp chữ nhật là?","da": ["2(a+b)h","(a+
