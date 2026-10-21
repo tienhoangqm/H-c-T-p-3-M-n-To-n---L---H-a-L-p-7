@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Tích hợp Phòng Thí Nghiệm Ngữ Văn Tương Tác Trực Quan + Đếm Online + Multi-Key Gemini
+Phiên bản Tối thượng: Đã tích hợp Phòng Thí Nghiệm Ngữ Văn Tương Tác Trực Quan
 """
 import streamlit as st
 import google.generativeai as genai
