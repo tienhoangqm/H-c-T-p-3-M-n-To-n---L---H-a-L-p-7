@@ -250,6 +250,7 @@ def trich_xuat_word_docx(file_bytes):
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
     ds_models = [
+        "gemini-3.5-flash",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash"
