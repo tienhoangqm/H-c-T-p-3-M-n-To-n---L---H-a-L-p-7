@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Toàn diện: Toán, Lý, Hóa & Ngữ Văn + Tìm Kiếm + Dark/Light Mode + AI Đa Giác Quan
+Phiên bản Toàn diện: Toán, Lý, Hóa & Ngữ Văn + Đếm User Online + AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
@@ -11,6 +11,7 @@ import re
 import time
 import zipfile
 import xml.etree.ElementTree as ET
+import uuid
 
 # Tải khởi động mượt mà chống ngủ đông
 with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, bạn chờ chút nhé..."):
@@ -34,6 +35,32 @@ with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, b
 
 # Mở "két sắt" lấy chìa khóa kết nối AI
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+# ==================== HỆ THỐNG ĐẾM NGƯỜI DÙNG TRỰC TUYẾN ====================
+@st.cache_resource
+def lay_bo_nho_truy_cap():
+    # Tạo một bộ nhớ dùng chung cho tất cả mọi người truy cập vào web
+    return {}
+
+def cap_nhat_nguoi_online():
+    bo_nho = lay_bo_nho_truy_cap()
+    
+    # Cấp cho mỗi học sinh một mã ID ẩn duy nhất khi vừa vào web
+    if 'user_id' not in st.session_state:
+        st.session_state.user_id = str(uuid.uuid4())
+        
+    # Ghi nhận thời gian hoạt động mới nhất của học sinh này
+    bo_nho[st.session_state.user_id] = time.time()
+    
+    # Lọc danh sách: Chỉ giữ lại những ai có tương tác trong vòng 5 phút qua (300 giây)
+    thoi_gian_hien_tai = time.time()
+    danh_sach_online = {uid: t for uid, t in bo_nho.items() if thoi_gian_hien_tai - t < 300}
+    
+    # Làm mới bộ nhớ chung
+    bo_nho.clear()
+    bo_nho.update(danh_sach_online)
+    
+    return len(bo_nho)
 
 # ==================== IMPORT DỮ LIỆU TỪ CÁC FILE ====================
 try:
@@ -250,9 +277,9 @@ def trich_xuat_word_docx(file_bytes):
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
     ds_models = [
-        "gemini-3.5-flash",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
+        "gemini-1.5-flash"
     ]
     max_retries = 3
     last_err = None
@@ -535,6 +562,11 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     st.caption("Hệ thống Ôn luyện THCS")
+    
+    # Gọi hàm và Hiển thị số người đang online rực rỡ ở đây
+    so_nguoi_online = cap_nhat_nguoi_online()
+    st.markdown(f"🟢 **Đang trực tuyến: {so_nguoi_online} học sinh**")
+    
     st.divider()
     che_do = st.radio(
         "⚙️ Chế độ & Công cụ:", 
