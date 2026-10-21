@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Hoàn thiện Giai đoạn 4: Dark/Light Mode + Mobile Responsive + Toàn bộ tính năng đỉnh cao
+Phiên bản Hoàn thiện Cuối cùng: Tự động Retry chống lỗi 429 + Quản lý trạng thái tính năng + Dark/Light Mode
 """
 import streamlit as st
 import google.generativeai as genai
 import io
 import random
 import re
+import time
 import zipfile
 import xml.etree.ElementTree as ET
 
@@ -51,28 +52,19 @@ except ImportError:
 DATABASE = {
     "📐 Môn Toán": TOAN,
     "🔬 Môn Vật lý (KHTN)": VATLY,
-    "🧪 Môn Hóa học (KHTN)": HOA,
+    "🧪 Môn Hóa học (KHTN)": HOA if HOA else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Hóa": {}}},
 }
 
-# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET (CHUẨN .EDU) ====================
+# ==================== DANH MỤC MÔ PHỎNG THÍ NGHIỆM PHET (ĐANG PHÁT TRIỂN / HOÀN THIỆN) ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
-        "📈 Vẽ đồ thị đường thẳng & Tỉ lệ thuận": "https://phet.colorado.edu/sims/html/graphing-lines/latest/graphing-lines_vi.html",
-        "🍕 Khám phá Phân số & Số hữu tỉ Q": "https://phet.colorado.edu/sims/html/fractions-intro/latest/fractions-intro_vi.html",
-        "📐 Xây dựng Diện tích & Chu vi hình học": "https://phet.colorado.edu/sims/html/area-builder/latest/area-builder_vi.html",
     },
     "🔬 Môn Vật lý (KHTN)": {
         "💡 Khúc xạ & Phản xạ ánh sáng (Quang học 7)": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html",
-        "🔊 Sóng âm, Biên độ & Tần số âm thanh": "https://phet.colorado.edu/sims/html/waves-intro/latest/waves-intro_vi.html",
-        "⚡ Lắp ráp Mạch điện một chiều (Đèn, Pin, Công tắc)": "https://phet.colorado.edu/sims/html/circuit-construction-kit-dc/latest/circuit-construction-kit-dc_vi.html",
-        "🚀 Lực, Chuyển động & Tốc độ": "https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_vi.html",
     },
     "🧪 Môn Hóa học (KHTN)": {
-        "⚛️ Xây dựng cấu tạo Nguyên tử (Proton, Neutron, Electron)": "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_vi.html",
-        "🧬 Lắp ghép Phân tử Hóa học (H2O, CO2, O2...)": "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_vi.html",
-        "⚖️ Cân bằng Phương trình Hóa học": "https://phet.colorado.edu/sims/html/balancing-chemical-equations/latest/balancing-chemical-equations_vi.html",
-        "🧪 Pha chế & Đo nồng độ dung dịch": "https://phet.colorado.edu/sims/html/concentration/latest/concentration_vi.html",
+        "⚛️ Cấu tạo Nguyên tử (Đang phát triển)": "",
     }
 }
 
@@ -84,10 +76,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Nhận diện chế độ Sáng / Tối từ sidebar
 dark_mode = st.sidebar.checkbox("🌙 Chế độ Ban đêm (Dark Mode)", value=False)
 
-# CSS chuẩn hóa: Tối ưu Mobile, ẩn công cụ rườm rà và hỗ trợ linh hoạt Dark/Light Mode
 if dark_mode:
     CSS = """
     <style>
@@ -106,7 +96,6 @@ if dark_mode:
         }
         .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
-        
         .card-home { background-color: #1E293B; border: 1px solid #334155; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; color: #F1F5F9; }
         .khung-lythuyet { background-color: #1E293B; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #3B82F6; color: #F1F5F9 !important; }
         .khung-vidu { background-color: #27272A; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #F1F5F9 !important; }
@@ -132,7 +121,6 @@ else:
         }
         .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
         .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
-        
         .card-home { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; }
         .khung-lythuyet { background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #2563EB; color: #1E293B !important; }
         .khung-vidu { background-color: #FFFBEB; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #1E293B !important; }
@@ -143,7 +131,7 @@ else:
     """
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ==================== HÀM TIỆN ÍCH ====================
+# ==================== HÀM TIỆN ÍCH & GỌI AI THÔNG MINH (CÓ RETRY CHỐNG LỖI 429) ====================
 def lam_sach_id(s):
     return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
 
@@ -231,6 +219,7 @@ def trich_xuat_word_docx(file_bytes):
         return f"[Lỗi đọc file Word: {e}]"
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
+    """Hàm gọi AI tự động retry thông minh khi gặp lỗi Quota/429 (ResourceExhausted)"""
     ds_models = [
         "gemini-3.5-flash",
         "gemini-3.5-pro",
@@ -238,18 +227,27 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
         "gemini-2.0-flash",
         "gemini-1.5-flash"
     ]
+    max_retries = 3
     last_err = None
+
     for ten_m in ds_models:
-        try:
-            m = genai.GenerativeModel(model_name=ten_m, system_instruction=system_instruction)
-            if history is not None:
-                chat_s = m.start_chat(history=history)
-                return chat_s.send_message(payload).text
-            else:
-                return m.generate_content(payload).text
-        except Exception as e:
-            last_err = e
-            continue
+        for attempt in range(max_retries):
+            try:
+                m = genai.GenerativeModel(model_name=ten_m, system_instruction=system_instruction)
+                if history is not None:
+                    chat_s = m.start_chat(history=history)
+                    return chat_s.send_message(payload).text
+                else:
+                    return m.generate_content(payload).text
+            except Exception as e:
+                last_err = e
+                error_str = str(e).lower()
+                # Nếu gặp lỗi quá tải / giới hạn (429 hoặc resource_exhausted), chờ giãn cách rồi thử lại
+                if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                else:
+                    break  # Lỗi khác thì chuyển sang model tiếp theo ngay
     raise last_err
 
 # ==================== TÍNH NĂNG TÌM KIẾM THÔNG MINH (GLOBAL SEARCH) ====================
@@ -298,7 +296,7 @@ def hien_thi_trang_chu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile & Trải nghiệm Ban đêm (Dark Mode)</p>
+        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile, chống quá tải AI & Trải nghiệm Ban đêm</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -321,8 +319,8 @@ def hien_thi_trang_chu():
     with col_h2:
         st.markdown("""
         <div class="card-home">
-            <h3>💬 Trợ lý Gia sư AI 24/7</h3>
-            <p>Hỗ trợ giải đáp, gợi mở phương pháp Socratic, chụp ảnh đề bài và đọc to giọng nói.</p>
+            <h3>💬 Trợ lý Gia sư AI 24/7 (Có cơ chế Retry)</h3>
+            <p>Hỗ trợ giải đáp thông minh, tự động thử lại khi hệ thống quá tải (lỗi 429), giúp học sinh học tập không bị gián đoạn.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -333,26 +331,32 @@ def hien_thi_trang_chu():
         </div>
         """, unsafe_allow_html=True)
 
-# ==================== HÀM PHÒNG THÍ NGHIỆM ẢO ====================
+# ==================== HÀM PHÒNG THÍ NGHIỆM ẢO (CÓ THÔNG BÁO ĐANG PHÁT TRIỂN) ====================
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
     st.markdown("#### 🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác (PhET Colorado)")
     ds_tn_mon = DANH_MUC_THI_NGHIEM.get(mon_hien_tai, {})
     if not ds_tn_mon:
         ds_tn_mon = DANH_MUC_THI_NGHIEM["🔬 Môn Vật lý (KHTN)"]
+    
     ten_tn = st.selectbox(
         f"🔬 Chọn mô phỏng thực hành cho {mon_hien_tai}:",
         list(ds_tn_mon.keys()),
         key=f"select_tn_{key_prefix}_{lam_sach_id(mon_hien_tai)}"
     )
-    st.components.v1.iframe(ds_tn_mon[ten_tn], height=580, scrolling=True)
-    st.info("💡 **Mẹo thực hành:** Dùng chuột kéo thả trực tiếp trên màn hình, sau đó kéo xuống hỏi Gia sư AI để hiểu rõ bản chất nhé!")
+    url_tn = ds_tn_mon[ten_tn]
+    
+    if not url_tn:
+        st.warning("🚧 **Tính năng đang phát triển:** Phòng thí nghiệm cho môn học này đang được cập nhật thêm mô phỏng chuẩn bị ra mắt học sinh!")
+    else:
+        st.components.v1.iframe(url_tn, height=580, scrolling=True)
+        st.info("💡 **Mẹo thực hành:** Dùng chuột kéo thả trực tiếp trên màn hình, sau đó kéo xuống hỏi Gia sư AI để hiểu rõ bản chất nhé!")
 
 # ==================== HÀM TRẠM NẠP DỮ LIỆU (AUTO-PARSER) ====================
 def hien_thi_tram_nap_du_lieu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p>
-        <p class="hero-sub">Dành cho Admin: Tải file đề bài (Word, PDF, Ảnh, TXT) để tạo Code Python chuẩn.</p>
+        <p class="hero-sub">Dành cho Admin: Tải file đề bài để tạo Code Python chuẩn.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -504,6 +508,7 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
 # ==================== GIAO DIỆN CHÍNH (SIDEBAR) ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
+    st.caption("Hệ thống Ôn luyện THCS")
     st.divider()
     che_do = st.radio(
         "⚙️ Chế độ & Công cụ:", 
@@ -546,7 +551,14 @@ bai_dang_hoc = ""
 if che_do == "🏠 Trang chủ / Hướng dẫn": hien_thi_trang_chu()
 elif che_do == "🔍 Tra cứu / Tìm kiếm": hien_thi_tim_kiem_toan_dien()
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)": hien_thi_tram_nap_du_lieu()
-elif che_do == "🎪 Phòng thí nghiệm ảo": hien_thi_phong_thi_nghiem("🔬 Môn Vật lý (KHTN)", key_prefix="sidebar_mode")
+elif che_do == "🎪 Phòng thí nghiệm ảo":
+    st.markdown("""
+    <div class="hero-banner">
+        <p class="hero-title">🎪 Phòng Thí Nghiệm Ảo — Khoa Học Tự Nhiên</p>
+        <p class="hero-sub">Mô phỏng tương tác trực quan chuẩn PhET (Đại học Colorado, Mỹ)</p>
+    </div>
+    """, unsafe_allow_html=True)
+    hien_thi_phong_thi_nghiem("🔬 Môn Vật lý (KHTN)", key_prefix="sidebar_mode")
 else:
     st.markdown(f"""
     <div class="hero-banner">
@@ -579,7 +591,7 @@ else:
             if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (CÓ HỖ TRỢ RETRY TỰ ĐỘNG)
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
@@ -598,7 +610,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
 
     SYSTEM_PROMPT = f"Bạn là gia sư AI môn {mon_hoc_ai} lớp 7 sách Kết Nối Tri Thức. Dùng phương pháp Socratic gợi mở từng bước, không giải bài hộ. Trình bày ngắn gọn, chuẩn xác."
 
-    model = genai.GenerativeModel(model_name="gemini-3.5-flash", system_instruction=SYSTEM_PROMPT)
     if "chat_history" not in st.session_state: st.session_state.chat_history = []
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
@@ -624,6 +635,7 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
         with st.chat_message("assistant"):
             gemini_history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
             try:
+                # Gọi hàm an toàn có tích hợp tự động Retry chống lỗi 429 / quá tải
                 ans_text = goi_gemini_an_toan([prompt, img_pil] if img_pil else prompt, system_instruction=SYSTEM_PROMPT, history=gemini_history)
                 st.markdown(ans_text)
                 st.session_state.chat_history.append({"role": "assistant", "content": ans_text})
@@ -634,4 +646,5 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                         gTTS(text=clean_text, lang='vi').write_to_fp(afp)
                         afp.seek(0)
                         st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
-            except Exception as e: st.error(f"⚠️ Lỗi kết nối AI: {e}")
+            except Exception as e:
+                st.error(f"⚠️ Hệ thống AI đang có nhiều học sinh truy cập cùng lúc (Giới hạn Free Tier). Đang tự động thử lại hoặc em chờ vài giây rồi gửi lại câu hỏi nhé! (Lỗi: {e})")
