@@ -209,7 +209,6 @@ def trich_xuat_word_docx(file_bytes):
 
 # --- HÀM GỌI DOLA VÀ GEMINI ---
 def goi_dola(cau_hoi):
-    """Gọi Dola lấy nội dung chuẩn"""
     if not DOLA_ENDPOINT or not DOLA_KEY: return None
     try:
         phan_hoi = requests.post(
@@ -224,11 +223,13 @@ def goi_dola(cau_hoi):
         return None
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
-    """Hàm AI tự động rẽ nhánh bỏ qua model chết (404) và thử lại model bận (429)"""
     ds_models = [
+        "gemini-3.5-flash",
+        "gemini-3.5-pro",
+        "gemini-2.5-flash",
         "gemini-1.5-flash",
         "gemini-1.5-pro",
-        "gemini-2.0-flash"
+        "gemini-pro"
     ]
     max_retries = 3
     last_err = None
@@ -245,10 +246,8 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
             except Exception as e:
                 last_err = e
                 error_str = str(e).lower()
-                # 404 (Không tìm thấy model) -> Thoát ngay vòng lặp hiện tại, chuyển sang model dự phòng tiếp theo
                 if "404" in error_str or "not found" in error_str:
                     break 
-                # 429 (Quá tải) -> Chờ và gọi lại chính model này
                 elif "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
                     time.sleep(1.5 * (attempt + 1))
                     continue
@@ -554,13 +553,11 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
             nd_chuan = None
             ans_text = ""
             
-            # BƯỚC 1: Lấy nội dung chuẩn Dola nếu bật
             if bat_dola and not img_pil:
                 with st.spinner("🔍 Dola đang rà soát nội dung chuẩn SGK..."):
                     nd_chuan = goi_dola(prompt)
             
             try:
-                # BƯỚC 2: Gọi Gemini diễn giải
                 with st.spinner("🤖 Gia sư Gemini đang xử lý..."):
                     if nd_chuan:
                         cau_truyen = f"Dưới đây là nội dung chuẩn SGK:\n{nd_chuan}\n\nĐóng vai gia sư {mon_hoc_ai}, diễn giải dễ hiểu cho học sinh lớp 7 câu hỏi: {prompt}"
@@ -592,7 +589,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                         st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
 
             except Exception as e:
-                # BƯỚC 3: AUTO-FALLBACK KHI GEMINI SẬP HOÀN TOÀN
                 if nd_chuan:
                     fallback_msg = f"⚠️ *Gia sư AI đang bảo trì, hệ thống tự động chuyển sang chế độ Dola (Chuẩn SGK):*\n\n✅ **Nội dung chuẩn:**\n{nd_chuan}"
                     st.markdown(fallback_msg)
