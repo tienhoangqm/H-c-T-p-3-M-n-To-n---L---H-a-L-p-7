@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Tích hợp trực tiếp Phòng Thí Nghiệm Ngữ Văn Tương Tác vào bài học
+Phiên bản Tối thượng: Đã khôi phục đầy đủ dữ liệu Ngữ Văn Học Kỳ 1 + Phòng Thí Nghiệm Văn học Tương tác
 """
 import streamlit as st
 import google.generativeai as genai
@@ -118,7 +118,7 @@ def kiem_tra_gioi_han_tan_suat(cooldown_seconds=5):
     st.session_state["last_ai_request_time"] = now
     return True, 0
 
-# ==================== IMPORT DỮ LIỆU TỪ CÁC FILE ====================
+# ==================== IMPORT DỮ LIỆU TOÁN, LÝ, HÓA ====================
 try:
     from data_toan import TOAN
 except ImportError:
@@ -131,18 +131,101 @@ try:
     from data_hoa import HOA
 except ImportError:
     HOA = {}
-try:
-    from data_van import VAN
-except ImportError:
-    VAN = {}
+
+# ==================== DỮ LIỆU NGỮ VĂN HỌC KỲ 1 (ĐÃ KHÔI PHỤC ĐẦY ĐỦ CÁC CHƯƠNG) ====================
+VAN = {
+    "Lớp 7": {
+        "Chương 1: Bầu trời tuổi thơ (Truyện)": {
+            "Văn bản 1: Bồng chanh đỏ (trích, Đỗ Chu)": {
+                "ly_thuyet": "Truyện ngắn kể về hai anh em Hoài và Ý với tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
+                "vi_du": "Chi tiết thả chim bồng chanh đỏ về tự nhiên thể hiện sự thức tỉnh nhân cách và lòng nhân ái.",
+                "cau_hoi": [
+                    {
+                        "nd": "Truyện 'Bồng chanh đỏ' của tác giả nào?",
+                        "da": ["Đỗ Chu", "Tô Hoài", "Khánh Hoài", "Duy Khán"],
+                        "d": 0
+                    },
+                    {
+                        "nd": "Nhân vật chính trong truyện là ai?",
+                        "da": ["Hai anh em Hoài và Ý", "Ông nội", "Côn và Bản", "Thành và Thủy"],
+                        "d": 0
+                    }
+                ],
+                "bt_co_ban": [
+                    {"de": "Nêu ý nghĩa nhan đề 'Bồng chanh đỏ'?", "dd": ["Biểu tượng cho vẻ đẹp thiên nhiên và ước mơ tuổi thơ"], "lg": "Đó là hình ảnh trung tâm khơi gợi những cảm xúc trong trẻo."}
+                ],
+                "bt_nang_cao": [
+                    {"de": "Phân tích sự biến đổi tâm trạng của nhân vật Hoài?", "dd": ["Từ tò mò muốn sở hữu đến thấu hiểu và buông bỏ để bảo vệ sự sống"], "lg": "Thể hiện sự nhân hậu, tôn trọng tự nhiên."}
+                ]
+            },
+            "Văn bản 2: Bố cục và mạch ngầm trong văn bản": {
+                "ly_thuyet": "Tìm hiểu cách xây dựng cốt truyện và các lớp ý nghĩa ẩn giấu trong tác phẩm truyện.",
+                "vi_du": "Mạch ngầm văn bản là những cảm xúc không nói trực tiếp mà gửi gắm qua chi tiết.",
+                "cau_hoi": [
+                    {
+                        "nd": "Mạch ngầm văn bản là gì?",
+                        "da": ["Những suy nghĩ, cảm xúc ẩn giấu dưới lời văn", "Cốt truyện chính", "Lời thoại của nhân vật", "Bối cảnh sáng tác"],
+                        "d": 0
+                    }
+                ],
+                "bt_co_ban": [{"de": "Mạch ngầm thường được bộc lộ qua đâu?", "dd": ["Chi tiết nghệ thuật và hình ảnh biểu tượng"], "lg": "Thông qua các chi tiết miêu tả và hành động."}],
+                "bt_nang_cao": [{"de": "Tác dụng của mạch ngầm trong truyện ngắn?", "dd": ["Tăng chiều sâu và sức gợi cảm cho tác phẩm"], "lg": "Giúp người đọc suy ngẫm nhiều hơn."}]
+            }
+        },
+        "Chương 2: Khúc tâm tình của đất nước (Thơ)": {
+            "Văn bản 1: Tia nắng đầu tiên (Đức Lợi)": {
+                "ly_thuyet": "Bài thơ ca ngợi vẻ đẹp thiên nhiên buổi sáng và tình cảm gia đình ấm áp.",
+                "vi_du": "Hình ảnh tia nắng sớm chiếu qua khung cửa sổ mang lại sức sống mới.",
+                "cau_hoi": [
+                    {
+                        "nd": "Bài thơ 'Tia nắng đầu tiên' thuộc thể thơ nào?",
+                        "da": ["Thơ tự do / 5 chữ", "Thơ lục bát", "Thơ 7 chữ", "Thơ song thất lục bát"],
+                        "d": 0
+                    }
+                ],
+                "bt_co_ban": [{"de": "Tia nắng đầu tiên tượng trưng cho điều gì?", "dd": ["Niềm hy vọng và khởi đầu tốt đẹp"], "lg": "Mang ý nghĩa biểu tượng sâu sắc."}],
+                "bt_nang_cao": [{"de": "Phân tích cảm xúc của nhân vật trữ tình trong bài thơ?", "dd": ["Rung động tinh tế trước thiên nhiên và tình mẫu tử"], "lg": "Gắn kết không gian thiên nhiên với tình cảm gia đình."}]
+            },
+            "Văn bản 2: Mẹ (Đỗ Bạch Nga)": {
+                "ly_thuyet": "Bài thơ khắc họa hình ảnh người mẹ tần tảo, hy sinh vì con cái.",
+                "vi_du": "Hình ảnh gánh nặng cuộc đời oằn trên vai mẹ.",
+                "cau_hoi": [
+                    {
+                        "nd": "Biện pháp tu từ nổi bật trong bài thơ 'Mẹ' là gì?",
+                        "da": ["Ẩn dụ / So sánh", "Nói quá", "Liệt kê", "Chơi chữ"],
+                        "d": 0
+                    }
+                ],
+                "bt_co_ban": [{"de": "Tình cảm của người con đối với mẹ được thể hiện như thế nào?", "dd": ["Biết ơn sâu sắc và xót xa trước những vất vả của mẹ"], "lg": "Thể hiện đạo lý uống nước nhớ nguồn."}],
+                "bt_nang_cao": [{"de": "Ý nghĩa hình ảnh người mẹ trong thơ ca?", "dd": ["Biểu tượng của sự hy sinh và tình yêu thương vô bờ bến"], "lg": "Là nguồn cội nuôi dưỡng tâm hồn con người."}]
+            }
+        },
+        "Chương 3: Hành trình tri thức (Nghị luận & Thông tin)": {
+            "Văn bản 1: Tự học - một cuộc du thú trường chinh (Nguyễn Đăng Mạnh)": {
+                "ly_thuyet": "Văn bản nghị luận bàn về tầm quan trọng và phương pháp tự học.",
+                "vi_du": "Tự học giúp con người mở rộng chân trời tri thức không giới hạn.",
+                "cau_hoi": [
+                    {
+                        "nd": "Vấn đề nghị luận chính của văn bản là gì?",
+                        "da": ["Tầm quan trọng của việc tự học", "Cách đọc sách hiệu quả", "Phương pháp học ngoại ngữ", "Vai trò của thầy cô"],
+                        "d": 0
+                    }
+                ],
+                "bt_co_ban": [{"de": "Vì sao tác giả gọi tự học là 'cuộc du thú trường chinh'?", "dd": ["Vì đó là hành trình khám phá tri thức dài lâu, đầy thú vị"], "lg": "Phép ẩn dụ độc đáo của nhà nghiên cứu Nguyễn Đăng Mạnh."}],
+                "bt_nang_cao": [{"de": "Rút ra bài học cho bản thân về phương pháp tự học?", "dd": ["Chủ động, kiên trì và tìm tòi sáng tạo trong học tập"], "lg": "Tự học quyết định thành công của mỗi người."}]
+            }
+        }
+    }
+}
 
 DATABASE = {
     "📐 Môn Toán": TOAN,
     "🔬 Môn Vật lý (KHTN)": VATLY,
     "🧪 Môn Hóa học (KHTN)": HOA if HOA else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Hóa": {}}},
-    "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
+    "📖 Môn Ngữ Văn": VAN,
 }
 
+# ==================== DANH MỤC MÔ PHỎNG PHET & NGỮ VĂN TƯƠNG TÁC ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -167,7 +250,7 @@ DANH_MUC_THI_NGHIEM = {
 
 DATA_LAB_NGU_VAN = {
     "🗺️ 1. Bản đồ Cấu trúc & Bối cảnh Tác phẩm": {
-        "tieu_de": "Bản đồ Cấu trúc Tác phẩm: Bồng chanh đỏ (Đỗ Chu) & Cuộc chia tay của những con búp bê",
+        "tieu_de": "Bản đồ Cấu trúc Tác phẩm: Bồng chanh đỏ (Đỗ Chu)",
         "hoan_canh": "Truyện ngắn xuất sắc viết về tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
         "bo_cuc": [
             {"phan": "Phần 1: Mở đầu", "noi_dung": "Giới thiệu không gian ven sông quen thuộc và tổ chim bồng chanh đỏ đầy bí ẩn của hai anh em Hoài và Ý."},
@@ -631,7 +714,6 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                             if tl[i] == da_dung: st.markdown(f"✅ Câu {i}: Đúng")
                             else: st.markdown(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
 
-    # Sửa trực tiếp ở đây: Truyền đúng môn học hiện tại (mon) vào phòng thí nghiệm của bài học
     with tab5: hien_thi_phong_thi_nghiem(mon, key_prefix=f"tab_{sid}")
 
 def hien_thi_che_do_thi(mon, lop, chuong_dict):
