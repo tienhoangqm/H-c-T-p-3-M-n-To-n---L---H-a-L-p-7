@@ -562,7 +562,6 @@ with st.sidebar:
     
     so_nguoi_online = cap_nhat_nguoi_online()
     st.markdown(f"🟢 **Đang trực tuyến: {so_nguoi_online} học sinh**")
-    st.caption(f"🔑 Khóa API sẵn sàng: {len(GEMINI_KEYS)} khóa")
     st.divider()
     
     che_do = st.radio("⚙️ Chế độ & Công cụ:", ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "🎪 Phòng thí nghiệm ảo", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"])
