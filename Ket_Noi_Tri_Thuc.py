@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Giao diện Tuyệt đẹp + Vá Lỗi Toàn Diện (Lock, LRU Cache, Trộn Đề)
+Phiên bản Tổng hợp Hoàn Chỉnh: Giao diện Đẹp + Lock Đa luồng + Trạm Nạp Dữ Liệu Đầy Đủ + Dữ liệu 3 Chương Văn
 """
 import streamlit as st
 import io
@@ -205,6 +205,16 @@ def doc_to_an_toan(text, autoplay=True):
     except Exception:
         pass
 
+def trich_xuat_word_docx(file_bytes):
+    try:
+        with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
+            xml_content = z.read('word/document.xml')
+        tree = ET.fromstring(xml_content)
+        doan_van = [''.join([t.text for t in p.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t') if t.text]) for p in tree.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p')]
+        return '\n'.join([p for p in doan_van if p])
+    except Exception as e:
+        return f"[Lỗi đọc file Word: {e}]"
+
 # ==================== MÔ-ĐUN AI (CÓ LOCK) ====================
 def goi_dola_toi_uu(cau_hoi):
     if not DOLA_ENDPOINT or not DOLA_KEY: return None
@@ -265,7 +275,7 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                         else: break
     raise last_err
 
-# ==================== DATA & GIAO DIỆN CHÍNH ====================
+# ==================== DATA TOÁN, LÝ, HÓA ====================
 try: from data_toan import TOAN
 except ImportError: TOAN = {}
 try: from data_vatly import VATLY
@@ -273,22 +283,52 @@ except ImportError: VATLY = {}
 try: from data_hoa import HOA
 except ImportError: HOA = {}
 
+# ==================== DỮ LIỆU NGỮ VĂN ĐẦY ĐỦ 3 CHƯƠNG ====================
 VAN = {
     "Lớp 7": {
         "Chương 1: Bầu trời tuổi thơ (Truyện)": {
             "Văn bản 1: Bồng chanh đỏ (trích, Đỗ Chu)": {
                 "ly_thuyet": "Truyện ngắn kể về hai anh em Hoài và Ý với tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
+                "vi_du": "Chi tiết thả chim bồng chanh đỏ về tự nhiên thể hiện sự thức tỉnh nhân cách và lòng nhân ái.",
                 "cau_hoi": [
-                    {"nd": "Truyện 'Bồng chanh đỏ' của tác giả nào?", "da": ["Đỗ Chu", "Tô Hoài", "Khánh Hoài"], "d": 0},
-                    {"nd": "Nhân vật chính là ai?", "da": ["Anh em Hoài Ý", "Ông nội", "Thành và Thủy"], "d": 0}
+                    {"nd": "Truyện 'Bồng chanh đỏ' của tác giả nào?", "da": ["Đỗ Chu", "Tô Hoài", "Khánh Hoài", "Duy Khán"], "d": 0},
+                    {"nd": "Nhân vật chính trong truyện là ai?", "da": ["Hai anh em Hoài và Ý", "Ông nội", "Côn và Bản", "Thành và Thủy"], "d": 0}
                 ],
-                "bt_co_ban": [{"de": "Ý nghĩa nhan đề?", "dd": ["Vẻ đẹp thiên nhiên"], "lg": "Biểu tượng tuổi thơ."}],
-                "bt_nang_cao": [{"de": "Tâm trạng nhân vật Hoài?", "dd": ["Thấu hiểu và buông bỏ"], "lg": "Sự nhân hậu."}]
+                "bt_co_ban": [{"de": "Nêu ý nghĩa nhan đề 'Bồng chanh đỏ'?", "dd": ["Biểu tượng cho vẻ đẹp thiên nhiên"], "lg": "Đó là hình ảnh trung tâm khơi gợi những cảm xúc trong trẻo."}],
+                "bt_nang_cao": [{"de": "Phân tích sự biến đổi tâm trạng của nhân vật Hoài?", "dd": ["Thấu hiểu và buông bỏ"], "lg": "Thể hiện sự nhân hậu, tôn trọng tự nhiên."}]
+            },
+            "Văn bản 2: Bố cục và mạch ngầm trong văn bản": {
+                "ly_thuyet": "Tìm hiểu cách xây dựng cốt truyện và các lớp ý nghĩa ẩn giấu trong tác phẩm truyện.",
+                "cau_hoi": [{"nd": "Mạch ngầm văn bản là gì?", "da": ["Những suy nghĩ, cảm xúc ẩn giấu dưới lời văn", "Cốt truyện chính", "Lời thoại của nhân vật"], "d": 0}],
+                "bt_co_ban": [{"de": "Mạch ngầm thường được bộc lộ qua đâu?", "dd": ["Chi tiết nghệ thuật"], "lg": "Thông qua các chi tiết miêu tả và hành động."}],
+                "bt_nang_cao": [{"de": "Tác dụng của mạch ngầm trong truyện ngắn?", "dd": ["Tăng chiều sâu"], "lg": "Giúp người đọc suy ngẫm nhiều hơn."}]
+            }
+        },
+        "Chương 2: Khúc tâm tình của đất nước (Thơ)": {
+            "Văn bản 1: Tia nắng đầu tiên (Đức Lợi)": {
+                "ly_thuyet": "Bài thơ ca ngợi vẻ đẹp thiên nhiên buổi sáng và tình cảm gia đình ấm áp.",
+                "cau_hoi": [{"nd": "Bài thơ thuộc thể thơ nào?", "da": ["Thơ tự do / 5 chữ", "Thơ lục bát", "Thơ 7 chữ", "Tất cả phương án trên"], "d": 0}],
+                "bt_co_ban": [{"de": "Tia nắng đầu tiên tượng trưng cho điều gì?", "dd": ["Niềm hy vọng"], "lg": "Mang ý nghĩa biểu tượng sâu sắc."}],
+                "bt_nang_cao": [{"de": "Phân tích cảm xúc của nhân vật trữ tình?", "dd": ["Rung động tinh tế"], "lg": "Gắn kết thiên nhiên với gia đình."}]
+            },
+            "Văn bản 2: Mẹ (Đỗ Bạch Nga)": {
+                "ly_thuyet": "Bài thơ khắc họa hình ảnh người mẹ tần tảo, hy sinh vì con cái.",
+                "cau_hoi": [{"nd": "Biện pháp tu từ nổi bật trong bài thơ 'Mẹ' là gì?", "da": ["Ẩn dụ / So sánh", "Nói quá", "Liệt kê"], "d": 0}],
+                "bt_co_ban": [{"de": "Tình cảm của người con đối với mẹ?", "dd": ["Biết ơn sâu sắc"], "lg": "Thể hiện đạo lý uống nước nhớ nguồn."}],
+                "bt_nang_cao": [{"de": "Ý nghĩa hình ảnh người mẹ?", "dd": ["Biểu tượng của sự hy sinh"], "lg": "Là nguồn cội nuôi dưỡng tâm hồn."}]
+            }
+        },
+        "Chương 3: Hành trình tri thức (Nghị luận & Thông tin)": {
+            "Văn bản 1: Tự học - một cuộc du thú trường chinh": {
+                "ly_thuyet": "Văn bản nghị luận bàn về tầm quan trọng và phương pháp tự học.",
+                "cau_hoi": [{"nd": "Vấn đề nghị luận chính là gì?", "da": ["Tầm quan trọng của việc tự học", "Cách đọc sách hiệu quả", "Phương pháp học ngoại ngữ"], "d": 0}],
+                "bt_co_ban": [{"de": "Vì sao gọi tự học là 'cuộc du thú trường chinh'?", "dd": ["Khám phá tri thức dài lâu"], "lg": "Phép ẩn dụ độc đáo."}],
+                "bt_nang_cao": [{"de": "Rút ra bài học cho bản thân?", "dd": ["Chủ động, kiên trì"], "lg": "Tự học quyết định thành công."}]
             }
         }
     }
 }
-DATABASE = {"📐 Môn Toán": TOAN, "🔬 Môn Vật lý (KHTN)": VATLY, "🧪 Môn Hóa học (KHTN)": HOA, "📖 Môn Ngữ Văn": VAN}
+DATABASE = {"📐 Môn Toán": TOAN, "🔬 Môn Vật lý (KHTN)": VATLY, "🧪 Môn Hóa học (KHTN)": HOA if HOA else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Hóa": {}}}, "📖 Môn Ngữ Văn": VAN}
 
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {"⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html"},
@@ -335,7 +375,7 @@ DATA_LAB_NGU_VAN = {
     }
 }
 
-# Sidebar
+# ==================== SIDEBAR ĐIỀU HƯỚNG ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     dark_mode = st.toggle("🌙 Chế độ tối", key="dark_mode_toggle")
@@ -359,7 +399,7 @@ with st.sidebar:
         so_bai = len(st.session_state.lich_su_hoc_tap)
         st.metric("Điểm TB", f"{sum(i['diem'] for i in st.session_state.lich_su_hoc_tap) / so_bai:.1f}", f"{so_bai} bài")
 
-# CSS Tiêm sau khi khai báo biến dark_mode để hiển thị Layout chuẩn
+# ==================== CSS TIÊM ĐỂ HIỂN THỊ GIAO DIỆN ĐẸP MẮT ====================
 if dark_mode:
     st.markdown("""
     <style>
@@ -448,7 +488,6 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     c2.metric("✏️ Cơ bản", f"{len(bt_cb)} bài")
     c3.metric("🔥 Nâng cao", f"{len(bt_nc)} bài")
 
-    # KHÔI PHỤC ĐẦY ĐỦ 5 TAB GIAO DIỆN
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📚 Lý thuyết", "✏️ Cơ bản", "🔥 Nâng cao", "📝 Trắc nghiệm", "🎪 Phòng thí nghiệm"])
     
     with tab1:
@@ -548,11 +587,47 @@ elif che_do == "🔍 Tra cứu / Tìm kiếm":
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
     st.markdown("""<div class="hero-banner"><p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p></div>""", unsafe_allow_html=True)
     mk = st.text_input("🔑 Mật khẩu Admin:", type="password")
+    
     if not ADMIN_PASS:
         st.error("⚠️ Hệ thống chưa thiết lập ADMIN_PASSWORD trong Secrets. Tính năng bị khóa.")
     elif mk and hmac.compare_digest(mk, ADMIN_PASS):
         st.success("Xác thực thành công. Tính năng nạp file đang mở...")
-    elif mk: st.error("Sai mật khẩu!")
+        
+        tab_upfile, tab_paste = st.tabs(["📁 Tải File Lên", "📝 Dán Văn Bản Thô"])
+        danh_sach_files = []
+        with tab_upfile:
+            uploaded_files = st.file_uploader("Chọn file (docx, pdf, ảnh, txt):", type=["docx", "pdf", "png", "jpg", "jpeg", "txt"], accept_multiple_files=True)
+            if uploaded_files: danh_sach_files = uploaded_files
+        with tab_paste:
+            raw_text = st.text_area("Dán nội dung văn bản gốc vào đây:", height=220)
+
+        PROMPT_PARSER = 'Chuyển nội dung thành Dictionary Python chuẩn gồm "ly_thuyet", "vi_du", "cau_hoi", "bt_co_ban", "bt_nang_cao". Chỉ in code Python.'
+        if st.button("⚡ Bóc tách dữ liệu", type="primary", use_container_width=True):
+            if not danh_sach_files and not raw_text.strip(): 
+                st.warning("⚠️ Vui lòng tải file hoặc dán văn bản!")
+            else:
+                with st.spinner("🤖 Trợ lý AI đang đọc và phân tích cấu trúc..."):
+                    try:
+                        payload = []
+                        for f in danh_sach_files:
+                            if f.name.endswith(".docx"): payload.append(trich_xuat_word_docx(f.read()))
+                            elif f.name.endswith(".pdf"): payload.append({"mime_type": "application/pdf", "data": f.read()})
+                            elif f.name.endswith((".png", ".jpg", ".jpeg")) and HAS_PIL: payload.append(Image.open(io.BytesIO(f.read())))
+                            else: payload.append(f.read().decode('utf-8', errors='ignore'))
+                        if raw_text.strip(): payload.append(raw_text.strip())
+                        ket_qua = goi_gemini_an_toan(payload, system_instruction=PROMPT_PARSER)
+                        st.session_state["parsed_code_result"] = ket_qua.replace("```python", "").replace("```json", "").replace("```", "").strip()
+                    except Exception as e: 
+                        st.error(f"❌ Lỗi xử lý: {e}")
+
+        if "parsed_code_result" in st.session_state and st.session_state["parsed_code_result"]:
+            code_out = st.session_state["parsed_code_result"]
+            st.success("✅ Bóc tách dữ liệu thành công!")
+            st.download_button("💾 Tải Code về máy (.py)", data=code_out.encode("utf-8"), file_name="data_moi.py", mime="text/x-python")
+            st.code(code_out, language="python")
+            
+    elif mk: 
+        st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
     st.markdown("""<div class="hero-banner"><p class="hero-title">🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác</p></div>""", unsafe_allow_html=True)
@@ -560,7 +635,6 @@ elif che_do == "🎪 Phòng thí nghiệm ảo":
     hien_thi_phong_thi_nghiem(mon_lab, key_prefix="main_lab")
 
 elif che_do == "📖 Học theo chuyên đề":
-    # KHÔI PHỤC HERO BANNER TUYỆT ĐẸP CHO BÀI HỌC
     st.markdown(f"""<div class="hero-banner"><p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p><p class="hero-sub">Hệ thống học tập thông minh lớp 7</p></div>""", unsafe_allow_html=True)
     
     lop_dict = DATABASE[mon]
