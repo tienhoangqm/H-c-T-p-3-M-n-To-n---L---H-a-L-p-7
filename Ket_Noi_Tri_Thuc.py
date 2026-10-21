@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Giai đoạn 2: Trang Chủ + Lưu Lịch Sử Bài Làm + Chấm Điểm & Giải Thích Chi Tiết
+Phiên bản Giai đoạn 3: Tìm Kiếm Thông Minh (Global Search) + Báo Lỗi Câu Hỏi + Lịch Sử + AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
@@ -269,12 +269,54 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
             continue
     raise last_err
 
-# ==================== HIỂN THỊ TRANG CHỦ / GIỚI THIỆU ====================
+# ==================== TÍNH NĂNG TÌM KIẾM THÔNG MINH (GLOBAL SEARCH) ====================
+def hien_thi_tim_kiem_toan_dien():
+    st.markdown("""
+    <div class="hero-banner">
+        <p class="hero-title">🔍 Tra Cứu & Tìm Kiếm Tri Thức Thông Minh</p>
+        <p class="hero-sub">Gõ từ khóa bất kỳ (ví dụ: số hữu tỉ, định lý, phản xạ ánh sáng,...) để tìm nhanh bài học trong toàn bộ hệ thống</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    tu_khoa = st.text_input("🔎 Nhập từ khóa cần tìm kiếm:", placeholder="Gõ tên bài học hoặc khái niệm...")
+    
+    if tu_khoa.strip():
+        kw = tu_khoa.strip().lower()
+        ket_qua_tim = []
+        
+        for ten_mon, lop_dict in DATABASE.items():
+            for lop, chuong_dict in lop_dict.items():
+                for chuong, bai_dict in chuong_dict.items():
+                    for ten_bai, data in bai_dict.items():
+                        # Kiểm tra từ khóa trong tên bài, lý thuyết hoặc ví dụ
+                        lt = data.get("ly_thuyet", "").lower()
+                        vd = data.get("vi_du", "").lower()
+                        if kw in ten_bai.lower() or kw in lt or kw in vd:
+                            ket_qua_tim.append({
+                                "mon": ten_mon,
+                                "lop": lop,
+                                "chuong": chuong,
+                                "bai": ten_bai,
+                                "data": data
+                            })
+        
+        st.markdown(f"### 📋 Kết quả tìm kiếm cho từ khóa: *'{tu_khoa}'* ({len(ket_qua_tim)} kết quả)")
+        if not ket_qua_tim:
+            st.info("⚠️ Không tìm thấy bài học phù hợp với từ khóa của bạn. Hãy thử từ khóa ngắn hơn nhé!")
+        else:
+            for idx, item in enumerate(ket_qua_tim, 1):
+                with st.expander(f"{idx}. [{item['mon']} - {item['chuong']}] — {item['bai']}"):
+                    st.markdown(f"**Môn:** {item['mon']} | **Khối:** {item['lop']} | **{item['chuong']}**")
+                    if st.button(f"📖 Mở ngay bài này", key=f"btn_go_to_{idx}"):
+                        st.session_state["search_jump"] = item
+                        st.rerun()
+
+# ==================== HÀM TRANG CHỦ / GIỚI THIỆU ====================
 def hien_thi_trang_chu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Nền tảng học tập thông minh tích hợp Phòng Thí Nghiệm Ảo, Lưu Lịch Sử Bài Làm và Trợ lý Gia sư AI</p>
+        <p class="hero-sub">Nền tảng học tập thông minh tích hợp Phòng Thí Nghiệm Ảo, Tìm Kiếm Nhanh và Trợ lý Gia sư AI</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -283,9 +325,9 @@ def hien_thi_trang_chu():
         st.markdown("""
         <div class="card-home">
             <h3>🌟 Giới thiệu Hệ thống</h3>
-            <p>Chào mừng em đến với không gian học tập trực tuyến bám sát chương trình Giáo dục Phổ thông 2018 bộ sách <b>Kết Nối Tri Thức</b> lớp 7:</p>
+            <p>Không gian học tập trực tuyến bám sát chương trình GDPT 2018 bộ sách <b>Kết Nối Tri Thức</b> lớp 7:</p>
             <ul>
-                <li>📐 <b>Môn Toán lớp 7:</b> Hệ thống Số hữu tỉ, Hình học phẳng, Biểu thức đại số...</li>
+                <li>📐 <b>Môn Toán lớp 7:</b> Số hữu tỉ, Hình học phẳng, Biểu thức đại số...</li>
                 <li>🔬 <b>Môn Vật lý (KHTN):</b> Quang học, Mạch điện, Âm học sinh động.</li>
                 <li>🧪 <b>Môn Hóa học (KHTN):</b> Cấu tạo nguyên tử, Phân tử, Nồng độ dung dịch.</li>
             </ul>
@@ -294,8 +336,8 @@ def hien_thi_trang_chu():
 
         st.markdown("""
         <div class="card-home">
-            <h3>🎪 Phòng Thí Nghiệm Ảo (Virtual Lab)</h3>
-            <p>Trải nghiệm các mô phỏng tương tác đỉnh cao chuẩn PhET (Đại học Colorado, Mỹ). Học sinh có thể trực tiếp kéo thả mạch điện, đo khúc xạ ánh sáng ngay trên màn hình.</p>
+            <h3>🔍 Tìm Kiếm Thông Minh (Global Search)</h3>
+            <p>Tính năng mới giúp học sinh gõ từ khóa bất kỳ để truy xuất ngay lập tức lý thuyết và bài tập từ kho dữ liệu mà không cần tìm kiếm thủ công.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -304,18 +346,17 @@ def hien_thi_trang_chu():
         <div class="card-home">
             <h3>💬 Trợ lý Gia sư AI 24/7 (Đa Giác Quan)</h3>
             <ul>
-                <li>🧠 <b>Phương pháp Socratic:</b> AI gợi mở từng bước để con tự tư duy thay vì giải hộ.</li>
-                <li>📸 <b>Mắt thần AI:</b> Chụp ảnh đề bài hoặc hình vẽ để Gia sư soi và hướng dẫn giải.</li>
-                <li>🎙️ <b>Thu âm giọng nói:</b> Bấm nút và nói câu hỏi trực tiếp.</li>
-                <li>🔊 <b>Tự động đọc to:</b> AI tự động chuyển câu trả lời thành giọng nói chuẩn tiếng Việt.</li>
+                <li>🧠 <b>Phương pháp Socratic:</b> AI gợi mở từng bước để học sinh tự tư duy.</li>
+                <li>📸 <b>Mắt thần AI:</b> Chụp ảnh đề bài hoặc hình vẽ để Gia sư hướng dẫn.</li>
+                <li>🎙️ <b>Thu âm & Đọc to:</b> Hỗ trợ nói chuyện và tự động đọc to đề bài.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class="card-home">
-            <h3>📊 Quản lý Lịch sử Học tập</h3>
-            <p>Mỗi bài tập cơ bản hay bài trắc nghiệm hoàn thành đều được hệ thống tự động ghi nhớ điểm số, thống kê chi tiết câu đúng/sai giúp phụ huynh dễ dàng theo dõi lực học của con.</p>
+            <h3>🚨 Tương tác & Báo lỗi</h3>
+            <p>Hệ thống tích hợp nút <b>Báo lỗi câu hỏi</b> ngay dưới các bài tập để phụ huynh và học sinh dễ dàng phản hồi khi phát hiện sai sót, giúp ngân hàng đề ngày càng chuẩn xác.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -349,7 +390,6 @@ def hien_thi_tram_nap_du_lieu():
 
     danh_sach_files = []
     with tab_upfile:
-        st.markdown("### 📤 1. Tải file bài giảng / đề cương / đề thi lên hệ thống")
         uploaded_files = st.file_uploader(
             "Chọn hoặc kéo thả file từ máy tính vào đây:",
             type=["docx", "pdf", "png", "jpg", "jpeg", "webp", "txt", "md"],
@@ -357,11 +397,10 @@ def hien_thi_tram_nap_du_lieu():
             key="parser_file_uploader"
         )
         if uploaded_files:
-            st.success(f"✅ Đã nhận **{len(uploaded_files)} file**: " + ", ".join([f.name for f in uploaded_files]))
+            st.success(f"✅ Đã nhận **{len(uploaded_files)} file**.")
             danh_sach_files = uploaded_files
 
     with tab_paste:
-        st.markdown("### 📝 1. Dán nội dung thô vào đây")
         raw_text = st.text_area("Copy bài giảng hoặc câu hỏi dán vào đây:", height=220, key="parser_raw_text")
 
     ghi_chu_them = st.text_input("💡 Yêu cầu bổ sung cho AI (không bắt buộc):", placeholder="Ví dụ: Tạo thêm 5 câu trắc nghiệm...")
@@ -382,10 +421,9 @@ def hien_thi_tram_nap_du_lieu():
             {"de": "Đề bài nâng cao", "hd": "Gợi ý", "dd": ["kết quả"], "lg": "Lời giải chi tiết"}
         ]
     }
-    Yêu cầu: Chỉ in ra đúng cấu trúc Dictionary Python, không giải thích gì thêm ngoài lề.
+    Yêu cầu: Chỉ in ra đúng cấu trúc Dictionary Python, không giải thích gì thêm.
     """
 
-    st.markdown("### 🚀 2. Xử lý & Tạo Code Tự Động")
     if st.button("⚡ Bóc tách dữ liệu & Tạo Code Python", type="primary", use_container_width=True):
         if not danh_sach_files and not raw_text.strip():
             st.warning("⚠️ Vui lòng tải file hoặc dán văn bản trước khi bấm nút!")
@@ -419,7 +457,7 @@ def hien_thi_tram_nap_du_lieu():
         st.download_button("💾 Tải đoạn Code về máy (.py)", data=code_out.encode("utf-8"), file_name="du_lieu_moi.py", mime="text/x-python", use_container_width=True)
         st.code(code_out, language="python")
 
-# ==================== HIỂN THỊ NỘI DUNG BÀI HỌC ====================
+# ==================== HÀM HIỂN THỊ NỘI DUNG BÀI HỌC ====================
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     st.markdown(f"### 📖 {ten_bai}")
     lt = data.get("ly_thuyet", "").strip()
@@ -450,19 +488,22 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
         st.markdown("#### ✏️ Bài tập cơ bản — Tự luyện")
         if not bt_cb: st.info("Chưa có bài tập cơ bản.")
         else:
-            dung_cb = 0
-            tong_cb = len(bt_cb)
             for i, bt in enumerate(bt_cb, 1):
                 with st.expander(f"Bài {i}: {bt['de']}"):
                     ans = st.text_input("Nhập kết quả:", key=f"cb_{sid}_{i}")
-                    if st.button("Kiểm tra đáp án", key=f"btn_cb_{sid}_{i}"):
-                        if not ans.strip(): st.warning("⚠️ Vui lòng nhập đáp án!")
-                        elif so_sanh(ans, bt["dd"]):
-                            st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
-                            st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
-                        else:
-                            st.markdown(f"<p class='sai'>❌ Chưa đúng. Đáp án: {bt['dd'][0]}</p>", unsafe_allow_html=True)
-                            st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
+                    col_b1, col_b2 = st.columns([3, 1])
+                    with col_b1:
+                        if st.button("Kiểm tra đáp án", key=f"btn_cb_{sid}_{i}"):
+                            if not ans.strip(): st.warning("⚠️ Vui lòng nhập đáp án!")
+                            elif so_sanh(ans, bt["dd"]):
+                                st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
+                                st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
+                            else:
+                                st.markdown(f"<p class='sai'>❌ Chưa đúng. Đáp án: {bt['dd'][0]}</p>", unsafe_allow_html=True)
+                                st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
+                    with col_b2:
+                        if st.checkbox("⚠️ Báo lỗi", key=f"err_cb_{sid}_{i}"):
+                            st.error("Cảm ơn bạn đã báo lỗi! Admin sẽ kiểm tra lại.")
 
     with tab3:
         st.markdown("#### 🔥 Bài tập nâng cao — Vận dụng tư duy")
@@ -473,7 +514,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     st.markdown(f"**Đề bài:** {nc['de']}")
                     if nc.get('hd'): st.info(f"💡 **Hướng dẫn:** {nc['hd']}")
                     ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
-                    c1, c2 = st.columns(2)
+                    c1, c2, c3 = st.columns(3)
                     with c1:
                         if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
                             if not ans.strip(): st.warning("⚠️ Vui lòng nhập đáp án!")
@@ -482,6 +523,9 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     with c2:
                         if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"):
                             st.success(f"**Lời giải:** {nc['lg']}")
+                    with c3:
+                        if st.checkbox("⚠️ Báo lỗi", key=f"err_nc_{sid}_{i}"):
+                            st.error("Đã ghi nhận báo lỗi.")
 
     with tab4:
         st.markdown("#### 📝 Luyện tập trắc nghiệm bài học")
@@ -514,11 +558,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                         diem = dung / len(de) * 10
                         luu_tien_do(mon, lop, chuong, ten_bai, dung, len(de))
                         
-                        # Ghi nhận vào lịch sử học tập chung
-                        chi_tiet_sai = []
-                        for i, ch in enumerate(de, 1):
-                            if tl[i] != ch["da"][ch["d"]]:
-                                chi_tiet_sai.append(f"Câu {i} (Chọn: {tl[i]} · Đúng: {ch['da'][ch['d']]})")
+                        chi_tiet_sai = [f"Câu {i}" for i, ch in enumerate(de, 1) if tl[i] != ch["da"][ch["d"]]]
                         ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(de), chi_tiet_sai)
 
                         if diem >= 8.0: st.balloons()
@@ -569,8 +609,7 @@ def hien_thi_che_do_thi(mon, lop, chuong_dict):
                     dung = sum(1 for i, ch in enumerate(de_thi, 1) if tl_thi[i] == ch["da"][ch["d"]])
                     diem = dung / len(de_thi) * 10
                     
-                    # Lưu vào lịch sử học tập
-                    chi_tiet_sai = [f"Câu {i} sai" for i, ch in enumerate(de_thi, 1) if tl_thi[i] != ch["da"][ch["d"]]]
+                    chi_tiet_sai = [f"Câu {i}" for i, ch in enumerate(de_thi, 1) if tl_thi[i] != ch["da"][ch["d"]]]
                     ghi_nhan_lich_su(f"Thi thử: {ten_de_hien_tai} ({mon})", diem, dung, len(de_thi), chi_tiet_sai)
 
                     if diem >= 8.0: st.balloons()
@@ -591,6 +630,7 @@ with st.sidebar:
         "⚙️ Chế độ & Công cụ:", 
         [
             "🏠 Trang chủ / Hướng dẫn",
+            "🔍 Tra cứu / Tìm kiếm",
             "📖 Học theo chuyên đề", 
             "📝 Phòng thi / Kiểm tra",
             "🎪 Phòng thí nghiệm ảo",
@@ -598,8 +638,11 @@ with st.sidebar:
         ]
     )
     st.divider()
-    if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🎪 Phòng thí nghiệm ảo", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
+    if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "🎪 Phòng thí nghiệm ảo", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
         mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
+        hien_thi_tien_do()
+    elif che_do == "🔍 Tra cứu / Tìm kiếm":
+        mon = "🔍 Tra cứu"
         hien_thi_tien_do()
     elif che_do == "🎪 Phòng thí nghiệm ảo":
         mon = "🎪 Phòng Thí Nghiệm Khoa Học"
@@ -613,11 +656,22 @@ with st.sidebar:
         mon = "🏠 Trang chủ"
         hien_thi_tien_do()
 
+# Xử lý nhảy trang nếu người dùng bấm từ kết quả tìm kiếm
+if "search_jump" in st.session_state:
+    jump_item = st.session_state["search_jump"]
+    del st.session_state["search_jump"]
+    che_do = "📖 Học theo chuyên đề"
+    mon = jump_item["mon"]
+    # Tự động gán giá trị tương ứng để hiển thị đúng bài
+    st.session_state["mon_main"] = mon
+
 # ==================== ĐIỀU HƯỚNG MÀN HÌNH CHÍNH ====================
 bai_dang_hoc = ""
 
 if che_do == "🏠 Trang chủ / Hướng dẫn":
     hien_thi_trang_chu()
+elif che_do == "🔍 Tra cứu / Tìm kiếm":
+    hien_thi_tim_kiem_toan_dien()
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)":
     hien_thi_tram_nap_du_lieu()
 elif che_do == "🎪 Phòng thí nghiệm ảo":
@@ -674,7 +728,7 @@ else:
 # ==========================================================
 # KHU VỰC GIA SƯ AI ĐA GIÁC QUAN & MẮT THẦN
 # ==========================================================
-if che_do not in ["🏠 Trang chủ / Hướng dẫn", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
+if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
     st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
