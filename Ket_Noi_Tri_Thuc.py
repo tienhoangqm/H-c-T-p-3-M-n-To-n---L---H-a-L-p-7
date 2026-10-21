@@ -249,15 +249,35 @@ def trich_xuat_word_docx(file_bytes):
         return f"[Lỗi đọc file Word: {e}]"
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
+    """Hàm gọi AI tự động retry thông minh với các model ổn định hiện tại"""
     ds_models = [
         "gemini-3.5-flash",
-        "gemini-3.5-pro",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash"
     ]
     max_retries = 3
     last_err = None
+
+    for ten_m in ds_models:
+        for attempt in range(max_retries):
+            try:
+                m = genai.GenerativeModel(model_name=ten_m, system_instruction=system_instruction)
+                if history is not None:
+                    chat_s = m.start_chat(history=history)
+                    return chat_s.send_message(payload).text
+                else:
+                    return m.generate_content(payload).text
+            except Exception as e:
+                last_err = e
+                error_str = str(e).lower()
+                # Nếu gặp lỗi quá tải (429) hoặc không tìm thấy model (404), thử lại hoặc chuyển model
+                if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str or "404" in error_str:
+                    time.sleep(1.5 * (attempt + 1))
+                    continue
+                else:
+                    break  # Lỗi khác thì chuyển sang model tiếp theo ngay
+    raise last_err
 
     for ten_m in ds_models:
         for attempt in range(max_retries):
