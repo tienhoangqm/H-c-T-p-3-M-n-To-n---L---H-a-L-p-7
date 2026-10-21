@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tối thượng: Đã tích hợp Phòng Thí Nghiệm Ngữ Văn Tương Tác Trực Quan
+Phiên bản Tối thượng: Tích hợp trực tiếp Phòng Thí Nghiệm Ngữ Văn Tương Tác vào bài học
 """
 import streamlit as st
 import google.generativeai as genai
@@ -143,7 +143,6 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN if VAN else {"Lớp 7": {"Chương 1: Đang cập nhật dữ liệu Văn": {}}},
 }
 
-# ==================== DANH MỤC MÔ PHỎNG PHET & NGỮ VĂN TƯƠNG TÁC ====================
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html",
@@ -166,50 +165,48 @@ DANH_MUC_THI_NGHIEM = {
     }
 }
 
-# ==================== DỮ LIỆU MẪU PHÒNG THÍ NGHIỆM NGỮ VĂN ====================
 DATA_LAB_NGU_VAN = {
     "🗺️ 1. Bản đồ Cấu trúc & Bối cảnh Tác phẩm": {
-        "tieu_de": "Bản đồ Cấu trúc Tác phẩm: Cuộc chia tay của những con búp bê (Khánh Hoài)",
-        "hoan_canh": "Viết năm 1992, đạt giải Nhất cuộc thi viết tương lai vì trẻ em.",
+        "tieu_de": "Bản đồ Cấu trúc Tác phẩm: Bồng chanh đỏ (Đỗ Chu) & Cuộc chia tay của những con búp bê",
+        "hoan_canh": "Truyện ngắn xuất sắc viết về tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
         "bo_cuc": [
-            {"phan": "Phần 1: Mở đầu", "noi_dung": "Hai anh em Thành và Thủy phải chia đồ chơi vì bố mẹ chia tay."},
-            {"phan": "Phần 2: Diễn biến", "noi_dung": "Thủy đến lớp chào cô giáo và các bạn, cuộc chia tay đầy nước mắt với em Vệ."},
-            {"phan": "Phần 3: Cao trào", "noi_dung": "Hai anh em chia tay nhau ngậm ngùi, con búp bê Vệ Sĩ và Em Nhỏ không nỡ rời xa."},
-            {"phan": "Phần 4: Kết thúc", "noi_dung": "Thủy quyết định không bắt Vệ Sĩ rời xa Em Nhỏ, nhưng lòng đau xót khôn nguôi."}
+            {"phan": "Phần 1: Mở đầu", "noi_dung": "Giới thiệu không gian ven sông quen thuộc và tổ chim bồng chanh đỏ đầy bí ẩn của hai anh em Hoài và Ý."},
+            {"phan": "Phần 2: Diễn biến", "noi_dung": "Cuộc mạo hiểm leo lên bờ vực cao để quan sát tổ chim bồng chanh đỏ nở con."},
+            {"phan": "Phần 3: Cao trào", "noi_dung": "Quyết định thả chim về với tự nhiên sau khi nhận ra tình mẫu tử thiêng liêng của loài vật."},
+            {"phan": "Phần 4: Kết thúc", "noi_dung": "Bài học sâu sắc về sự tôn trọng tự do và tình yêu thương muôn loài."}
         ],
-        "y_nghia": "Ca ngợi tình cảm anh em thắm thiết, sâu nặng; lên án những gia đình thiếu trách nhiệm làm tổn thương trẻ thơ."
+        "y_nghia": "Bồi dưỡng tình yêu thiên nhiên, ý thức bảo vệ môi trường sống và sự trân trọng những vẻ đẹp trong ngần của tuổi thơ."
     },
     "🎭 2. Biểu đồ Tương tác & Phân tích Nhân vật": {
-        "nhan_vat": "Bé Thủy trong 'Cuộc chia tay của những con búp bê'",
-        "dac_diem": "Ngây thơ, giàu tình cảm, thương anh và vô cùng gắn bó với đồ chơi.",
-        "hanh_vi_tieu_bieu": "Khóc nức nở khi phải chia đồ chơi; nhường hết bút mực cho anh; đau đớn khi đặt hai con búp bê cạnh nhau.",
+        "nhan_vat": "Nhân vật Hoài trong truyện 'Bồng chanh đỏ'",
+        "dac_diem": "Giàu tình cảm, ham khám phá, biết trân trọng sự sống và có nội tâm nhân hậu.",
+        "hanh_vi_tieu_bieu": "Trèo cây leo vực tìm tổ chim; say sưa ngắm nhìn chim bố mẹ mớm mồi; quyết định ngăn không cho em bắt chim.",
         "dien_bien_tam_ly": [
-            {"giai_doan": "Đầu truyện", "tam_trang": "Buồn bã, hoảng hốt khi nghe tin bố mẹ chia tay."},
-            {"giai_doan": "Giữa truyện", "tam_trang": "Nén nước mắt khi chia tay thầy cô, bạn bè."},
-            {"giai_doan": "Cuối truyện", "tam_trang": "Đau đớn tột cùng khi buộc phải chia cắt hai con búp bê Vệ Sĩ và Em Nhỏ."}
+            {"giai_doan": "Đầu truyện", "tam_trang": "Tò mò, khao khát sở hữu tổ chim bồng chanh đỏ tuyệt đẹp."},
+            {"giai_doan": "Giữa truyện", "tam_trang": "Xúc động trước tình cảm gia đình chim bồng chanh."},
+            {"giai_doan": "Cuối truyện", "tam_trang": "Thức tỉnh, hạnh phúc và buông bỏ ý định bắt chim để trả lại tự do cho chúng."}
         ]
     },
     "🕸️ 3. Sơ đồ Quan hệ Nhân vật": {
-        "tac_pham": "Truyện ngắn 'Dế Mèn phiêu lưu ký' (Tô Hoài)",
+        "tac_pham": "Mối quan hệ trong 'Bồng chanh đỏ'",
         "quan_he": [
-            {"tu_khoa": "Dế Mèn ↔️ Dế Choắt", "loai": "Gắn bó - Bài học sâu sắc", "mo_ta": "Choắt yếu đuối, hay gây chuyện nhưng được Mèn thương tình, tuy nhiên sự ngông cuồng của Mèn đã dẫn đến cái chết thương tâm của Choắt."},
-            {"tu_khoa": "Dế Mèn ↔️ Nhà Trò", "loai": "Cứu giúp - Che chở", "mo_ta": "Mèn bảo vệ Nhà Trò khỏi bọn Nhện độc ác, thể hiện lòng thương người và tinh thần trượng nghĩa."},
-            {"tu_khoa": "Dế Mèn ↔️ Xén Tóc / Cốc", "loai": "Xung đột - Thử thách", "mo_ta": "Những va chạm ngoài xã hội giúp Dế Mèn trưởng thành, bớt tính xốc nổi."}
+            {"tu_khoa": "Anh Hoài ↔️ Em Ý", "loai": "Đồng hành khám phá", "mo_ta": "Hai anh em cùng chia sẻ những bí mật tuổi thơ, cùng leo trèo và cùng thay đổi nhận thức qua sự việc chú chim bồng chanh."},
+            {"tu_khoa": "Con người ↔️ Thiên nhiên (Chim bồng chanh)", "loai": "Từ chinh phục đến thấu hiểu", "mo_ta": "Sự chuyển biến từ ý định săn bắt sang bảo vệ, thể hiện sự hòa hợp giữa con người và tự nhiên."}
         ]
     },
     "✍️ 4. Phòng thực hành Luyện từ & Ngữ pháp": {
-        "chu_de": "Phân biệt Câu đơn và Câu phức & Biện pháp tu từ",
+        "chu_de": "Phòng thực hành Từ vựng & Biện pháp tu từ lớp 7",
         "cau_hoi_mau": [
-            {"cau": "Bởi vì trời mưa lớn, / nên đường phố ngập nước.", "loai": "Câu phức (Quan hệ Nguyên nhân - Kết quả)", "phan_tich": "Vế 1: Nguyên nhân (trời mưa lớn), Vế 2: Kết quả (đường phố ngập nước)."},
-            {"cau": "Dế Mèn / rất khỏe mạnh và cường tráng.", "loai": "Câu đơn (Mở rộng vị ngữ)", "phan_tich": "Chủ ngữ: Dế Mèn, Vị ngữ: rất khỏe mạnh và cường tráng."}
+            {"cau": "Đôi cánh bồng chanh đỏ chói rực rỡ như một đốm lửa nhỏ.", "loai": "Biện pháp tu từ: So sánh", "phan_tich": "Tác dụng: Làm cho hình ảnh chim bồng chanh trở nên sinh động, nổi bật và giàu sức gợi hình."},
+            {"cau": "Tiếng chim hót vang lừng / chào đón bình minh.", "loai": "Biện pháp tu từ: Nhân hóa", "phan_tich": "Tác dụng: Gắn cho chim hoạt động của con người, tăng tính biểu cảm."}
         ]
     },
     "📝 5. Trạm Lập dàn ý & Cấu trúc bài văn": {
-        "the_loai": "Văn biểu cảm về người thân (Mẹ / Bà)",
+        "the_loai": "Viết bài văn biểu cảm về một tác phẩm văn học",
         "dan_y": [
-            {"buoc": "1. Mở bài", "noi_dung": "Giới thiệu người thân định tả và ấn tượng chung sâu sắc nhất."},
-            {"buoc": "2. Thân bài", "noi_dung": "- Ngoại hình, cử chỉ, hành động thể hiện tình yêu thương.\n- Kỷ niệm sâu sắc nhất giữa em và người đó.\n- Phẩm chất cao đẹp (hy sinh, tần tảo)."},
-            {"buoc": "3. Kết bài", "noi_dung": "Khẳng định tình cảm thiêng liêng của em và lời hứa phấn đấu ngoan ngoãn."}
+            {"buoc": "1. Mở bài", "noi_dung": "Giới thiệu tên tác phẩm, tác giả và cảm xúc chung chi phối người đọc."},
+            {"buoc": "2. Thân bài", "noi_dung": "- Nêu ấn tượng về nội dung (cốt truyện, chi tiết đắt giá).\n- Nêu cảm xúc về nhân vật hoặc bức tranh thiên nhiên trong tác phẩm.\n- Ý nghĩa sâu xa mà tác phẩm gửi gắm."},
+            {"buoc": "3. Kết bài", "noi_dung": "Khẳng định giá trị trường tồn của tác phẩm và bài học rút ra cho bản thân."}
         ]
     }
 }
@@ -426,7 +423,7 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
 
     raise last_err
 
-# ==================== HÀM HIỂN THỊ PHÒNG THÍ NGHIỆM NGỮ VĂN TƯƠNG TÁC ====================
+# ==================== GIAO DIỆN PHÒNG THÍ NGHIỆM NGỮ VĂN TƯƠNG TÁC ====================
 def hien_thi_phong_thi_nghiem_ngu_van(key_prefix="van"):
     st.markdown("""
     <div class="hero-banner">
@@ -634,6 +631,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                             if tl[i] == da_dung: st.markdown(f"✅ Câu {i}: Đúng")
                             else: st.markdown(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
 
+    # Sửa trực tiếp ở đây: Truyền đúng môn học hiện tại (mon) vào phòng thí nghiệm của bài học
     with tab5: hien_thi_phong_thi_nghiem(mon, key_prefix=f"tab_{sid}")
 
 def hien_thi_che_do_thi(mon, lop, chuong_dict):
