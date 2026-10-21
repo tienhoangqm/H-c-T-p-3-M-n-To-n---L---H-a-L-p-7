@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Vá Lỗi Toàn Diện: Threading Lock API, Regex Số Học, Cache An Toàn, HMAC Admin
+Phiên bản Khởi Động An Toàn: Chống sập App tuyệt đối khi mất file Secrets
 """
 import streamlit as st
+import google.generativeai as genai
 import io
 import random
 import re
@@ -17,10 +18,14 @@ import hashlib
 import threading
 import hmac
 from collections import OrderedDict
-import google.generativeai as genai
 
-# ==================== CẤU HÌNH TRANG & ĐIỀU HƯỚNG SỚM ====================
-st.set_page_config(page_title="Hệ Thống Học Tập Lớp 7", page_icon="🎓", layout="wide", initial_sidebar_state="expanded")
+# ==================== CẤU HÌNH TRANG (PHẢI ĐẶT ĐẦU TIÊN) ====================
+st.set_page_config(
+    page_title="Hệ Thống Học Tập Lớp 7 - Kết Nối Tri Thức",
+    page_icon="🎓",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Xử lý nhảy trang từ tính năng Tìm kiếm trước khi Sidebar render
 if "search_jump" in st.session_state:
@@ -29,6 +34,26 @@ if "search_jump" in st.session_state:
     st.session_state["mon_main"] = item["mon"]
     st.session_state["chuong_main"] = item["chuong"]
     st.session_state["bai_main"] = item["bai"]
+
+# Tải khởi động mượt mà chống ngủ đông
+with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, bạn chờ chút nhé..."):
+    try:
+        from streamlit_mic_recorder import speech_to_text
+        HAS_MIC = True
+    except ImportError:
+        HAS_MIC = False
+
+    try:
+        from gtts import gTTS
+        HAS_TTS = True
+    except ImportError:
+        HAS_TTS = False
+
+    try:
+        from PIL import Image
+        HAS_PIL = True
+    except ImportError:
+        HAS_PIL = False
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC (GLOBAL) ====================
 @st.cache_resource
@@ -43,9 +68,11 @@ def get_global_locks():
 
 GLOBALS = get_global_locks()
 
-# ==================== ĐỌC SECRETS AN TOÀN ====================
+# ==================== ĐỌC SECRETS AN TOÀN (CHỐNG SẬP APP) ====================
 def get_secret(key_name, default_val=""):
+    """Hàm lấy key an toàn, nếu không có file secrets.toml thì không bị sập"""
     try:
+        # Bọc an toàn tuyệt đối khi gọi st.secrets
         if key_name in st.secrets:
             return st.secrets[key_name]
     except Exception:
@@ -66,6 +93,12 @@ def lay_danh_sach_gemini_keys():
     return keys
 
 GEMINI_KEYS = lay_danh_sach_gemini_keys()
+if GEMINI_KEYS:
+    try:
+        genai.configure(api_key=GEMINI_KEYS[0])
+    except Exception:
+        pass
+
 DOLA_ENDPOINT = str(get_secret("DOLA_API_ENDPOINT")).strip()
 DOLA_KEY = str(get_secret("DOLA_API_KEY")).strip()
 DOLA_PROJECT_TIER = str(get_secret("DOLA_PROJECT_TIER", "high_limit_edu")).strip()
@@ -100,7 +133,6 @@ def tao_ma_hash_cau_hoi(mon_hoc, bai_hoc, che_do, cau_hoi):
     return hashlib.md5(chuoi_chuan.encode('utf-8')).hexdigest()
 
 def luu_cache_ai(ma_hash, noi_dung):
-    # Bộ lọc chống lưu các thông báo lỗi
     nd_lower = noi_dung.lower()
     if any(k in nd_lower for k in ["bận", "quá tải", "lỗi", "chuyển sang", "bảo trì"]) or "⚠️" in noi_dung:
         return
@@ -127,14 +159,10 @@ def ep_kieu_so_hoc(chuoi):
         if len(parts) == 2:
             try: return float(parts[0]) / float(parts[1])
             except: return None
-    
-    # Nhận diện chuẩn VN (1.000,5) bằng regex
     if re.fullmatch(r'-?\d{1,3}(\.\d{3})+(,\d+)?', s):
         s = s.replace('.', '').replace(',', '.')
     else:
-        # Chuẩn quốc tế hoặc dấu phẩy thập phân thường
         s = s.replace(',', '.')
-        
     try: return float(s)
     except ValueError: return None
 
@@ -144,20 +172,16 @@ def so_sanh_so_hoc(nd, ds_dung):
         val_d = ep_kieu_so_hoc(d)
         if val_x is not None and val_d is not None:
             if abs(val_x - val_d) < 1e-5: return True
-        # So sánh chuỗi tuyệt đối cho bài đại số (x, y)
         if re.sub(r'\s+', '', str(nd).lower()) == re.sub(r'\s+', '', str(d).lower()): return True
     return False
 
 def tron_dap_an_thong_minh(ch):
     da_goc = list(ch["da"])
     d_dung = da_goc[ch["d"]]
-    
-    # Không trộn nếu có đáp án mang tính tổng hợp
     for ans in da_goc:
         txt = str(ans).lower()
         if "cả" in txt or "tất cả" in txt or "đáp án" in txt or "phương án" in txt or "a, b" in txt:
             return da_goc, ch["d"]
-            
     random.shuffle(da_goc)
     return da_goc, da_goc.index(d_dung)
 
@@ -171,6 +195,28 @@ def sap_xep_chuong(ds_chuong):
 def ghi_nhan_lich_su(tieu_de_bai, diem, dung, tong):
     if 'lich_su_hoc_tap' not in st.session_state: st.session_state.lich_su_hoc_tap = []
     st.session_state.lich_su_hoc_tap.insert(0, {"bai": tieu_de_bai, "diem": diem, "dung": dung, "tong": tong})
+
+def lam_sach_van_ban_doc(text):
+    s = str(text)
+    s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1 phần \2', s)
+    s = s.replace(r'\mathbb{Q}', 'Q').replace(r'\mathbb{Z}', 'Z').replace(r'\mathbb{N}', 'N').replace(r'\mathbb{R}', 'R')
+    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ').replace(r'\div', ' chia ')
+    s = s.replace('^2', ' bình phương ').replace('^3', ' lập phương ')
+    s = re.sub(r'[$*#_`~\\{}]', ' ', s)
+    s = re.sub(r'[^\w\s,.?!:;()+\-*/=<>%àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]', '', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+def doc_to_an_toan(text, autoplay=True):
+    if not HAS_TTS or not text: return
+    try:
+        clean_text = lam_sach_van_ban_doc(text)
+        if clean_text:
+            afp = io.BytesIO()
+            gTTS(text=clean_text, lang='vi').write_to_fp(afp)
+            afp.seek(0)
+            st.audio(afp, format='audio/mp3', autoplay=autoplay)
+    except Exception:
+        pass
 
 # ==================== MÔ-ĐUN AI (CÓ LOCK) ====================
 def goi_dola_toi_uu(cau_hoi):
@@ -199,12 +245,11 @@ def lay_ds_model_kha_dung(api_key):
     return uu_tien
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
-    if not GEMINI_KEYS: raise RuntimeError("Chưa cấu hình GEMINI_API_KEY")
+    if not GEMINI_KEYS: raise RuntimeError("Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm vào Secrets.")
     if "key_index" not in st.session_state: st.session_state["key_index"] = 0
     so_luong_key = len(GEMINI_KEYS)
     last_err = None
 
-    # Threading Lock bảo vệ việc gán API key toàn cục
     with GLOBALS["ai_api_lock"]:
         for k_offset in range(so_luong_key):
             idx = (st.session_state["key_index"] + k_offset) % so_luong_key
@@ -263,6 +308,10 @@ with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     dark_mode = st.toggle("🌙 Chế độ tối", key="dark_mode_toggle")
     st.markdown(f"🟢 **Đang trực tuyến: {cap_nhat_nguoi_online()}**")
+    
+    if not GEMINI_KEYS:
+        st.warning("⚠️ Ứng dụng chưa có API Key, đang chạy ở chế độ giao diện Mẫu.")
+        
     st.divider()
     
     che_do = st.radio("⚙️ Chức năng:", ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "🎪 Phòng thí nghiệm ảo", "⚙️ Trạm Nạp Dữ Liệu"], key="che_do_sidebar")
@@ -314,7 +363,6 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
         st.error("⚠️ Hệ thống chưa thiết lập ADMIN_PASSWORD trong Secrets. Tính năng bị khóa.")
     elif mk and hmac.compare_digest(mk, ADMIN_PASS):
         st.success("Xác thực thành công. Tính năng nạp file đang mở...")
-        # Lược bỏ code nạp file chi tiết để tiết kiệm không gian, giữ logic bảo mật
     elif mk: st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
@@ -398,36 +446,39 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra"]:
 
     prompt = st.chat_input("Hỏi gia sư...")
     if prompt:
-        ok, giay = kiem_tra_gioi_han_tan_suat()
-        if not ok:
-            st.warning(f"⏳ Chờ {giay}s rồi hỏi tiếp. Lần này AI chưa nhận câu hỏi của em: '{prompt}'")
+        if not GEMINI_KEYS:
+            st.error("⚠️ Hệ thống chưa được cấu hình API Key. Vui lòng báo thầy cô thêm khóa API để sử dụng tính năng này.")
         else:
-            with st.chat_message("user"): st.markdown(prompt)
-            st.session_state.chat_history.append({"role": "user", "content": prompt})
-            
-            with st.chat_message("assistant"):
-                is_first = (len(st.session_state.chat_history) <= 2)
-                h_key = tao_ma_hash_cau_hoi(mon_ai, bai_dang_hoc, nguon_ai, prompt) if is_first else None
-                ans_cached = lay_cache_ai(h_key) if h_key else None
+            ok, giay = kiem_tra_gioi_han_tan_suat()
+            if not ok:
+                st.warning(f"⏳ Chờ {giay}s rồi hỏi tiếp. Lần này AI chưa nhận câu hỏi của em: '{prompt}'")
+            else:
+                with st.chat_message("user"): st.markdown(prompt)
+                st.session_state.chat_history.append({"role": "user", "content": prompt})
                 
-                if ans_cached:
-                    st.markdown(ans_cached)
-                    st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
-                else:
-                    g_hist = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
-                    luu_kq = ""
-                    try:
-                        with st.spinner("AI đang nghĩ..."):
-                            if "Dola" in nguon_ai:
-                                d_nd = goi_dola_toi_uu(prompt)
-                                if d_nd: luu_kq = goi_gemini_an_toan(f"Chuẩn SGK: {d_nd}\nDiễn giải câu: {prompt}", sys_prompt, g_hist)
-                                else: luu_kq = goi_gemini_an_toan(prompt, sys_prompt, g_hist)
-                            else:
-                                luu_kq = goi_gemini_an_toan(prompt, sys_prompt, g_hist)
-                            st.markdown(luu_kq)
-                    except Exception as e:
-                        luu_kq = "⚠️ AI đang bận xử lý, em thử lại câu hỏi nhé."
-                        st.error(luu_kq)
-                        
-                    st.session_state.chat_history.append({"role": "assistant", "content": luu_kq})
-                    if h_key: luu_cache_ai(h_key, luu_kq)
+                with st.chat_message("assistant"):
+                    is_first = (len(st.session_state.chat_history) <= 2)
+                    h_key = tao_ma_hash_cau_hoi(mon_ai, bai_dang_hoc, nguon_ai, prompt) if is_first else None
+                    ans_cached = lay_cache_ai(h_key) if h_key else None
+                    
+                    if ans_cached:
+                        st.markdown(ans_cached)
+                        st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
+                    else:
+                        g_hist = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
+                        luu_kq = ""
+                        try:
+                            with st.spinner("AI đang nghĩ..."):
+                                if "Dola" in nguon_ai:
+                                    d_nd = goi_dola_toi_uu(prompt)
+                                    if d_nd: luu_kq = goi_gemini_an_toan(f"Chuẩn SGK: {d_nd}\nDiễn giải câu: {prompt}", sys_prompt, g_hist)
+                                    else: luu_kq = goi_gemini_an_toan(prompt, sys_prompt, g_hist)
+                                else:
+                                    luu_kq = goi_gemini_an_toan(prompt, sys_prompt, g_hist)
+                                st.markdown(luu_kq)
+                        except Exception as e:
+                            luu_kq = "⚠️ AI đang bận xử lý, em thử lại câu hỏi nhé."
+                            st.error(luu_kq)
+                            
+                        st.session_state.chat_history.append({"role": "assistant", "content": luu_kq})
+                        if h_key: luu_cache_ai(h_key, luu_kq)
