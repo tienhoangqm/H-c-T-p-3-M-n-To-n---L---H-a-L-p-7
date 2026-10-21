@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Hoàn thiện Cuối cùng: Tự động Retry chống lỗi 429 + Quản lý trạng thái tính năng + Dark/Light Mode
+Phiên bản Hoàn thiện Cuối cùng: Đồng bộ thẻ Trang chủ + Tự động Retry chống lỗi 429 + Quản lý trạng thái tính năng + Dark/Light Mode
 """
 import streamlit as st
 import google.generativeai as genai
@@ -78,6 +78,7 @@ st.set_page_config(
 
 dark_mode = st.sidebar.checkbox("🌙 Chế độ Ban đêm (Dark Mode)", value=False)
 
+# ==================== CẤU HÌNH CSS ĐỒNG BỘ CHIỀU CAO THẺ & GIAO DIỆN ====================
 if dark_mode:
     CSS = """
     <style>
@@ -91,12 +92,22 @@ if dark_mode:
         
         .hero-banner {
             background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
-            color: #F8FAFC; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1rem;
+            color: #F8FAFC; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1.2rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
-        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
-        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
-        .card-home { background-color: #1E293B; border: 1px solid #334155; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; color: #F1F5F9; }
+        .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
+        
+        /* Đồng bộ chiều cao card và căn đều khoảng cách */
+        .card-home {
+            background-color: #1E293B; border: 1px solid #334155;
+            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
+            color: #F1F5F9; display: flex; flex-direction: column; height: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .card-home h3 { margin-top: 0; font-size: 1.15rem; margin-bottom: 0.6rem; color: #60A5FA; }
+        .card-home p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: #94A3B8; }
+
         .khung-lythuyet { background-color: #1E293B; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #3B82F6; color: #F1F5F9 !important; }
         .khung-vidu { background-color: #27272A; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #F1F5F9 !important; }
         .dung { color: #34D399; font-weight: 700; }
@@ -116,12 +127,22 @@ else:
         
         .hero-banner {
             background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-            color: white; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1rem;
+            color: white; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1.2rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
-        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
-        .card-home { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; }
+        .hero-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.9rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
+        
+        /* Đồng bộ chiều cao card và căn đều khoảng cách */
+        .card-home {
+            background-color: #F8FAFC; border: 1px solid #E2E8F0;
+            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
+            display: flex; flex-direction: column; height: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card-home h3 { margin-top: 0; font-size: 1.15rem; margin-bottom: 0.6rem; color: #1D4ED8; }
+        .card-home p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: #475569; }
+
         .khung-lythuyet { background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #2563EB; color: #1E293B !important; }
         .khung-vidu { background-color: #FFFBEB; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #1E293B !important; }
         .dung { color: #059669; font-weight: 700; }
@@ -242,12 +263,11 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
             except Exception as e:
                 last_err = e
                 error_str = str(e).lower()
-                # Nếu gặp lỗi quá tải / giới hạn (429 hoặc resource_exhausted), chờ giãn cách rồi thử lại
                 if "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
                     time.sleep(2 * (attempt + 1))
                     continue
                 else:
-                    break  # Lỗi khác thì chuyển sang model tiếp theo ngay
+                    break
     raise last_err
 
 # ==================== TÍNH NĂNG TÌM KIẾM THÔNG MINH (GLOBAL SEARCH) ====================
@@ -291,16 +311,16 @@ def hien_thi_tim_kiem_toan_dien():
                         st.session_state["search_jump"] = item
                         st.rerun()
 
-# ==================== HÀM TRANG CHỦ / GIỚI THIỆU ====================
+# ==================== HÀM TRANG CHỦ / GIỚI THIỆU (CÂN ĐỐI & GỌN GÀNG) ====================
 def hien_thi_trang_chu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile, chống quá tải AI & Trải nghiệm Ban đêm</p>
+        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile, chống quá tải AI & Giao diện Ban đêm</p>
     </div>
     """, unsafe_allow_html=True)
 
-    col_h1, col_h2 = st.columns(2)
+    col_h1, col_h2 = st.columns(2, gap="medium")
     with col_h1:
         st.markdown("""
         <div class="card-home">
@@ -319,8 +339,8 @@ def hien_thi_trang_chu():
     with col_h2:
         st.markdown("""
         <div class="card-home">
-            <h3>💬 Trợ lý Gia sư AI 24/7 (Có cơ chế Retry)</h3>
-            <p>Hỗ trợ giải đáp thông minh, tự động thử lại khi hệ thống quá tải (lỗi 429), giúp học sinh học tập không bị gián đoạn.</p>
+            <h3>💬 Trợ lý Gia sư AI 24/7 (Có Retry)</h3>
+            <p>Hỗ trợ giải đáp thông minh, tự động thử lại khi quá tải (lỗi 429), giúp học sinh học tập không bị gián đoạn.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -635,7 +655,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
         with st.chat_message("assistant"):
             gemini_history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
             try:
-                # Gọi hàm an toàn có tích hợp tự động Retry chống lỗi 429 / quá tải
                 ans_text = goi_gemini_an_toan([prompt, img_pil] if img_pil else prompt, system_instruction=SYSTEM_PROMPT, history=gemini_history)
                 st.markdown(ans_text)
                 st.session_state.chat_history.append({"role": "assistant", "content": ans_text})
