@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX — Ẩn hoàn toàn nút GitHub/Edit & Tích hợp Phòng Thí Nghiệm & Gia Sư AI Đa Giác Quan
+Phiên bản chuẩn hóa UI/UX — Đưa Phòng Thí Nghiệm Ảo lên đầu Menu & Tích hợp Gia Sư AI Đa Giác Quan
 """
 import streamlit as st
 import google.generativeai as genai
@@ -408,26 +408,31 @@ def hien_thi_phong_thí_nghiệm():
         
     st.info("💡 **Mẹo thực hành:** Học sinh có thể dùng chuột kéo thả các linh kiện, thay đổi thông số trực tiếp ngay trên khung thí nghiệm phía trên, sau đó đặt câu hỏi cho Gia sư AI ở khung chat bên dưới để hiểu sâu bản chất hiện tượng!")
 
-# ==================== GIAO DIỆN CHÍNH ====================
+# ==================== GIAO DIỆN CHÍNH (SIDEBAR) ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     st.caption("Hệ thống Ôn luyện & Kiểm tra THCS")
     st.divider()
+    
+    # Đưa Phòng Thí Nghiệm Ảo lên ĐẦU TIÊN để dễ nhận diện nhất
     che_do = st.radio(
         "⚙️ Chế độ học tập:", 
         [
+            "🎪 Phòng Thí Nghiệm Ảo",
             "📖 Học theo chuyên đề", 
-            "📝 Phòng thi / Kiểm tra",
-            "🎪 Phòng Thí Nghiệm Ảo"
+            "📝 Phòng thi / Kiểm tra"
         ]
     )
     st.divider()
+    
     if che_do != "🎪 Phòng Thí Nghiệm Ảo":
         mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
         hien_thi_tien_do()
     else:
         st.success("✨ Đang mở Phòng Thí Nghiệm Khoa Học!")
+        mon = "🎪 Phòng Thí Nghiệm Khoa Học"
 
+# ==================== ĐIỀU HƯỚNG HIỂN THỊ MÀN HÌNH CHÍNH ====================
 bai_dang_hoc = ""
 
 if che_do == "🎪 Phòng Thí Nghiệm Ảo":
@@ -499,7 +504,6 @@ with col_ai3:
         st.session_state.chat_history = []
         st.rerun()
 
-# Xác định tên môn ngữ cảnh cho AI thông minh hơn
 ten_mon_ai_hien_tai = "Khoa học Tự nhiên và Toán học" if che_do == "🎪 Phòng Thí Nghiệm Ảo" else mon
 
 SYSTEM_PROMPT = f"""
@@ -586,10 +590,10 @@ if prompt:
             clean_text_for_audio = lam_sach_van_ban_doc(response.text)
             if clean_text_for_audio:
                 tts = gTTS(text=clean_text_for_audio, lang='vi')
-                audio_fp = io.BytesIO()
-                tts.write_to_fp(audio_fp)
-                audio_fp.seek(0)
-                st.audio(audio_fp, format='audio/mp3', autoplay=tu_dong_doc)
+            audio_fp = io.BytesIO()
+            tts.write_to_fp(audio_fp)
+            audio_fp.seek(0)
+            st.audio(audio_fp, format='audio/mp3', autoplay=tu_dong_doc)
         except Exception:
             st.caption("🔇 (Hiện chưa tạo được âm thanh cho câu trả lời này, em đọc chữ phía trên nhé!)")
         
