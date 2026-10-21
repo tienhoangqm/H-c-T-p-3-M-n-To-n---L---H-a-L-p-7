@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện - Tích hợp Gia Sư AI Đa Giác Quan
+Phiên bản chuẩn hóa UI/UX & Vá lỗi toàn diện - Gia Sư AI Đa Giác Quan & Mắt Thần
 """
 import streamlit as st
 import google.generativeai as genai
 from streamlit_mic_recorder import speech_to_text
 from gtts import gTTS
+from PIL import Image
 import io
 import random
 import re
@@ -122,7 +123,6 @@ def chuan_hoi(s):
 
 def so_sanh(nd, ds_dung):
     x = chuan_hoi(nd)
-    # Vá lỗi: Nếu học sinh để trống không nhập gì thì trả về False ngay
     if not x:
         return False
     for d in ds_dung:
@@ -131,7 +131,6 @@ def so_sanh(nd, ds_dung):
             continue
         if x == y:
             return True
-        # Chỉ cho phép khớp chuỗi con nếu người dùng nhập đủ dài (>= 2 ký tự)
         if len(x) >= 2 and (x in y or y in x):
             return True
         try:
@@ -157,6 +156,26 @@ def hien_thi_tien_do():
             diem_tb = td / tc * 10
             st.sidebar.metric("Điểm trung bình", f"{diem_tb:.1f} / 10", f"Đã làm {so_bai} bài")
             st.sidebar.progress(min(td / tc, 1.0))
+
+def lam_sach_van_ban_doc(text):
+    """Làm sạch Emoji, ký hiệu Toán LaTeX và Markdown để giọng đọc AI mượt mà 100%"""
+    s = str(text)
+    # Chuyển đổi các ký hiệu Toán học LaTeX phổ biến sang tiếng Việt đọc thuận miệng
+    s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1 phần \2', s)
+    s = s.replace(r'\mathbb{Q}', 'Q').replace(r'\mathbb{Z}', 'Z').replace(r'\mathbb{N}', 'N').replace(r'\mathbb{R}', 'R')
+    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ').replace(r'\div', ' chia ')
+    s = s.replace('^2', ' bình phương ').replace('^3', ' lập phương ')
+    # Xóa các ký tự điều khiển Markdown và LaTeX
+    s = re.sub(r'[$*#_`~\\{}]', ' ', s)
+    # Lọc bỏ toàn bộ Emoji (chỉ giữ lại chữ cái tiếng Việt, chữ số và dấu câu cơ bản)
+    s = re.sub(
+        r'[^\w\s,.?!:;()+\-*/=<>%àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]',
+        '',
+        s
+    )
+    # Thu gọn khoảng trắng thừa
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
 
 # ==================== HIỂN THỊ NỘI DUNG BÀI HỌC ====================
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
@@ -384,7 +403,6 @@ if not lop_dict:
     st.warning("Đang cập nhật dữ liệu cho môn học này...")
 else:
     ds_lop = list(lop_dict.keys())
-    # Mặc định ưu tiên chọn Lớp 7 nếu có nhiều lớp
     idx_lop = ds_lop.index("Lớp 7") if "Lớp 7" in ds_lop else 0
     
     if che_do == "📖 Học theo chuyên đề":
@@ -415,14 +433,14 @@ else:
         if chuong_dict:
             hien_thi_che_do_thi(mon, lop, chuong_dict)
 
-# ==========================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (CUỐI FILE)
-# ==========================================
+# ==========================================================
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN & MẮT THẦN (CUỐI FILE)
+# ==========================================================
 st.divider()
 st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
-# Nút chọn ngữ cảnh môn học cho AI
-col_ai1, col_ai2 = st.columns([3, 1])
+# Nút chọn ngữ cảnh môn học & Tùy chọn âm thanh
+col_ai1, col_ai2, col_ai3 = st.columns([2.5, 1.2, 1])
 with col_ai1:
     st.markdown("**📌 Em đang muốn hỏi Gia sư về môn nào?**")
     mon_hoc_ai = st.radio(
@@ -432,6 +450,10 @@ with col_ai1:
         label_visibility="collapsed"
     )
 with col_ai2:
+    st.write("")
+    tu_dong_doc = st.checkbox("🔊 Tự động đọc to", value=True)
+with col_ai3:
+    st.write("")
     if st.button("🗑️ Xóa lịch sử chat", use_container_width=True):
         st.session_state.chat_history = []
         st.rerun()
@@ -442,13 +464,12 @@ Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) chuy
 Thông tin thêm: Trên màn hình học sinh đang mở mục "{mon}" ({bai_dang_hoc}).
 Nguyên tắc SƯ PHẠM TỐI THƯỢNG:
 1. TUYỆT ĐỐI KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
-2. Sử dụng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ để học sinh tự suy nghĩ và tính toán.
+2. Sử dụng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ để học sinh tự suy nghĩ và tính toán. Nếu học sinh gửi ảnh bài tập/hình vẽ, hãy quan sát kỹ bức ảnh, nhận xét đề bài và gợi ý bước đầu tiên.
 3. HIỆN TẠI HỌC SINH ĐANG HỎI MÔN {mon_hoc_ai}: CHỈ ĐƯỢC DÙNG phương pháp và kiến thức của môn {mon_hoc_ai} Lớp 7 để giải thích. TUYỆT ĐỐI KHÔNG dùng kiến thức vượt cấp.
-4. Xưng hô: "Anh/Chị" và "Em", dùng nhiều icon thân thiện.
-5. Trình bày công thức Toán/Hóa rõ ràng, giải thích ngắn gọn, súc tích, đọc thuận miệng vì câu trả lời sẽ được chuyển thành giọng nói cho học sinh nghe.
+4. Xưng hô: "Chị" (hoặc "Anh") và "Em", dùng icon thân thiện.
+5. Trình bày công thức rõ ràng, giải thích ngắn gọn, súc tích. KHÔNG viết kéo dài chữ (như "đâyyyy", "nhaaaa", "mứiiii") để bộ phát giọng nói tiếng Việt đọc chuẩn xác nhất.
 """
 
-# Khởi tạo bộ não AI với model 3.5 đã chạy ổn định trên tài khoản
 model = genai.GenerativeModel(
     model_name="gemini-3.5-flash",
     system_instruction=SYSTEM_PROMPT
@@ -463,7 +484,24 @@ for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 3. Khung cho học sinh nhập câu hỏi (Tích hợp Thu âm Giọng nói & Bàn phím)
+# 3. TÍNH NĂNG MẮT THẦN AI (Đọc ảnh chụp bài tập & Hình vẽ)
+img_pil = None
+btn_gui_anh = False
+
+with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài / hình vẽ cho Gia sư", expanded=False):
+    tab_anh1, tab_anh2 = st.tabs(["📁 Tải ảnh từ máy / điện thoại", "📷 Mở Camera chụp trực tiếp"])
+    with tab_anh1:
+        file_anh = st.file_uploader("Chọn ảnh chụp bài tập hoặc hình vẽ (JPG, PNG):", type=["png", "jpg", "jpeg"], key="upload_anh")
+    with tab_anh2:
+        cam_anh = st.camera_input("Đưa vở hoặc đề bài vào khung hình để chụp:", key="cam_anh")
+    
+    anh_chon = cam_anh or file_anh
+    if anh_chon is not None:
+        img_pil = Image.open(anh_chon)
+        st.image(img_pil, caption="📌 Ảnh đề bài đang đính kèm cho Gia sư", width=320)
+        btn_gui_anh = st.button("🔍 Nhờ Gia sư xem và gợi ý giải bài trong ảnh này", type="primary")
+
+# 4. Khung cho học sinh nhập câu hỏi (Tích hợp Thu âm Giọng nói & Bàn phím)
 st.markdown("🎙️ **Lười gõ phím? Bấm vào nút bên dưới để đọc câu hỏi nhé:**")
 
 text_from_mic = speech_to_text(
@@ -476,12 +514,20 @@ text_from_mic = speech_to_text(
 
 prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào, gõ vào đây anh/chị gợi ý cho nhé...")
 
-# Nhận lệnh từ Micro hoặc từ Bàn phím
-prompt = text_from_mic or prompt_from_keyboard
+# Nhận lệnh từ Nút gửi ảnh, từ Micro hoặc từ Bàn phím
+prompt = None
+if btn_gui_anh:
+    prompt = "Chị xem giúp em bài tập trong bức ảnh đính kèm này và gợi ý từng bước cách làm cho em với ạ!"
+elif text_from_mic:
+    prompt = text_from_mic
+elif prompt_from_keyboard:
+    prompt = prompt_from_keyboard
 
 if prompt:
     # Hiển thị câu hỏi của học sinh
     with st.chat_message("user"):
+        if img_pil is not None:
+            st.image(img_pil, width=250)
         st.markdown(prompt)
     st.session_state.chat_history.append({"role": "user", "content": prompt})
 
@@ -492,20 +538,25 @@ if prompt:
             for msg in st.session_state.chat_history[:-1]
         ]
         chat_session = model.start_chat(history=gemini_history)
-        response = chat_session.send_message(prompt)
+        
+        # Nếu có ảnh đính kèm thì gửi cả chữ lẫn ảnh cho AI nhìn
+        if img_pil is not None:
+            response = chat_session.send_message([prompt, img_pil])
+        else:
+            response = chat_session.send_message(prompt)
         
         # In câu trả lời bằng chữ ra màn hình
         st.markdown(response.text)
         
-        # Chuyển văn bản thành giọng nói tiếng Việt (Text-to-Speech)
+        # Chuyển văn bản đã lọc sạch Emoji thành giọng nói tiếng Việt và Tự động phát
         try:
-            # Lọc bỏ các ký tự đánh dấu (*, #, _) để giọng đọc mượt mà hơn
-            clean_text_for_audio = re.sub(r'[*#_`~]', '', response.text)
-            tts = gTTS(text=clean_text_for_audio, lang='vi')
-            audio_fp = io.BytesIO()
-            tts.write_to_fp(audio_fp)
-            audio_fp.seek(0)
-            st.audio(audio_fp, format='audio/mp3')
+            clean_text_for_audio = lam_sach_van_ban_doc(response.text)
+            if clean_text_for_audio:
+                tts = gTTS(text=clean_text_for_audio, lang='vi')
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                audio_fp.seek(0)
+                st.audio(audio_fp, format='audio/mp3', autoplay=tu_dong_doc)
         except Exception:
             st.caption("🔇 (Hiện chưa tạo được âm thanh cho câu trả lời này, em đọc chữ phía trên nhé!)")
         
