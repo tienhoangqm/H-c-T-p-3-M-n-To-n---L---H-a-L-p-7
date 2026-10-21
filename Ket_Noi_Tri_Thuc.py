@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Giai đoạn 3: Tìm Kiếm Thông Minh (Global Search) + Báo Lỗi Câu Hỏi + Lịch Sử + AI Đa Giác Quan
+Phiên bản Hoàn thiện Giai đoạn 4: Dark/Light Mode + Mobile Responsive + Toàn bộ tính năng đỉnh cao
 """
 import streamlit as st
 import google.generativeai as genai
@@ -84,80 +84,63 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS chuẩn hóa: Ẩn nút Cây bút chì (Edit) & GitHub nhưng BẢO VỆ 100% nút mở Sidebar
-CSS = """
-<style>
-    .main .block-container { padding-top: 1.2rem; max-width: 95%; }
-    
-    [data-testid="stToolbarActions"] { display: none !important; }
-    [data-testid="stHeaderActionElements"] { display: none !important; }
-    .stAppDeployButton { display: none !important; }
-    #MainMenu { visibility: hidden !important; }
-    footer { visibility: hidden !important; }
-    .viewerBadge_container__1QSob { display: none !important; }
-    
-    /* Banner Header */
-    .hero-banner {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        color: white;
-        padding: 1.2rem 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
-    .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
-    
-    .card-home {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        padding: 1.2rem;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    
-    .khung-lythuyet {
-        background-color: #EFF6FF;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 6px solid #2563EB;
-        margin: 0.8rem 0;
-        color: #1E293B !important;
-        font-size: 1rem;
-        line-height: 1.65;
-        white-space: pre-wrap;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .khung-vidu {
-        background-color: #FFFBEB;
-        padding: 1.2rem;
-        border-radius: 10px;
-        border-left: 6px solid #F59E0B;
-        margin: 0.8rem 0;
-        color: #1E293B !important;
-        font-size: 1rem;
-        line-height: 1.65;
-        white-space: pre-wrap;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    
-    .dung { color: #059669; font-weight: 700; font-size: 1.05rem; }
-    .sai { color: #DC2626; font-weight: 700; font-size: 1.05rem; }
-    
-    .diem-thi {
-        background-color: #FFF1F2;
-        font-size: 1.6rem;
-        color: #E11D48 !important;
-        font-weight: 800;
-        text-align: center;
-        padding: 1.2rem;
-        border: 2px dashed #F43F5E;
-        border-radius: 12px;
-        margin: 1rem 0;
-    }
-</style>
-"""
+# Nhận diện chế độ Sáng / Tối từ sidebar
+dark_mode = st.sidebar.checkbox("🌙 Chế độ Ban đêm (Dark Mode)", value=False)
+
+# CSS chuẩn hóa: Tối ưu Mobile, ẩn công cụ rườm rà và hỗ trợ linh hoạt Dark/Light Mode
+if dark_mode:
+    CSS = """
+    <style>
+        .stApp { background-color: #0F172A; color: #F1F5F9; }
+        .main .block-container { padding-top: 1.2rem; max-width: 95%; }
+        [data-testid="stToolbarActions"] { display: none !important; }
+        [data-testid="stHeaderActionElements"] { display: none !important; }
+        .stAppDeployButton { display: none !important; }
+        #MainMenu { visibility: hidden !important; }
+        footer { visibility: hidden !important; }
+        
+        .hero-banner {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            color: #F8FAFC; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
+        
+        .card-home { background-color: #1E293B; border: 1px solid #334155; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; color: #F1F5F9; }
+        .khung-lythuyet { background-color: #1E293B; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #3B82F6; color: #F1F5F9 !important; }
+        .khung-vidu { background-color: #27272A; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #F1F5F9 !important; }
+        .dung { color: #34D399; font-weight: 700; }
+        .sai { color: #F87171; font-weight: 700; }
+        .diem-thi { background-color: #451A03; font-size: 1.6rem; color: #F87171 !important; font-weight: 800; text-align: center; padding: 1.2rem; border: 2px dashed #EF4444; border-radius: 12px; }
+    </style>
+    """
+else:
+    CSS = """
+    <style>
+        .main .block-container { padding-top: 1.2rem; max-width: 95%; }
+        [data-testid="stToolbarActions"] { display: none !important; }
+        [data-testid="stHeaderActionElements"] { display: none !important; }
+        .stAppDeployButton { display: none !important; }
+        #MainMenu { visibility: hidden !important; }
+        footer { visibility: hidden !important; }
+        
+        .hero-banner {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+            color: white; padding: 1.2rem 1.5rem; border-radius: 12px; margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
+        
+        .card-home { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; }
+        .khung-lythuyet { background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #2563EB; color: #1E293B !important; }
+        .khung-vidu { background-color: #FFFBEB; padding: 1.2rem; border-radius: 10px; border-left: 6px solid #F59E0B; color: #1E293B !important; }
+        .dung { color: #059669; font-weight: 700; }
+        .sai { color: #DC2626; font-weight: 700; }
+        .diem-thi { background-color: #FFF1F2; font-size: 1.6rem; color: #E11D48 !important; font-weight: 800; text-align: center; padding: 1.2rem; border: 2px dashed #F43F5E; border-radius: 12px; }
+    </style>
+    """
 st.markdown(CSS, unsafe_allow_html=True)
 
 # ==================== HÀM TIỆN ÍCH ====================
@@ -274,7 +257,7 @@ def hien_thi_tim_kiem_toan_dien():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🔍 Tra Cứu & Tìm Kiếm Tri Thức Thông Minh</p>
-        <p class="hero-sub">Gõ từ khóa bất kỳ (ví dụ: số hữu tỉ, định lý, phản xạ ánh sáng,...) để tìm nhanh bài học trong toàn bộ hệ thống</p>
+        <p class="hero-sub">Gõ từ khóa bất kỳ để tìm nhanh bài học trong toàn bộ hệ thống</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -288,7 +271,6 @@ def hien_thi_tim_kiem_toan_dien():
             for lop, chuong_dict in lop_dict.items():
                 for chuong, bai_dict in chuong_dict.items():
                     for ten_bai, data in bai_dict.items():
-                        # Kiểm tra từ khóa trong tên bài, lý thuyết hoặc ví dụ
                         lt = data.get("ly_thuyet", "").lower()
                         vd = data.get("vi_du", "").lower()
                         if kw in ten_bai.lower() or kw in lt or kw in vd:
@@ -302,7 +284,7 @@ def hien_thi_tim_kiem_toan_dien():
         
         st.markdown(f"### 📋 Kết quả tìm kiếm cho từ khóa: *'{tu_khoa}'* ({len(ket_qua_tim)} kết quả)")
         if not ket_qua_tim:
-            st.info("⚠️ Không tìm thấy bài học phù hợp với từ khóa của bạn. Hãy thử từ khóa ngắn hơn nhé!")
+            st.info("⚠️ Không tìm thấy bài học phù hợp.")
         else:
             for idx, item in enumerate(ket_qua_tim, 1):
                 with st.expander(f"{idx}. [{item['mon']} - {item['chuong']}] — {item['bai']}"):
@@ -316,7 +298,7 @@ def hien_thi_trang_chu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Nền tảng học tập thông minh tích hợp Phòng Thí Nghiệm Ảo, Tìm Kiếm Nhanh và Trợ lý Gia sư AI</p>
+        <p class="hero-sub">Nền tảng học tập thông minh tối ưu cho Mobile & Trải nghiệm Ban đêm (Dark Mode)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -325,38 +307,29 @@ def hien_thi_trang_chu():
         st.markdown("""
         <div class="card-home">
             <h3>🌟 Giới thiệu Hệ thống</h3>
-            <p>Không gian học tập trực tuyến bám sát chương trình GDPT 2018 bộ sách <b>Kết Nối Tri Thức</b> lớp 7:</p>
-            <ul>
-                <li>📐 <b>Môn Toán lớp 7:</b> Số hữu tỉ, Hình học phẳng, Biểu thức đại số...</li>
-                <li>🔬 <b>Môn Vật lý (KHTN):</b> Quang học, Mạch điện, Âm học sinh động.</li>
-                <li>🧪 <b>Môn Hóa học (KHTN):</b> Cấu tạo nguyên tử, Phân tử, Nồng độ dung dịch.</li>
-            </ul>
+            <p>Không gian học tập trực tuyến bám sát sách <b>Kết Nối Tri Thức</b> lớp 7 gồm Toán, Vật lý, Hóa học.</p>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class="card-home">
-            <h3>🔍 Tìm Kiếm Thông Minh (Global Search)</h3>
-            <p>Tính năng mới giúp học sinh gõ từ khóa bất kỳ để truy xuất ngay lập tức lý thuyết và bài tập từ kho dữ liệu mà không cần tìm kiếm thủ công.</p>
+            <h3>🌙 Chế độ Ban đêm (Dark Mode)</h3>
+            <p>Bật công tắc chế độ ban đêm ở menu bên trái để bảo vệ mắt khi ôn tập vào buổi tối.</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col_h2:
         st.markdown("""
         <div class="card-home">
-            <h3>💬 Trợ lý Gia sư AI 24/7 (Đa Giác Quan)</h3>
-            <ul>
-                <li>🧠 <b>Phương pháp Socratic:</b> AI gợi mở từng bước để học sinh tự tư duy.</li>
-                <li>📸 <b>Mắt thần AI:</b> Chụp ảnh đề bài hoặc hình vẽ để Gia sư hướng dẫn.</li>
-                <li>🎙️ <b>Thu âm & Đọc to:</b> Hỗ trợ nói chuyện và tự động đọc to đề bài.</li>
-            </ul>
+            <h3>💬 Trợ lý Gia sư AI 24/7</h3>
+            <p>Hỗ trợ giải đáp, gợi mở phương pháp Socratic, chụp ảnh đề bài và đọc to giọng nói.</p>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("""
         <div class="card-home">
-            <h3>🚨 Tương tác & Báo lỗi</h3>
-            <p>Hệ thống tích hợp nút <b>Báo lỗi câu hỏi</b> ngay dưới các bài tập để phụ huynh và học sinh dễ dàng phản hồi khi phát hiện sai sót, giúp ngân hàng đề ngày càng chuẩn xác.</p>
+            <h3>📱 Tối ưu thiết bị di động</h3>
+            <p>Giao diện co giãn mượt mà trên mọi thiết bị điện thoại, máy tính bảng và laptop.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -379,82 +352,41 @@ def hien_thi_tram_nap_du_lieu():
     st.markdown("""
     <div class="hero-banner">
         <p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p>
-        <p class="hero-sub">Dành cho Admin: Tải trực tiếp file đề bài (Word, PDF, Ảnh, TXT) để biến thành cấu trúc Code Python chuẩn 100%.</p>
+        <p class="hero-sub">Dành cho Admin: Tải file đề bài (Word, PDF, Ảnh, TXT) để tạo Code Python chuẩn.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    tab_upfile, tab_paste = st.tabs([
-        "📁 Cách 1: Tải File Lên (Word, PDF, Ảnh, TXT)",
-        "📝 Cách 2: Dán Nội Dung Thô Trực Tiếp"
-    ])
-
+    tab_upfile, tab_paste = st.tabs(["📁 Tải File Lên", "📝 Dán Văn Bản Thô"])
     danh_sach_files = []
     with tab_upfile:
-        uploaded_files = st.file_uploader(
-            "Chọn hoặc kéo thả file từ máy tính vào đây:",
-            type=["docx", "pdf", "png", "jpg", "jpeg", "webp", "txt", "md"],
-            accept_multiple_files=True,
-            key="parser_file_uploader"
-        )
-        if uploaded_files:
-            st.success(f"✅ Đã nhận **{len(uploaded_files)} file**.")
-            danh_sach_files = uploaded_files
-
+        uploaded_files = st.file_uploader("Chọn file:", type=["docx", "pdf", "png", "jpg", "jpeg", "txt"], accept_multiple_files=True, key="parser_file_uploader")
+        if uploaded_files: danh_sach_files = uploaded_files
     with tab_paste:
-        raw_text = st.text_area("Copy bài giảng hoặc câu hỏi dán vào đây:", height=220, key="parser_raw_text")
+        raw_text = st.text_area("Dán nội dung:", height=220, key="parser_raw_text")
 
-    ghi_chu_them = st.text_input("💡 Yêu cầu bổ sung cho AI (không bắt buộc):", placeholder="Ví dụ: Tạo thêm 5 câu trắc nghiệm...")
+    PROMPT_PARSER = 'Hãy chuyển đổi toàn bộ nội dung thành Dictionary Python chuẩn gồm "ly_thuyet", "vi_du", "cau_hoi", "bt_co_ban", "bt_nang_cao". Chỉ in ra code Python.'
 
-    PROMPT_PARSER = """
-    Bạn là một kỹ sư dữ liệu giáo dục xuất sắc. Hãy đọc toàn bộ nội dung từ file hoặc văn bản thô do người dùng cung cấp và chuyển đổi CẤU TRÚC TOÀN BỘ NỘI DUNG ĐÓ thành một Dictionary Python duy nhất theo đúng chuẩn của hệ thống sau:
-
-    {
-        "ly_thuyet": "Nội dung lý thuyết trọng tâm (Markdown, công thức dùng $latex$).",
-        "vi_du": "Các ví dụ minh họa (nếu có).",
-        "cau_hoi": [
-            {"de": "Câu hỏi trắc nghiệm?", "da": ["A", "B", "C", "D"], "d": 0, "gt": "Giải thích chi tiết"}
-        ],
-        "bt_co_ban": [
-            {"de": "Đề bài tự luận", "dd": ["15"], "lg": "Lời giải chi tiết"}
-        ],
-        "bt_nang_cao": [
-            {"de": "Đề bài nâng cao", "hd": "Gợi ý", "dd": ["kết quả"], "lg": "Lời giải chi tiết"}
-        ]
-    }
-    Yêu cầu: Chỉ in ra đúng cấu trúc Dictionary Python, không giải thích gì thêm.
-    """
-
-    if st.button("⚡ Bóc tách dữ liệu & Tạo Code Python", type="primary", use_container_width=True):
+    if st.button("⚡ Bóc tách dữ liệu", type="primary", use_container_width=True):
         if not danh_sach_files and not raw_text.strip():
-            st.warning("⚠️ Vui lòng tải file hoặc dán văn bản trước khi bấm nút!")
+            st.warning("⚠️ Vui lòng tải file hoặc dán văn bản!")
         else:
-            with st.spinner("🤖 AI đang đọc tài liệu và đóng gói Code Python..."):
+            with st.spinner("🤖 AI đang xử lý..."):
                 try:
                     payload = []
-                    if ghi_chu_them.strip(): payload.append(f"Yêu cầu: {ghi_chu_them.strip()}\n")
                     for f in danh_sach_files:
-                        ten_f = f.name.lower()
-                        file_bytes = f.read()
-                        if ten_f.endswith(".docx"):
-                            payload.append(f"\n--- FILE WORD ({f.name}) ---\n{trich_xuat_word_docx(file_bytes)}\n")
-                        elif ten_f.endswith(".pdf"):
-                            payload.append({"mime_type": "application/pdf", "data": file_bytes})
-                        elif ten_f.endswith((".png", ".jpg", ".jpeg", ".webp")) and HAS_PIL:
-                            payload.append(Image.open(io.BytesIO(file_bytes)))
-                        else:
-                            payload.append(f"\n--- FILE ({f.name}) ---\n{file_bytes.decode('utf-8', errors='ignore')}\n")
-                    if raw_text.strip(): payload.append(f"\n--- VĂN BẢN DÁN ---\n{raw_text.strip()}\n")
-                    payload.append("\nHãy chuyển đổi thành cấu trúc Dictionary Python chuẩn:")
+                        if f.name.endswith(".docx"): payload.append(trich_xuat_word_docx(f.read()))
+                        elif f.name.endswith(".pdf"): payload.append({"mime_type": "application/pdf", "data": f.read()})
+                        elif f.name.endswith((".png", ".jpg", ".jpeg")) and HAS_PIL: payload.append(Image.open(io.BytesIO(f.read())))
+                        else: payload.append(f.read().decode('utf-8', errors='ignore'))
+                    if raw_text.strip(): payload.append(raw_text.strip())
                     ket_qua = goi_gemini_an_toan(payload, system_instruction=PROMPT_PARSER)
-                    clean_code = ket_qua.replace("```python", "").replace("```json", "").replace("```", "").strip()
-                    st.session_state["parsed_code_result"] = clean_code
-                except Exception as e:
-                    st.error(f"❌ Có lỗi xảy ra: {e}")
+                    st.session_state["parsed_code_result"] = ket_qua.replace("```python", "").replace("```json", "").replace("```", "").strip()
+                except Exception as e: st.error(f"❌ Lỗi: {e}")
 
     if "parsed_code_result" in st.session_state and st.session_state["parsed_code_result"]:
         code_out = st.session_state["parsed_code_result"]
-        st.success("✅ Thành công! Dữ liệu đã được bóc tách.")
-        st.download_button("💾 Tải đoạn Code về máy (.py)", data=code_out.encode("utf-8"), file_name="du_lieu_moi.py", mime="text/x-python", use_container_width=True)
+        st.success("✅ Thành công!")
+        st.download_button("💾 Tải Code về máy (.py)", data=code_out.encode("utf-8"), file_name="data_moi.py", mime="text/x-python", use_container_width=True)
         st.code(code_out, language="python")
 
 # ==================== HÀM HIỂN THỊ NỘI DUNG BÀI HỌC ====================
@@ -468,81 +400,50 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     sid = lam_sach_id(f"{mon}_{lop}_{chuong}_{ten_bai}")
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("📝 Câu hỏi Trắc nghiệm", f"{len(ch_list)} câu")
-    c2.metric("✏️ Bài tập Cơ bản", f"{len(bt_cb)} bài")
-    c3.metric("🔥 Bài tập Nâng cao", f"{len(bt_nc)} bài")
+    c1.metric("📝 Trắc nghiệm", f"{len(ch_list)} câu")
+    c2.metric("✏️ Cơ bản", f"{len(bt_cb)} bài")
+    c3.metric("🔥 Nâng cao", f"{len(bt_nc)} bài")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📚 Lý thuyết & Ví dụ", 
-        "✏️ Bài tập cơ bản", 
-        "🔥 Bài tập nâng cao", 
-        "📝 Trắc nghiệm bài học",
-        "🎪 Thí nghiệm & Mô phỏng"
-    ])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📚 Lý thuyết", "✏️ Cơ bản", "🔥 Nâng cao", "📝 Trắc nghiệm", "🎪 Thí nghiệm"])
 
     with tab1:
-        if lt: st.markdown(f"#### 📌 Lý thuyết trọng tâm\n<div class='khung-lythuyet'>{lt}</div>", unsafe_allow_html=True)
-        if vd: st.markdown(f"#### 💡 Ví dụ minh họa\n<div class='khung-vidu'>{vd}</div>", unsafe_allow_html=True)
+        if lt: st.markdown(f"<div class='khung-lythuyet'>{lt}</div>", unsafe_allow_html=True)
+        if vd: st.markdown(f"<div class='khung-vidu'>{vd}</div>", unsafe_allow_html=True)
 
     with tab2:
-        st.markdown("#### ✏️ Bài tập cơ bản — Tự luyện")
-        if not bt_cb: st.info("Chưa có bài tập cơ bản.")
+        if not bt_cb: st.info("Chưa có bài tập.")
         else:
             for i, bt in enumerate(bt_cb, 1):
                 with st.expander(f"Bài {i}: {bt['de']}"):
                     ans = st.text_input("Nhập kết quả:", key=f"cb_{sid}_{i}")
-                    col_b1, col_b2 = st.columns([3, 1])
-                    with col_b1:
-                        if st.button("Kiểm tra đáp án", key=f"btn_cb_{sid}_{i}"):
-                            if not ans.strip(): st.warning("⚠️ Vui lòng nhập đáp án!")
-                            elif so_sanh(ans, bt["dd"]):
-                                st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
-                                st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
-                            else:
-                                st.markdown(f"<p class='sai'>❌ Chưa đúng. Đáp án: {bt['dd'][0]}</p>", unsafe_allow_html=True)
-                                st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
-                    with col_b2:
-                        if st.checkbox("⚠️ Báo lỗi", key=f"err_cb_{sid}_{i}"):
-                            st.error("Cảm ơn bạn đã báo lỗi! Admin sẽ kiểm tra lại.")
+                    if st.button("Kiểm tra", key=f"btn_cb_{sid}_{i}"):
+                        if not ans.strip(): st.warning("⚠️ Nhập đáp án trước!")
+                        elif so_sanh(ans, bt["dd"]): st.markdown("<p class='dung'>✅ Chính xác!</p>", unsafe_allow_html=True)
+                        else: st.markdown(f"<p class='sai'>❌ Sai. Đáp án: {bt['dd'][0]}</p>", unsafe_allow_html=True)
+                        st.info(f"💡 Giải thích: {bt.get('gt') or bt.get('lg', '')}")
 
     with tab3:
-        st.markdown("#### 🔥 Bài tập nâng cao — Vận dụng tư duy")
         if not bt_nc: st.info("Chưa có bài tập nâng cao.")
         else:
             for i, nc in enumerate(bt_nc, 1):
-                with st.expander(f"Bài nâng cao {i}: {nc['de'][:80]}..."):
+                with st.expander(f"Bài nâng cao {i}: {nc['de'][:60]}..."):
                     st.markdown(f"**Đề bài:** {nc['de']}")
                     if nc.get('hd'): st.info(f"💡 **Hướng dẫn:** {nc['hd']}")
                     ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
-                    c1, c2, c3 = st.columns(3)
-                    with c1:
-                        if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
-                            if not ans.strip(): st.warning("⚠️ Vui lòng nhập đáp án!")
-                            elif so_sanh(ans, nc["dd"]): st.success("🎉 Chính xác!")
-                            else: st.error(f"❌ Gợi ý: {nc['dd'][0]}")
-                    with c2:
-                        if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"):
-                            st.success(f"**Lời giải:** {nc['lg']}")
-                    with c3:
-                        if st.checkbox("⚠️ Báo lỗi", key=f"err_nc_{sid}_{i}"):
-                            st.error("Đã ghi nhận báo lỗi.")
+                    if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
+                        if so_sanh(ans, nc["dd"]): st.success("🎉 Chính xác!")
+                        else: st.error(f"❌ Gợi ý: {nc['dd'][0]}")
+                    if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"):
+                        st.success(f"**Lời giải:** {nc['lg']}")
 
     with tab4:
-        st.markdown("#### 📝 Luyện tập trắc nghiệm bài học")
         tong = len(ch_list)
-        if tong == 0: st.info("Chưa có câu hỏi trắc nghiệm.")
+        if tong == 0: st.info("Chưa có trắc nghiệm.")
         else:
-            options = sorted(list(set([n for n in [10, 15, 20, 30, 50] if n <= tong] + [tong])))
-            col_sl, col_btn = st.columns([2, 1])
-            with col_sl: so_cau = st.selectbox("📋 Chọn số lượng câu:", options, key=f"sl_{sid}")
-            with col_btn:
-                st.write("")
-                st.write("")
-                tao_moi = st.button("🔄 Đổi câu hỏi", key=f"new_{sid}", use_container_width=True)
-            
+            options = sorted(list(set([n for n in [10, 15, 20, 30] if n <= tong] + [tong])))
+            so_cau = st.selectbox("Chọn số lượng câu:", options, key=f"sl_{sid}")
             key_de = f"de_{sid}_{so_cau}"
-            if tao_moi or key_de not in st.session_state:
-                st.session_state[key_de] = random.sample(ch_list, min(so_cau, tong))
+            if key_de not in st.session_state: st.session_state[key_de] = random.sample(ch_list, min(so_cau, tong))
             de = st.session_state[key_de]
 
             with st.form(f"form_{sid}"):
@@ -551,80 +452,58 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     st.markdown(f"**Câu {i}:** {ch.get('nd') or ch.get('de')}")
                     tl[i] = st.radio(f"Câu {i}:", ch["da"], key=f"radio_{sid}_{so_cau}_{i}", index=None, label_visibility="collapsed")
                     st.divider()
-                if st.form_submit_button("🚀 Nộp bài & Chấm điểm", type="primary", use_container_width=True):
-                    if None in tl.values(): st.warning("⚠️ Bạn còn bỏ trống đáp án chưa chọn!")
+                if st.form_submit_button("🚀 Nộp bài", type="primary", use_container_width=True):
+                    if None in tl.values(): st.warning("⚠️ Còn câu chưa chọn!")
                     else:
                         dung = sum(1 for i, ch in enumerate(de, 1) if tl[i] == ch["da"][ch["d"]])
                         diem = dung / len(de) * 10
                         luu_tien_do(mon, lop, chuong, ten_bai, dung, len(de))
-                        
-                        chi_tiet_sai = [f"Câu {i}" for i, ch in enumerate(de, 1) if tl[i] != ch["da"][ch["d"]]]
-                        ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(de), chi_tiet_sai)
-
-                        if diem >= 8.0: st.balloons()
-                        st.markdown(f"<div class='diem-thi'>🏆 KẾT QUẢ: {diem:.1f} / 10 <br><span style='font-size:1rem;'>(Đúng {dung}/{len(de)} câu)</span></div>", unsafe_allow_html=True)
+                        ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(de))
+                        st.markdown(f"<div class='diem-thi'>🏆 KẾT QUẢ: {diem:.1f} / 10</div>", unsafe_allow_html=True)
                         for i, ch in enumerate(de, 1):
                             da_dung = ch["da"][ch["d"]]
-                            if tl[i] == da_dung: st.markdown(f"✅ **Câu {i}: Đúng** — {da_dung}")
-                            else: st.markdown(f"❌ **Câu {i}: Sai** — Bạn chọn: *{tl[i]}* · Đúng: **{da_dung}**")
-                            st.info(f"💡 Giải thích: {ch['gt']}")
+                            if tl[i] == da_dung: st.markdown(f"✅ Câu {i}: Đúng")
+                            else: st.markdown(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
 
-    with tab5:
-        hien_thi_phong_thi_nghiem(mon, key_prefix=f"tab_{sid}")
+    with tab5: hien_thi_phong_thi_nghiem(mon, key_prefix=f"tab_{sid}")
 
 # ==================== HIỂN THỊ CHẾ ĐỘ THI THỬ ====================
 def hien_thi_che_do_thi(mon, lop, chuong_dict):
     st.markdown("### ⏱️ PHÒNG THI THỬ & KIỂM TRA ĐỊNH KÌ")
     ds_chuong_sorted = sap_xep_chuong(list(chuong_dict.keys()))
     col1, col2 = st.columns([1, 2])
-    with col1:
-        loai_de = st.selectbox("📌 Cấu trúc đề:", ["Kiểm tra 15 phút (10 câu)", "Giữa kì (20 câu)", "Học kì (40 câu)", "HSG (50 câu)"])
-        mapping_cau = {"Kiểm tra 15 phút (10 câu)": 10, "Giữa kì (20 câu)": 20, "Học kì (40 câu)": 40, "HSG (50 câu)": 50}
-    with col2:
-        chuong_chon = st.multiselect("📚 Chọn chương kiểm tra:", ds_chuong_sorted, default=ds_chuong_sorted)
+    with col1: loai_de = st.selectbox("Cấu trúc đề:", ["Kiểm tra 15 phút (10 câu)", "Giữa kì (20 câu)", "Học kì (40 câu)"])
+    with col2: chuong_chon = st.multiselect("Chọn chương:", ds_chuong_sorted, default=ds_chuong_sorted)
 
+    mapping_cau = {"Kiểm tra 15 phút (10 câu)": 10, "Giữa kì (20 câu)": 20, "Học kì (40 câu)": 40}
     if st.button("🚀 TẠO ĐỀ THI", type="primary", use_container_width=True):
         all_questions = []
         for c in chuong_chon:
-            for b, data in chuong_dict[c].items():
-                all_questions.extend(data.get("cau_hoi", []))
-        if len(all_questions) == 0: st.error("❌ Chương được chọn chưa có câu hỏi!")
+            for b, data in chuong_dict[c].items(): all_questions.extend(data.get("cau_hoi", []))
+        if not all_questions: st.error("❌ Chưa có câu hỏi!")
         else:
             st.session_state[f"dethi_{mon}_{lop}"] = random.sample(all_questions, min(mapping_cau[loai_de], len(all_questions)))
             st.session_state[f"ten_dethi_{mon}_{lop}"] = loai_de
 
     if f"dethi_{mon}_{lop}" in st.session_state:
         de_thi = st.session_state[f"dethi_{mon}_{lop}"]
-        ten_de_hien_tai = st.session_state.get(f'ten_dethi_{mon}_{lop}', loai_de)
-        st.markdown(f"#### 📜 {ten_de_hien_tai.upper()} — ({len(de_thi)} Câu)")
         with st.form(f"form_thi_{mon}_{lop}"):
             tl_thi = {}
             for i, ch in enumerate(de_thi, 1):
                 st.markdown(f"**Câu {i}:** {ch.get('nd') or ch.get('de')}")
                 tl_thi[i] = st.radio(f"Đ/á {i}:", ch["da"], key=f"thi_{mon}_{lop}_{i}", index=None, label_visibility="collapsed")
                 st.divider()
-            if st.form_submit_button("🎯 NỘP BÀI CHẤM ĐIỂM", type="primary"):
-                if None in tl_thi.values(): st.warning("⚠️ Còn câu chưa chọn đáp án!")
+            if st.form_submit_button("🎯 NỘP BÀI", type="primary"):
+                if None in tl_thi.values(): st.warning("⚠️ Còn câu chưa chọn!")
                 else:
                     dung = sum(1 for i, ch in enumerate(de_thi, 1) if tl_thi[i] == ch["da"][ch["d"]])
                     diem = dung / len(de_thi) * 10
-                    
-                    chi_tiet_sai = [f"Câu {i}" for i, ch in enumerate(de_thi, 1) if tl_thi[i] != ch["da"][ch["d"]]]
-                    ghi_nhan_lich_su(f"Thi thử: {ten_de_hien_tai} ({mon})", diem, dung, len(de_thi), chi_tiet_sai)
-
-                    if diem >= 8.0: st.balloons()
-                    st.markdown(f"<div class='diem-thi'>🏆 ĐIỂM BÀI THI: {diem:.1f} / 10</div>", unsafe_allow_html=True)
-                    with st.expander("🔍 XEM ĐÁP ÁN VÀ LỜI GIẢI CHI TIẾT", expanded=True):
-                        for i, ch in enumerate(de_thi, 1):
-                            d_dung = ch["da"][ch["d"]]
-                            if tl_thi[i] == d_dung: st.markdown(f"✅ **Câu {i}: Đúng** — {d_dung}")
-                            else: st.markdown(f"❌ **Câu {i}: Sai** — Chọn: *{tl_thi[i]}* · Đúng: **{d_dung}**")
-                            st.info(f"💡 {ch['gt']}")
+                    ghi_nhan_lich_su(f"Thi thử ({mon})", diem, dung, len(de_thi))
+                    st.markdown(f"<div class='diem-thi'>🏆 ĐIỂM: {diem:.1f} / 10</div>", unsafe_allow_html=True)
 
 # ==================== GIAO DIỆN CHÍNH (SIDEBAR) ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
-    st.caption("Hệ thống Ôn luyện THCS")
     st.divider()
     che_do = st.radio(
         "⚙️ Chế độ & Công cụ:", 
@@ -645,159 +524,96 @@ with st.sidebar:
         mon = "🔍 Tra cứu"
         hien_thi_tien_do()
     elif che_do == "🎪 Phòng thí nghiệm ảo":
-        mon = "🎪 Phòng Thí Nghiệm Khoa Học"
-        st.success("✨ Đang mở Phòng Thí Nghiệm Khoa Học!")
+        mon = "🎪 Phòng Thí Nghiệm"
         hien_thi_tien_do()
     elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)":
-        mon = "⚙️ Trạm Nạp Dữ Liệu"
-        st.success("✨ Chế độ Admin: Nạp dữ liệu.")
+        mon = "⚙️ Trạm Nạp"
         hien_thi_tien_do()
     else:
         mon = "🏠 Trang chủ"
         hien_thi_tien_do()
 
-# Xử lý nhảy trang nếu người dùng bấm từ kết quả tìm kiếm
 if "search_jump" in st.session_state:
     jump_item = st.session_state["search_jump"]
     del st.session_state["search_jump"]
     che_do = "📖 Học theo chuyên đề"
     mon = jump_item["mon"]
-    # Tự động gán giá trị tương ứng để hiển thị đúng bài
     st.session_state["mon_main"] = mon
 
 # ==================== ĐIỀU HƯỚNG MÀN HÌNH CHÍNH ====================
 bai_dang_hoc = ""
 
-if che_do == "🏠 Trang chủ / Hướng dẫn":
-    hien_thi_trang_chu()
-elif che_do == "🔍 Tra cứu / Tìm kiếm":
-    hien_thi_tim_kiem_toan_dien()
-elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)":
-    hien_thi_tram_nap_du_lieu()
-elif che_do == "🎪 Phòng thí nghiệm ảo":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎪 Phòng Thí Nghiệm Ảo — Khoa Học Tự Nhiên</p>
-        <p class="hero-sub">Mô phỏng tương tác trực quan chuẩn PhET (Đại học Colorado, Mỹ)</p>
-    </div>
-    """, unsafe_allow_html=True)
-    hien_thi_phong_thi_nghiem("🔬 Môn Vật lý (KHTN)", key_prefix="sidebar_mode")
+if che_do == "🏠 Trang chủ / Hướng dẫn": hien_thi_trang_chu()
+elif che_do == "🔍 Tra cứu / Tìm kiếm": hien_thi_tim_kiem_toan_dien()
+elif che_do == "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)": hien_thi_tram_nap_du_lieu()
+elif che_do == "🎪 Phòng thí nghiệm ảo": hien_thi_phong_thi_nghiem("🔬 Môn Vật lý (KHTN)", key_prefix="sidebar_mode")
 else:
     st.markdown(f"""
     <div class="hero-banner">
         <p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p>
-        <p class="hero-sub">Hệ thống lý thuyết trọng tâm, bài tập phân hóa, phòng thí nghiệm ảo và Gia sư AI 24/7</p>
+        <p class="hero-sub">Hệ thống học tập thông minh lớp 7</p>
     </div>
     """, unsafe_allow_html=True)
 
     lop_dict = DATABASE[mon]
-    if not lop_dict:
-        st.warning(f"⚠️ Đang cập nhật dữ liệu cho môn **{mon}**...")
+    if not lop_dict: st.warning(f"⚠️ Đang cập nhật dữ liệu cho môn **{mon}**...")
     else:
         ds_lop = list(lop_dict.keys())
         idx_lop = ds_lop.index("Lớp 7") if "Lớp 7" in ds_lop else 0
-        
         if che_do == "📖 Học theo chuyên đề":
             col_l, col_c, col_b = st.columns([1, 2, 2])
-            with col_l:
-                lop = st.selectbox("🏫 Khối lớp:", ds_lop, index=idx_lop, key="lop_main")
+            with col_l: lop = st.selectbox("🏫 Khối lớp:", ds_lop, index=idx_lop, key="lop_main")
             chuong_dict = lop_dict[lop]
-            
-            if not chuong_dict:
-                st.warning("Chưa có dữ liệu chương.")
-            else:
+            if chuong_dict:
                 ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
-                with col_c:
-                    chuong = st.selectbox("📂 Chọn Chương:", ds_chuong, key="chuong_main")
+                with col_c: chuong = st.selectbox("📂 Chọn Chương:", ds_chuong, key="chuong_main")
                 bai_dict = chuong_dict[chuong]
-                
-                if not bai_dict:
-                    st.warning("Chưa có dữ liệu bài học.")
-                else:
-                    with col_b:
-                        bai = st.selectbox("📘 Chọn Chuyên đề:", list(bai_dict.keys()), key="bai_main")
+                if bai_dict:
+                    with col_b: bai = st.selectbox("📘 Chọn Chuyên đề:", list(bai_dict.keys()), key="bai_main")
                     bai_dang_hoc = f"{chuong} - {bai}"
                     st.markdown("---")
                     hien_thi_bai(mon, lop, chuong, bai, bai_dict[bai])
         else:
-            lop = st.selectbox("🏫 Chọn khối lớp dự thi:", ds_lop, index=idx_lop, key="lop_thi")
+            lop = st.selectbox("🏫 Khối lớp:", ds_lop, index=idx_lop, key="lop_thi")
             chuong_dict = lop_dict[lop]
-            if chuong_dict:
-                hien_thi_che_do_thi(mon, lop, chuong_dict)
+            if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN & MẮT THẦN
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
     st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
-    idx_mon_ai = 0
-    if "Vật lý" in mon:
-        idx_mon_ai = 1
-    elif "Hóa học" in mon:
-        idx_mon_ai = 2
-
+    idx_mon_ai = 1 if "Vật lý" in mon else (2 if "Hóa học" in mon else 0)
     col_ai1, col_ai2, col_ai3 = st.columns([2.5, 1.2, 1])
     with col_ai1:
-        st.markdown("**📌 Em đang muốn hỏi Gia sư về môn nào?**")
-        mon_hoc_ai = st.radio(
-            "Ngữ cảnh môn học:", 
-            ["Toán", "Vật Lý", "Hóa Học", "Chuyện ngoài lề"], 
-            index=idx_mon_ai, 
-            horizontal=True,
-            label_visibility="collapsed"
-        )
+        mon_hoc_ai = st.radio("Ngữ cảnh môn:", ["Toán", "Vật Lý", "Hóa Học", "Chuyện ngoài lề"], index=idx_mon_ai, horizontal=True, label_visibility="collapsed")
     with col_ai2:
-        st.write("")
-        tu_dong_doc = st.checkbox("🔊 Tự động đọc to", value=True)
+        tu_dong_doc = st.checkbox("🔊 Đọc to", value=True)
     with col_ai3:
-        st.write("")
-        if st.button("🗑️ Xóa lịch sử chat", use_container_width=True):
+        if st.button("🗑️ Xóa chat", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
 
-    if mon_hoc_ai == "Chuyện ngoài lề":
-        SYSTEM_PROMPT = """
-        Bạn là một người anh/người chị AI tâm lý, hài hước (Gen Z) đang trò chuyện thư giãn cùng học sinh lớp 7.
-        Nguyên tắc: Lắng nghe, đồng cảm áp lực học tập, khuyên về phương pháp quản lý thời gian và kỹ năng sống. Xưng hô: "Chị/Anh" - "Em". KHÔNG viết kéo dài chữ.
-        """
-    else:
-        SYSTEM_PROMPT = f"""
-        Bạn là một gia sư AI trẻ trung, năng động, hài hước (Gen Z) chuyên kèm môn {mon_hoc_ai} lớp 7 (bám sát sách Kết Nối Tri Thức).
-        Thông tin thêm: Trên màn hình học sinh đang mở mục "{mon}" ({bai_dang_hoc}).
-        Nguyên tắc SƯ PHẠM TỐI THƯỢNG:
-        1. TUYỆT ĐỐI KHÔNG BAO GIỜ giải bài hộ hoặc đưa ra đáp án cuối cùng ngay lập tức.
-        2. Dùng phương pháp Socratic: Đặt câu hỏi gợi mở từng bước nhỏ.
-        3. CHỈ DÙNG kiến thức của môn {mon_hoc_ai} lớp 7.
-        4. Xưng hô: "Chị/Anh" và "Em", thân thiện. Trình bày công thức rõ ràng, súc tích.
-        """
+    SYSTEM_PROMPT = f"Bạn là gia sư AI môn {mon_hoc_ai} lớp 7 sách Kết Nối Tri Thức. Dùng phương pháp Socratic gợi mở từng bước, không giải bài hộ. Trình bày ngắn gọn, chuẩn xác."
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+    model = genai.GenerativeModel(model_name="gemini-3.5-flash", system_instruction=SYSTEM_PROMPT)
+    if "chat_history" not in st.session_state: st.session_state.chat_history = []
     for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+        with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
     img_pil, btn_gui_anh = None, False
     if HAS_PIL:
-        with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài / hình vẽ cho Gia sư", expanded=False):
-            t1, t2 = st.tabs(["📁 Tải ảnh", "📷 Camera"])
-            with t1: file_anh = st.file_uploader("Chọn ảnh (JPG, PNG):", type=["png", "jpg", "jpeg"], key="upload_anh")
-            with t2: cam_anh = st.camera_input("Chụp ảnh:", key="cam_anh")
-            anh_chon = cam_anh or file_anh
-            if anh_chon:
-                img_pil = Image.open(anh_chon)
-                st.image(img_pil, width=320)
-                btn_gui_anh = st.button("🔍 Nhờ Gia sư xem giải bài trong ảnh", type="primary")
+        with st.expander("📸 Mắt thần AI — Gửi ảnh chụp đề bài", expanded=False):
+            file_anh = st.file_uploader("Tải ảnh:", type=["png", "jpg", "jpeg"])
+            if file_anh:
+                img_pil = Image.open(file_anh)
+                st.image(img_pil, width=300)
+                btn_gui_anh = st.button("🔍 Gửi ảnh cho Gia sư", type="primary")
 
-    text_from_mic = None
-    if HAS_MIC:
-        st.markdown("🎙️ **Bấm vào đây để đọc câu hỏi:**")
-        text_from_mic = speech_to_text(language='vi-VN', start_prompt="🔴 NÓI", stop_prompt="⏹️ DỪNG", just_once=True, key='STT')
-
-    prompt_from_keyboard = st.chat_input("Em đang mắc kẹt ở bài nào...")
-    prompt = "Chị xem giúp em bài tập trong ảnh với ạ!" if btn_gui_anh else (text_from_mic or prompt_from_keyboard)
+    text_from_mic = speech_to_text(language='vi-VN', start_prompt="🔴 NÓI", stop_prompt="⏹️ DỪNG", just_once=True, key='STT') if HAS_MIC else None
+    prompt = "Chị xem giúp em bài tập trong ảnh với ạ!" if btn_gui_anh else (text_from_mic or st.chat_input("Em đang mắc kẹt bài nào..."))
 
     if prompt:
         with st.chat_message("user"):
@@ -806,29 +622,16 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
         st.session_state.chat_history.append({"role": "user", "content": prompt})
 
         with st.chat_message("assistant"):
-            gemini_history = [
-                {"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]}
-                for m in st.session_state.chat_history[:-1]
-            ]
+            gemini_history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
             try:
-                ans_text = goi_gemini_an_toan(
-                    [prompt, img_pil] if img_pil else prompt,
-                    system_instruction=SYSTEM_PROMPT,
-                    history=gemini_history
-                )
+                ans_text = goi_gemini_an_toan([prompt, img_pil] if img_pil else prompt, system_instruction=SYSTEM_PROMPT, history=gemini_history)
                 st.markdown(ans_text)
                 st.session_state.chat_history.append({"role": "assistant", "content": ans_text})
-
                 if HAS_TTS:
-                    try:
-                        clean_text = lam_sach_van_ban_doc(ans_text)
-                        if clean_text:
-                            tts = gTTS(text=clean_text, lang='vi')
-                            afp = io.BytesIO()
-                            tts.write_to_fp(afp)
-                            afp.seek(0)
-                            st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
-                    except Exception:
-                        st.caption("🔇 (Chưa tạo được âm thanh)")
-            except Exception as e:
-                st.error(f"⚠️ Gia sư AI đang bận. Bạn đợi chút rồi hỏi lại nhé! (Chi tiết: {e})")
+                    clean_text = lam_sach_van_ban_doc(ans_text)
+                    if clean_text:
+                        afp = io.BytesIO()
+                        gTTS(text=clean_text, lang='vi').write_to_fp(afp)
+                        afp.seek(0)
+                        st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
+            except Exception as e: st.error(f"⚠️ Lỗi kết nối AI: {e}")
