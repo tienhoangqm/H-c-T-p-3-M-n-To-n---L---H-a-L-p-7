@@ -46,10 +46,8 @@ with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, b
 
 # ==================== CẤU HÌNH XOAY VÒNG ĐA KHÓA API (MULTI-KEY) ====================
 def lay_danh_sach_gemini_keys():
-    """Thu thập tất cả các khóa Gemini API có trong st.secrets hoặc biến môi trường"""
     keys = []
     try:
-        # Hỗ trợ khai báo dạng danh sách: GEMINI_API_KEYS = ["key1", "key2"]
         if "GEMINI_API_KEYS" in st.secrets:
             val = st.secrets["GEMINI_API_KEYS"]
             if isinstance(val, list):
@@ -57,7 +55,6 @@ def lay_danh_sach_gemini_keys():
             elif isinstance(val, str):
                 keys.extend([k.strip() for k in val.split(",") if k.strip()])
         
-        # Hỗ trợ khai báo từng biến: GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3
         for k_name in ["GEMINI_API_KEY", "GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"]:
             if k_name in st.secrets and str(st.secrets[k_name]).strip():
                 k_val = str(st.secrets[k_name]).strip()
@@ -66,7 +63,6 @@ def lay_danh_sach_gemini_keys():
     except Exception:
         pass
 
-    # Dự phòng từ biến môi trường hệ thống
     for k_name in ["GEMINI_API_KEY", "GEMINI_API_KEY_2"]:
         env_val = os.getenv(k_name, "").strip()
         if env_val and env_val not in keys:
@@ -104,10 +100,9 @@ def cap_nhat_nguoi_online():
     bo_nho.update(danh_sach_online)
     return len(bo_nho)
 
-# ==================== BỘ ĐỆM (CACHE) & KIỂM TRA TẦN SUẤT (RATE LIMIT) ====================
+# ==================== BỘ ĐỆM & KIỂM TRA TẦN SUẤT ====================
 @st.cache_resource
 def lay_bo_nho_cache_ai():
-    """Bộ nhớ đệm lưu câu trả lời chung cho toàn bộ học sinh (tránh gọi lại câu đã hỏi)"""
     return {}
 
 def tao_ma_hash_cau_hoi(mon_hoc, cau_hoi):
@@ -115,7 +110,6 @@ def tao_ma_hash_cau_hoi(mon_hoc, cau_hoi):
     return hashlib.md5(chuoi_chuan.encode('utf-8')).hexdigest()
 
 def kiem_tra_gioi_han_tan_suat(cooldown_seconds=5):
-    """Giới hạn tần suất mỗi học sinh: cách nhau tối thiểu 5 giây giữa 2 lần bấm hỏi"""
     now = time.time()
     last_time = st.session_state.get("last_ai_request_time", 0.0)
     elapsed = now - last_time
@@ -232,7 +226,6 @@ def so_sanh(nd, ds_dung):
     return False
 
 def luu_tien_do(mon, lop, chuong, ten_bai, dung, tong):
-    """Lưu tiến độ làm bài vào session_state"""
     if "tien_do_chi_tiet" not in st.session_state:
         st.session_state["tien_do_chi_tiet"] = {}
     st.session_state["tien_do_chi_tiet"][f"{mon}_{lop}_{chuong}_{ten_bai}"] = {"dung": dung, "tong": tong}
@@ -274,14 +267,9 @@ def trich_xuat_word_docx(file_bytes):
     except Exception as e:
         return f"[Lỗi đọc file Word: {e}]"
 
-# ==================== TỐI ƯU GỌI DOLA (TIMEOUT NGẮN & BỘ ĐỆM) ====================
+# ==================== TỐI ƯU GỌI DOLA ====================
 @st.cache_data(ttl=3600, show_spinner=False)
 def goi_dola_toi_uu(cau_hoi):
-    """
-    Gọi Dola với timeout cực ngắn (4 giây).
-    Nếu Dola bận hoặc chưa cấu hình, lập tức trả về None để chuyển sang Gemini ngay, không đợi lâu.
-    Kèm header yêu cầu nâng cấp giới hạn (Quota Priority) cho dự án giáo dục.
-    """
     if not DOLA_ENDPOINT or not DOLA_KEY:
         return None
     try:
@@ -300,7 +288,7 @@ def goi_dola_toi_uu(cau_hoi):
                 "che_do": "chuan_sgk",
                 "yeu_cau_nang_cap_gioi_han": True
             },
-            timeout=4.0  # Timeout ngắn 4s: Dola bận thì sang Gemini ngay lập tức
+            timeout=4.0
         )
         if phan_hoi.status_code == 200:
             data_json = phan_hoi.json()
@@ -310,10 +298,9 @@ def goi_dola_toi_uu(cau_hoi):
     except Exception:
         return None
 
-# ==================== TỐI ƯU GỌI GEMINI (LUÂN PHIÊN API KEY + DÒ MODEL SỐNG) ====================
+# ==================== TỐI ƯU GỌI GEMINI ====================
 @st.cache_data(ttl=3600, show_spinner=False)
 def lay_danh_sach_model_kha_dung(api_key):
-    """Tự động kiểm tra danh sách model thực tế đang mở trên API Key để không bao giờ bị lỗi 404"""
     uu_tien = [
         "gemini-2.5-flash",
         "gemini-2.0-flash",
@@ -324,13 +311,12 @@ def lay_danh_sach_model_kha_dung(api_key):
     ]
     try:
         genai.configure(api_key=api_key)
-         ds_hien_co = []
+        ds_hien_co = []
         for m in genai.list_models():
             if "generateContent" in getattr(m, "supported_generation_methods", []):
                 ten_ngan = m.name.replace("models/", "")
                 ds_hien_co.append(ten_ngan)
         if ds_hien_co:
-            # Sắp xếp ưu tiên các model Flash nhanh và tiết kiệm quota trước
             ket_qua = [m for m in uu_tien if m in ds_hien_co]
             for m in ds_hien_co:
                 if m not in ket_qua and "gemini" in m:
@@ -341,16 +327,9 @@ def lay_danh_sach_model_kha_dung(api_key):
     return uu_tien
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
-    """
-    Hàm gọi Gemini có:
-    1. Luân phiên xoay vòng nhiều khóa API (Multi-Key Rotation).
-    2. Tự động chờ & phân bổ hợp lý (Exponential Backoff) khi gặp lỗi 429.
-    3. Tự động nhảy qua model lỗi 404 tức thì không tốn thời gian chờ.
-    """
     if not GEMINI_KEYS:
         raise RuntimeError("Chưa cấu hình GEMINI_API_KEY trong phần Secrets của Streamlit.")
 
-    # Xoay vòng khóa API bắt đầu từ vị trí lưu trong session_state
     if "key_index" not in st.session_state:
         st.session_state["key_index"] = 0
 
@@ -365,7 +344,6 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
         ds_models = lay_danh_sach_model_kha_dung(current_key)
 
         for ten_m in ds_models:
-            # Tối đa 2 lần thử cho mỗi model nếu gặp lỗi quá tải tạm thời
             for attempt in range(2):
                 try:
                     m = genai.GenerativeModel(model_name=ten_m, system_instruction=system_instruction)
@@ -375,7 +353,6 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                     else:
                         ket_qua_text = m.generate_content(payload).text
 
-                    # Ghi nhận Key đang hoạt động tốt cho lần gọi tiếp theo
                     st.session_state["key_index"] = idx_hien_tai
                     return ket_qua_text
 
@@ -383,11 +360,8 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                     last_err = e
                     error_str = str(e).lower()
 
-                    # Nếu model không tồn tại (404) -> đổi ngay sang model tiếp theo (không sleep)
                     if "404" in error_str or "not found" in error_str or "not supported" in error_str:
                         break
-
-                    # Nếu hết hạn mức/quá tải (429) -> Chờ ngắn ở lần 1, nếu vẫn lỗi thì chuyển sang Model/Key khác
                     elif "429" in error_str or "resource_exhausted" in error_str or "quota" in error_str:
                         if attempt == 0:
                             time.sleep(1.2)
@@ -539,7 +513,6 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     else:
                         dung = sum(1 for i, ch in enumerate(de, 1) if tl[i] == ch["da"][ch["d"]])
                         diem = dung / len(de) * 10
-                        luu_tien_do(mon, lop, chuong, ten_bai, dung, len(de))
                         ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(de))
                         st.markdown(f"<div class='diem-thi'>🏆 KẾT QUẢ: {diem:.1f} / 10</div>", unsafe_allow_html=True)
                         for i, ch in enumerate(de, 1):
@@ -655,7 +628,7 @@ else:
             if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI (TUẦN TỰ 1 NGUỒN - CÓ BỘ ĐỆM - RATE LIMIT)
+# KHU VỰC GIA SƯ AI
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
@@ -701,7 +674,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
     prompt = "Chị xem giúp em bài tập trong ảnh với ạ!" if btn_gui_anh else (text_from_mic or st.chat_input("Em đang mắc kẹt bài nào..."))
 
     if prompt:
-        # 1. KIỂM TRA GIỚI HẠN TẦN SUẤT NGƯỜI DÙNG (CHỐNG SPAM BẤM LIÊN TỤC)
         duoc_phep, giay_cho = kiem_tra_gioi_han_tan_suat(cooldown_seconds=5)
         if not duoc_phep:
             st.warning(f"⏳ Em thao tác hơi nhanh! Vui lòng chờ **{giay_cho} giây** nữa rồi gửi câu hỏi tiếp theo để hệ thống phân bổ tốt nhất nhé.")
@@ -715,7 +687,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                 bo_nho_cache = lay_bo_nho_cache_ai()
                 ma_hash = tao_ma_hash_cau_hoi(mon_hoc_ai, prompt) if not img_pil else None
 
-                # 2. KIỂM TRA BỘ ĐỆM (TRÁNH GỌI LẠI CÂU HỎI ĐÃ CÓ NGƯỜI HỎI)
                 if ma_hash and ma_hash in bo_nho_cache:
                     ans_cached = bo_nho_cache[ma_hash]
                     st.markdown(ans_cached)
@@ -727,8 +698,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                     ans_text_for_tts = ""
                     luu_history = ""
 
-                    # 3. LUỒNG CHÍNH TUẦN TỰ — KHÔNG GỌI ĐỒNG THỜI 2 NGUỒN
-                    # Trường hợp A: Ưu tiên Gemini (mặc định nhanh & ổn định nhất)
                     if che_do_nguon == "⚡ Ưu tiên Gemini (Nhanh)" or img_pil:
                         try:
                             with st.spinner("🤖 Gia sư Gemini đang suy nghĩ..."):
@@ -738,14 +707,12 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                                 luu_history = ans_text
                                 ans_text_for_tts = ans_text
                         except Exception as err_gemini:
-                            # Gemini bận -> Chuyển tuần tự sang Dola (Timeout 4s)
                             nd_dola = goi_dola_toi_uu(prompt) if not img_pil else None
                             if nd_dola:
                                 luu_history = f"📚 **Nội dung chuẩn SGK (Từ Dola dự phòng):**\n\n{nd_dola}"
                                 st.info(luu_history)
                                 ans_text_for_tts = nd_dola
                             elif du_lieu_bai_hien_tai.get("ly_thuyet"):
-                                # Dự phòng tầng 3: Trích xuất trực tiếp từ CSDL SGK nội bộ của bài đang học
                                 lt_noi_bo = du_lieu_bai_hien_tai.get("ly_thuyet", "")
                                 luu_history = (
                                     f"💡 *Hiện tại đường truyền AI đang bận ({err_gemini}), hệ thống gửi em **Kiến thức trọng tâm chuẩn SGK** của bài học hiện tại nhé:*\n\n"
@@ -756,7 +723,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                             else:
                                 st.error(f"⚠️ Đường truyền AI đang bận hoặc khóa API cần kiểm tra lại. Chi tiết kỹ thuật: {err_gemini}")
 
-                    # Trường hợp B: Ưu tiên Dola trước (Timeout ngắn 4s -> Nếu bận nhảy sang Gemini ngay)
                     elif che_do_nguon == "📚 Ưu tiên Dola (Chuẩn SGK)":
                         with st.spinner("📚 Đang tra cứu nhanh Dola (tối đa 4s)..."):
                             nd_dola = goi_dola_toi_uu(prompt)
@@ -765,7 +731,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                             st.info(luu_history)
                             ans_text_for_tts = nd_dola
                         else:
-                            # Dola bận hoặc quá 4s -> Chuyển ngay sang Gemini, không đợi
                             try:
                                 with st.spinner("⚡ Dola đang bận, chuyển ngay sang Gia sư Gemini..."):
                                     ans_text = goi_gemini_an_toan(prompt, system_instruction=SYSTEM_PROMPT, history=gemini_history)
@@ -775,7 +740,6 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                             except Exception as err_gemini:
                                 st.error(f"⚠️ Tạm thời chưa kết nối được AI. Chi tiết kỹ thuật: {err_gemini}")
 
-                    # Trường hợp C: Kết hợp tuần tự (Dola 4s -> nếu có thì Gemini diễn giải, nếu không thì Gemini trả lời thẳng)
                     else:
                         with st.spinner("🔍 Bước 1: Kiểm tra nhanh nội dung Dola (tối đa 4s)..."):
                             nd_dola = goi_dola_toi_uu(prompt)
@@ -806,13 +770,11 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
                             else:
                                 st.error(f"⚠️ Đường truyền AI đang bận. Chi tiết kỹ thuật: {err_gemini}")
 
-                    # Lưu vào lịch sử & Lưu vào Bộ đệm (Cache) nếu thành công
                     if luu_history:
                         st.session_state.chat_history.append({"role": "assistant", "content": luu_history})
                         if ma_hash:
                             bo_nho_cache[ma_hash] = luu_history
 
-                # 4. ĐỌC TO VĂN BẢN (TTS)
                 if HAS_TTS and ans_text_for_tts:
                     clean_text = lam_sach_van_ban_doc(ans_text_for_tts)
                     if clean_text:
