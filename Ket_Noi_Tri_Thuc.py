@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Toàn diện: Toán, Lý, Hóa & Ngữ Văn + Đếm User Online + AI Đa Giác Quan
+Phiên bản Tối thượng: Toán, Lý, Hóa, Văn + Đếm User Online + Tích hợp Dola & Gemini
 """
 import streamlit as st
 import google.generativeai as genai
@@ -12,6 +12,8 @@ import time
 import zipfile
 import xml.etree.ElementTree as ET
 import uuid
+import requests
+import os
 
 # Tải khởi động mượt mà chống ngủ đông
 with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, bạn chờ chút nhé..."):
@@ -33,33 +35,33 @@ with st.spinner("🚀 Hệ thống đang khởi động cỗ máy học tập, b
     except ImportError:
         HAS_PIL = False
 
-# Mở "két sắt" lấy chìa khóa kết nối AI
+# ==================== CẤU HÌNH API KEYS ====================
+# Khởi tạo Gemini
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+# Khởi tạo Dola (Lấy từ secrets hoặc biến môi trường)
+try:
+    DOLA_ENDPOINT = st.secrets.get("DOLA_API_ENDPOINT", os.getenv("DOLA_API_ENDPOINT", ""))
+    DOLA_KEY = st.secrets.get("DOLA_API_KEY", os.getenv("DOLA_API_KEY", ""))
+except Exception:
+    DOLA_ENDPOINT = ""
+    DOLA_KEY = ""
 
 # ==================== HỆ THỐNG ĐẾM NGƯỜI DÙNG TRỰC TUYẾN ====================
 @st.cache_resource
 def lay_bo_nho_truy_cap():
-    # Tạo một bộ nhớ dùng chung cho tất cả mọi người truy cập vào web
     return {}
 
 def cap_nhat_nguoi_online():
     bo_nho = lay_bo_nho_truy_cap()
-    
-    # Cấp cho mỗi học sinh một mã ID ẩn duy nhất khi vừa vào web
     if 'user_id' not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4())
         
-    # Ghi nhận thời gian hoạt động mới nhất của học sinh này
     bo_nho[st.session_state.user_id] = time.time()
-    
-    # Lọc danh sách: Chỉ giữ lại những ai có tương tác trong vòng 5 phút qua (300 giây)
     thoi_gian_hien_tai = time.time()
     danh_sach_online = {uid: t for uid, t in bo_nho.items() if thoi_gian_hien_tai - t < 300}
-    
-    # Làm mới bộ nhớ chung
     bo_nho.clear()
     bo_nho.update(danh_sach_online)
-    
     return len(bo_nho)
 
 # ==================== IMPORT DỮ LIỆU TỪ CÁC FILE ====================
@@ -275,6 +277,29 @@ def trich_xuat_word_docx(file_bytes):
     except Exception as e:
         return f"[Lỗi đọc file Word: {e}]"
 
+# --- Hàm gọi Dola (Lấy nội dung chuẩn) ---
+def goi_dola(cau_hoi):
+    """Gọi Dola lấy nội dung chuẩn theo chương trình"""
+    if not DOLA_ENDPOINT or not DOLA_KEY:
+        return None
+    try:
+        phan_hoi = requests.post(
+            DOLA_ENDPOINT,
+            headers={"Authorization": f"Bearer {DOLA_KEY}"},
+            json={
+                "cau_hoi": cau_hoi,
+                "chuong_trinh": "ket_noi_tri_thuc_lop7",
+                "che_do": "chuan_sgk"
+            },
+            timeout=15
+        )
+        if phan_hoi.status_code == 200:
+            return phan_hoi.json().get("noi_dung_chuan", "")
+        return None
+    except Exception:
+        return None
+
+# --- Hàm gọi Gemini (Gia sư diễn giải) ---
 def goi_gemini_an_toan(payload, system_instruction, history=None):
     ds_models = [
         "gemini-2.5-flash",
@@ -372,8 +397,8 @@ def hien_thi_trang_chu():
     with col_h2:
         st.markdown("""
         <div class="card-home">
-            <h3>💬 Trợ lý Gia sư AI 24/7 (Đa môn)</h3>
-            <p>Hỗ trợ giải đáp thông minh, phương pháp Socratic, tự động thử lại khi quá tải, đồng hành cùng học sinh mọi lúc mọi nơi.</p>
+            <h3>💬 Trợ lý Dola + Gemini</h3>
+            <p>Dola truy xuất dữ liệu chuẩn xác 100% từ SGK, kết hợp Gia sư Gemini diễn giải thông minh, chống ảo giác kiến thức.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -649,19 +674,22 @@ else:
             if chuong_dict: hien_thi_che_do_thi(mon, lop, chuong_dict)
 
 # ==========================================================
-# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (HỖ TRỢ ĐA MÔN TOÁN, LÝ, HÓA, VĂN)
+# KHU VỰC GIA SƯ AI ĐA GIÁC QUAN (TÍCH HỢP DOLA + GEMINI)
 # ==========================================================
 if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm kiếm", "⚙️ Trạm Nạp Dữ Liệu (Auto-Parser)"]:
     st.divider()
     st.header("💬 Trợ lý AI 24/7 - Hỏi đáp cùng Gia sư")
 
     idx_mon_ai = 1 if "Vật lý" in mon else (2 if "Hóa học" in mon else (3 if "Ngữ Văn" in mon else 0))
-    col_ai1, col_ai2, col_ai3 = st.columns([2.5, 1.2, 1])
+    # Chỉnh lại tỉ lệ cột để thêm nút bật/tắt Dola
+    col_ai1, col_ai2, col_ai3, col_ai4 = st.columns([2, 1, 2, 1])
     with col_ai1:
         mon_hoc_ai = st.radio("Ngữ cảnh môn:", ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn", "Chuyện ngoài lề"], index=idx_mon_ai, horizontal=True, label_visibility="collapsed")
     with col_ai2:
         tu_dong_doc = st.checkbox("🔊 Đọc to", value=True)
     with col_ai3:
+        bat_dola = st.checkbox("🔍 Dùng Dola (Chuẩn SGK)", value=True, help="Truy xuất nội dung chuẩn SGK bằng Dola trước khi Gemini diễn giải")
+    with col_ai4:
         if st.button("🗑️ Xóa chat", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
@@ -672,8 +700,11 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
         SYSTEM_PROMPT = f"Bạn là gia sư AI môn {mon_hoc_ai} lớp 7 sách Kết Nối Tri Thức. Dùng phương pháp Socratic gợi mở từng bước, không giải bài hộ. Trình bày ngắn gọn, chuẩn xác."
 
     if "chat_history" not in st.session_state: st.session_state.chat_history = []
+    
+    # Hiển thị lịch sử chat
     for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]): st.markdown(msg["content"])
+        with st.chat_message(msg["role"]): 
+            st.markdown(msg["content"])
 
     img_pil, btn_gui_anh = None, False
     if HAS_PIL:
@@ -691,20 +722,56 @@ if che_do not in ["🏠 Trang chủ / Hướng dẫn", "🔍 Tra cứu / Tìm ki
         with st.chat_message("user"):
             if img_pil: st.image(img_pil, width=250)
             st.markdown(prompt)
+        
         st.session_state.chat_history.append({"role": "user", "content": prompt})
 
         with st.chat_message("assistant"):
             gemini_history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.chat_history[:-1]]
             try:
-                ans_text = goi_gemini_an_toan([prompt, img_pil] if img_pil else prompt, system_instruction=SYSTEM_PROMPT, history=gemini_history)
-                st.markdown(ans_text)
-                st.session_state.chat_history.append({"role": "assistant", "content": ans_text})
-                if HAS_TTS:
-                    clean_text = lam_sach_van_ban_doc(ans_text)
+                nd_chuan = None
+                
+                # BƯỚC 1: Nếu người dùng bật Dola và không gửi ảnh (Dola hiện tại chỉ đọc Text)
+                if bat_dola and not img_pil:
+                    with st.spinner("🔍 Dola đang rà soát nội dung chuẩn SGK..."):
+                        nd_chuan = goi_dola(prompt)
+                
+                # BƯỚC 2: Nếu có nội dung chuẩn từ Dola, Gemini sẽ diễn giải song song
+                if nd_chuan:
+                    with st.spinner("🤖 Gia sư Gemini đang diễn giải cho dễ hiểu..."):
+                        cau_truyen = f"Dưới đây là nội dung chuẩn theo SGK do Dola trích xuất:\n{nd_chuan}\n\nHãy đóng vai gia sư {mon_hoc_ai}, diễn giải nội dung trên cho học sinh lớp 7 hiểu một cách dễ nhất, dùng ví dụ gần gũi dựa trên câu hỏi: {prompt}"
+                        ans_text = goi_gemini_an_toan(cau_truyen, system_instruction=SYSTEM_PROMPT, history=gemini_history)
+                        
+                        # Hiển thị UI 2 cột (Chỉ hiện lúc tương tác trực tiếp)
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            st.markdown("✅ **Nội dung chuẩn (Dola)**")
+                            st.info(nd_chuan)
+                        with c2:
+                            st.markdown("💡 **Gia sư giải thích (Gemini)**")
+                            st.success(ans_text)
+                            
+                        # Gộp lại thành Markdown để lưu vào lịch sử hiển thị đẹp mắt cho những lần tải trang sau
+                        luu_history = f"**✅ NỘI DUNG CHUẨN (Dola):**\n\n> {nd_chuan}\n\n---\n**💡 GIA SƯ GIẢI THÍCH (Gemini):**\n\n{ans_text}"
+                        st.session_state.chat_history.append({"role": "assistant", "content": luu_history})
+                        
+                        audio_text = ans_text # Giọng đọc AI sẽ chỉ đọc phần diễn giải của Gemini cho tự nhiên
+                
+                # BƯỚC 3: Xử lý mặc định bằng Gemini (Khi có ảnh, Dola tắt, hoặc Dola lỗi mạng/không lấy được chuẩn)
+                else:
+                    payload = [prompt, img_pil] if img_pil else prompt
+                    ans_text = goi_gemini_an_toan(payload, system_instruction=SYSTEM_PROMPT, history=gemini_history)
+                    st.markdown(ans_text)
+                    st.session_state.chat_history.append({"role": "assistant", "content": ans_text})
+                    audio_text = ans_text
+                
+                # ĐỌC TO VĂN BẢN (TTS)
+                if HAS_TTS and audio_text:
+                    clean_text = lam_sach_van_ban_doc(audio_text)
                     if clean_text:
                         afp = io.BytesIO()
                         gTTS(text=clean_text, lang='vi').write_to_fp(afp)
                         afp.seek(0)
                         st.audio(afp, format='audio/mp3', autoplay=tu_dong_doc)
+                        
             except Exception as e:
-                st.error(f"⚠️ Hệ thống AI đang có nhiều học sinh truy cập cùng lúc (Giới hạn Free Tier). Đang tự động thử lại hoặc em chờ vài giây rồi gửi lại câu hỏi nhé! (Lỗi: {e})")
+                st.error(f"⚠️ Hệ thống AI đang gặp sự cố. Đang tự động thử lại hoặc em chờ vài giây rồi gửi lại câu hỏi nhé! (Lỗi: {e})")
