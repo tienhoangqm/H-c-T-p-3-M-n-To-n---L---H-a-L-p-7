@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản vá lỗi:
-  - Sửa trộn đáp án (không còn bị khóa nhầm bởi các từ như "cảm", "cảnh")
-  - Sửa lỗi đáp án cũ dính sang đề mới (key radio có mã làm mới)
+Phiên bản vá lỗi & tối ưu toàn diện:
+  - Sửa trộn đáp án (không khóa nhầm từ "cảm", "cảnh"; bảo toàn câu "Cả A và B")
+  - Sửa lỗi đáp án cũ dính sang đề mới (key radio có mã làm mới nonce)
   - Sửa nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức; chỉnh PhET đúng lớp 7
-  - Chuyển từ google-generativeai sang google-genai; cập nhật model Gemini mới
-Đợt vá 2:
+  - Chuyển sang SDK google-genai; cập nhật danh sách model Gemini mới & dự phòng
   - Báo lỗi rõ ràng khi thiếu thư viện google-genai (không còn sập trang)
   - Sửa nút "Mở bài học" ở trang Tra cứu; Phòng thi tự tạo đề khi đổi tùy chọn
-  - Lọc tin nhắn lỗi khỏi ngữ cảnh AI; gia sư mặc định theo môn đang học
-  - Trạm nạp dữ liệu xuất JSON đã kiểm tra cấu trúc (không còn sinh code Python)
+  - Lọc tin nhắn lỗi khỏi ngữ cảnh AI; gia sư mặc định theo môn đang học / thí nghiệm
+  - Tối ưu tốc độ tải bài học trên di động (công tắc bật PhET trong tab bài học)
+  - Trạm nạp dữ liệu xuất JSON đã kiểm tra cấu trúc (không còn sinh code Python tự do)
   - Giới hạn tổng số câu hỏi AI/phút; chặn đoán mật khẩu Admin
 """
 import streamlit as st
@@ -32,7 +32,7 @@ import json
 import datetime
 from collections import OrderedDict, deque
 
-# [VÁ 2] Không để cả trang sập nếu server chưa cài google-genai:
+# Không để cả trang sập nếu server chưa cài google-genai:
 # app vẫn chạy phần học tập, chỉ tắt gia sư AI và hiện hướng dẫn sửa.
 try:
     from google import genai
@@ -56,8 +56,7 @@ if "home_jump" in st.session_state:
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = st.session_state.pop("home_jump")
 
-# [VÁ 2 – mục 6] Gán thẳng giá trị cho các widget chọn Khối/Chương/Bài.
-# Trước đây dùng tham số index=, bị Streamlit bỏ qua khi widget đã có key.
+# Gán thẳng giá trị cho các widget chọn Khối/Chương/Bài khi nhảy từ Tra cứu
 if "search_jump" in st.session_state:
     item = st.session_state.pop("search_jump")
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
@@ -67,9 +66,6 @@ if "search_jump" in st.session_state:
     st.session_state["s_bai"] = item["bai"]
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
-# Ghi chú: SDK google-genai tạo client riêng cho từng API key, không còn
-# trạng thái cấu hình toàn cục như genai.configure() cũ, nên không cần khóa
-# toàn bộ lời gọi AI nữa — nhiều học sinh có thể hỏi cùng lúc.
 @st.cache_resource
 def get_global_locks():
     return {
@@ -78,9 +74,7 @@ def get_global_locks():
         "rate_lock": threading.Lock(),
         "online_users": {},
         "ai_cache": OrderedDict(),
-        # [VÁ 2 – mục 14] Mốc thời gian các câu hỏi AI của toàn hệ thống
         "ai_request_times": deque(),
-        # [VÁ 2 – mục 16] Mốc thời gian các lần nhập sai mật khẩu Admin
         "admin_fail_lock": threading.Lock(),
         "admin_fail_times": deque(),
     }
@@ -159,9 +153,6 @@ def cap_nhat_nguoi_online():
         bo_nho.update(ds_online)
         return len(bo_nho)
 
-# Tổng số câu hỏi AI tối đa của cả hệ thống trong 1 phút (đổi trong Secrets
-# bằng AI_MAX_PER_MINUTE). Chặn trường hợp tải lại trang để hỏi liên tục,
-# làm cạn hạn mức API của cả trường.
 def lay_gioi_han_toan_cuc():
     try:
         return max(1, int(get_secret("AI_MAX_PER_MINUTE", 30)))
@@ -175,7 +166,7 @@ def kiem_tra_gioi_han_tan_suat(cooldown_seconds=4):
     elapsed = now - last_time
     if elapsed < cooldown_seconds:
         return False, int(cooldown_seconds - elapsed) + 1
-    # 2) [VÁ 2 – mục 14] Giới hạn tổng cho toàn hệ thống
+    # 2) Giới hạn tổng cho toàn hệ thống
     gioi_han = lay_gioi_han_toan_cuc()
     with GLOBALS["rate_lock"]:
         hang_doi = GLOBALS["ai_request_times"]
@@ -195,9 +186,6 @@ def tao_ma_hash_cau_hoi(mon_hoc, bai_hoc, che_do, cau_hoi):
     return hashlib.md5(chuoi_chuan.encode("utf-8")).hexdigest()
 
 def luu_cache_ai(ma_hash, noi_dung):
-    # [VÁ 2 – mục 11] Chỉ bỏ qua thông báo lỗi của hệ thống (bắt đầu bằng ⚠️).
-    # Trước đây lọc theo chữ "lỗi", "bận"... nên bỏ sót cả câu trả lời hợp lệ
-    # như "lỗi sai thường gặp khi...".
     if not noi_dung or "⚠️" in noi_dung:
         return
     with GLOBALS["ai_cache_lock"]:
@@ -249,19 +237,23 @@ def so_sanh_so_hoc(nd, ds_dung):
             return True
     return False
 
-# [VÁ LỖI 1] So khớp theo nguyên từ/cụm từ, không so khớp chuỗi con.
-# Trước đây "cả" khớp nhầm vào "cảm", "cảnh", "cải"... khiến câu hỏi không
-# được trộn và đáp án đúng luôn nằm ở vị trí đầu tiên.
+# Phân tách rõ câu tổng hợp ("Tất cả...") và câu chỉ đích danh chữ cái ("Cả A và B")
 PHUONG_AN_CO_DINH = re.compile(
-    r'\b(?:tất cả|cả hai|cả ba|cả [a-d]|đáp án|phương án)\b',
+    r'\b(?:tất cả|cả hai|cả ba|các đáp án|các phương án)\b',
+    re.IGNORECASE
+)
+PHUONG_AN_DINH_DANH = re.compile(
+    r'\b(?:cả [a-d]|[a-d] và [a-d]|[a-d],\s*[a-d])\b',
     re.IGNORECASE
 )
 
 def tron_dap_an_thong_minh(ch):
-    """Trộn các phương án thường; các phương án kiểu 'Tất cả...', 'Cả A và B'
-    được giữ nguyên thứ tự và đặt ở cuối danh sách."""
+    """Trộn các phương án thường; nếu có phương án chỉ đích danh chữ cái ('Cả A và B')
+    thì giữ nguyên toàn bộ; nếu có 'Tất cả...' thì giữ ở cuối danh sách."""
     da_goc = list(ch["da"])
     d_dung = da_goc[ch["d"]]
+    if any(PHUONG_AN_DINH_DANH.search(str(x)) for x in da_goc):
+        return da_goc, ch["d"]
     co_dinh = [x for x in da_goc if PHUONG_AN_CO_DINH.search(str(x))]
     tu_do = [x for x in da_goc if x not in co_dinh]
     random.shuffle(tu_do)
@@ -269,8 +261,7 @@ def tron_dap_an_thong_minh(ch):
     return da_moi, da_moi.index(d_dung)
 
 def giu_lua_chon_hop_le(key, ds_lua_chon):
-    """Xóa giá trị cũ của widget nếu nó không còn trong danh sách lựa chọn
-    (ví dụ chuyển môn khác), tránh lỗi hoặc hiển thị sai."""
+    """Xóa giá trị cũ của widget nếu nó không còn trong danh sách lựa chọn."""
     if key in st.session_state and st.session_state[key] not in ds_lua_chon:
         del st.session_state[key]
 
@@ -337,8 +328,6 @@ def trich_xuat_word_docx(file_bytes):
         return f"[Lỗi đọc file Word: {e}]"
 
 # ==================== GHI LOG LỖI ====================
-# [VÁ 2 – mục 8] Ghi lỗi thật vào log của server (xem ở Manage app → Logs)
-# thay vì nuốt im lặng. Che API key nếu nó lọt vào thông báo lỗi.
 def ghi_log_loi(nguon, loi):
     try:
         thong_bao = str(loi)
@@ -374,16 +363,16 @@ def goi_dola_toi_uu(cau_hoi):
     except Exception:
         return None
 
-# Thứ tự ưu tiên model (thử lần lượt nếu model trước lỗi hoặc hết hạn mức).
-# Lưu ý: Gemini 3.1 Pro hiện chỉ có bản preview nên tên gọi trên API là
-# "gemini-3.1-pro-preview".
+# Thứ tự ưu tiên model (bao gồm cả dòng 3.x và các bản 2.5/2.0 ổn định làm chốt chặn)
 MODEL_UU_TIEN = [
     "gemini-3.8-flash",
     "gemini-3.5-flash-lite",
     "gemini-3.1-pro-preview",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
 ]
 
-# Các dòng model chuyên dụng không dùng để trò chuyện văn bản
 TU_KHOA_MODEL_LOAI_TRU = (
     "tts", "image", "live", "embedding", "transcribe",
     "omni", "banana", "robotics", "audio"
@@ -475,11 +464,9 @@ def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=Fa
                 except genai_errors.APIError as e:
                     last_err = e
                     ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
-                    # 429: hết hạn mức tạm thời -> chờ 1 giây thử lại một lần
                     if getattr(e, "code", None) == 429 and attempt == 0:
                         time.sleep(1.0)
                         continue
-                    # 404 hoặc lỗi khác -> chuyển sang model kế tiếp
                     break
                 except Exception as e:
                     last_err = e
@@ -488,8 +475,6 @@ def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=Fa
     raise last_err or RuntimeError("Không có model Gemini khả dụng.")
 
 # ==================== KIỂM TRA DỮ LIỆU BÀI HỌC (TRẠM NẠP) ====================
-# [VÁ 2 – mục 13] AI chỉ trả về JSON. App tự kiểm tra cấu trúc rồi tự sinh file
-# dữ liệu, không còn dùng code Python do AI viết (tránh chạy code lạ trên server).
 def tach_json_tu_van_ban(van_ban):
     s = str(van_ban).strip()
     s = re.sub(r'^```(?:json)?\s*|\s*```$', '', s)
@@ -577,9 +562,6 @@ try:
 except ImportError:
     HOA = {}
 
-# [VÁ LỖI 5] Nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức (tập 1):
-# Bài 1 "Bầu trời tuổi thơ" và Bài 2 "Khúc nhạc tâm hồn".
-# Các bài còn lại nên được giáo viên bổ sung qua file data_van.py.
 VAN_DEFAULT = {
     "Lớp 7": {
         "Bài 1: Bầu trời tuổi thơ (Truyện)": {
@@ -835,10 +817,6 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN
 }
 
-# [VÁ LỖI 5] Mô phỏng PhET chọn theo nội dung KHTN lớp 7:
-# - Vật lý: âm thanh, ánh sáng (phản xạ), từ (nam châm).
-# - Hóa học: nguyên tử, phân tử. Đã bỏ "Cân bằng phương trình" và
-#   "Nồng độ dung dịch" vì thuộc kiến thức lớp 8.
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html"
@@ -861,7 +839,6 @@ DANH_MUC_THI_NGHIEM = {
     }
 }
 
-# [VÁ LỖI 5] Mô-đun Ngữ văn dựng lại theo văn bản "Bầy chim chìa vôi"
 DATA_LAB_NGU_VAN = {
     "🗺️ Bản đồ Cấu trúc & Bối cảnh": {
         "tieu_de": "Bản đồ Cấu trúc: Bầy chim chìa vôi",
@@ -1013,9 +990,6 @@ else:
     """, unsafe_allow_html=True)
 
 # ==================== BỘ GIAO DIỆN THEO MÔN HỌC ====================
-# Mỗi môn có màu, biểu tượng, ký hiệu trang trí và lời nhắn riêng.
-# Muốn đổi màu một môn: sửa "sang" (chế độ sáng), "toi" (chế độ tối) và "chinh"
-# (màu nút, thẻ chọn, tab). Lời nhắn đổi theo ngày.
 CHU_DE_GIAO_DIEN = {
     "toan": {
         "icon": "📐", "ten": "Môn Toán",
@@ -1120,8 +1094,6 @@ MO_TA_MON_TRANG_CHU = {
     "van": "Truyện, thơ, tùy bút và kĩ năng viết bài văn.",
 }
 
-# Vị trí các ký hiệu trang trí trong banner: (top %, left %, cỡ chữ rem, độ trễ giây).
-# Đặt ở nửa trên và mép phải để không đè lên dòng lời nhắn ở đáy banner.
 VI_TRI_KY_HIEU = [
     (8, 62, 2.2, 0), (40, 74, 1.6, 1.2), (10, 86, 2.8, 2.4), (52, 90, 1.9, 0.6),
     (30, 54, 1.3, 3.0), (22, 70, 1.4, 1.8), (5, 42, 1.2, 4.0), (44, 60, 1.1, 2.8),
@@ -1150,7 +1122,6 @@ def css_giao_dien_chung():
     """CSS dùng chung cho banner, thẻ bài học, dải đề thi và ô môn học."""
     return (
         "<style>"
-        # ---- Banner đầu trang ----
         ".hb{position:relative;overflow:hidden;border-radius:20px;padding:1.4rem 1.5rem;"
         "margin:.2rem 0 1.3rem;color:#fff;"
         "background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 55%,var(--c3) 100%);"
@@ -1173,7 +1144,6 @@ def css_giao_dien_chung():
         ".hb-loi-nhan{position:relative;z-index:1;margin-top:1rem;padding:.6rem .9rem;border-radius:12px;"
         "font-size:.93rem;background:rgba(0,0,0,.26);border-left:4px solid var(--nhan);}"
         ".hb-loi-nhan b{color:var(--nhan);}"
-        # ---- Thẻ đầu bài học / dải đề thi ----
         ".bh{border-radius:16px;padding:1rem 1.2rem;margin:.4rem 0 1rem;"
         "background:var(--bh-nen);border:1px solid var(--bh-vien);border-left:6px solid var(--bh-c);}"
         ".bh-duong{font-size:.82rem;color:var(--bh-phu) !important;margin:0 0 .25rem;}"
@@ -1184,7 +1154,6 @@ def css_giao_dien_chung():
         ".bh-so .so{font-size:1.5rem;font-weight:800;line-height:1.1;color:var(--bh-c);}"
         ".bh-so .nhan{font-size:.8rem;color:var(--bh-phu);}"
         ".bh-loi{margin:0;font-size:.93rem;color:var(--bh-chu) !important;}"
-        # ---- Ô môn học ở Trang chủ ----
         ".om{position:relative;overflow:hidden;border-radius:18px;padding:1.1rem 1.1rem 1rem;"
         "min-height:178px;color:#fff;margin-bottom:.5rem;"
         "background:linear-gradient(150deg,var(--c1) 0%,var(--c2) 60%,var(--c3) 100%);"
@@ -1197,13 +1166,11 @@ def css_giao_dien_chung():
         "padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.2);}"
         ".om-kh{position:absolute;right:-6px;bottom:-14px;font-size:4.6rem;font-weight:800;"
         "opacity:.15;pointer-events:none;line-height:1;}"
-        # ---- Các bước học ở Trang chủ ----
         ".buoc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.6rem 0 1rem;}"
         ".buoc-o{border-radius:14px;padding:.8rem .9rem;background:var(--bh-nen);border:1px solid var(--bh-vien);}"
         ".buoc-so{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;"
         "border-radius:50%;font-weight:800;color:#fff;background:var(--bh-c);margin-bottom:.35rem;}"
         ".buoc-o p{margin:0;font-size:.9rem;color:var(--bh-chu) !important;}"
-        # ---- Chuyển động & màn hình nhỏ ----
         "@keyframes hb-troi{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(6deg)}}"
         "@keyframes hb-lac{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(4deg) scale(1.04)}}"
         "@media (max-width:640px){.hb{padding:1.1rem}.hb-tieu-de{font-size:1.45rem}"
@@ -1312,8 +1279,7 @@ def dem_chuong_bai(mon):
 
 # ==================== BANNER GIA SƯ AI ====================
 def tao_banner_gia_su(che_do_toi, bai_hien_tai="", ai_san_sang=True, co_anh=True, co_mic=True):
-    """Tạo HTML cho banner 'Gia sư AI 24/7'. Muốn đổi màu, sửa NEN/BONG bên dưới;
-    muốn đổi linh vật, sửa LINH_VAT."""
+    """Tạo HTML cho banner 'Gia sư AI 24/7'."""
     LINH_VAT = "🦉"
     if che_do_toi:
         NEN = "linear-gradient(135deg, #312E81 0%, #6D28D9 55%, #9D174D 100%)"
@@ -1445,11 +1411,12 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         )
         url_tn = ds_tn_mon[ten_tn]
         if url_tn:
-            components.iframe(url_tn, height=580, scrolling=True)
+            # Nếu ở màn hình Phòng thí nghiệm chính thì mở luôn; nếu ở tab phụ trong bài học thì bật công tắc mới tải cho nhẹ máy
+            if key_prefix == "main_lab" or st.toggle("🚀 Bật màn hình mô phỏng tương tác", key=f"load_phet_{key_prefix}"):
+                components.iframe(url_tn, height=580, scrolling=True)
 
 def dinh_dang_doan_van(van_ban):
-    """Giữ nguyên xuống dòng và thụt đầu dòng của nội dung lý thuyết / ví dụ khi
-    hiển thị trong khung HTML (trước đây mọi dòng bị dồn thành một đoạn)."""
+    """Giữ nguyên xuống dòng và thụt đầu dòng của nội dung lý thuyết / ví dụ."""
     cac_dong = html.escape(str(van_ban).strip(), quote=False).split("\n")
     ket_qua = []
     for dong in cac_dong:
@@ -1458,8 +1425,7 @@ def dinh_dang_doan_van(van_ban):
     return "<br>".join(ket_qua)
 
 def la_bai_tu_luan(bt):
-    """Bài tự luận: giáo viên đánh dấu kieu='tu_luan', hoặc mọi đáp án đều là câu dài
-    (học sinh không thể gõ trùng khớp từng chữ để máy chấm)."""
+    """Bài tự luận: giáo viên đánh dấu kieu='tu_luan', hoặc mọi đáp án đều là câu dài."""
     if bt.get("kieu") == "tu_luan":
         return True
     dap_an = [str(x).strip() for x in bt.get("dd", []) if str(x).strip()]
@@ -1584,8 +1550,6 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     nd_ch = ch.get("nd") or ch.get("de")
                     de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
                 st.session_state[f"de_{sid}"] = de_tron
-                # [VÁ LỖI 4] Mỗi đề mới có mã riêng -> nút chọn đáp án được tạo mới,
-                # lựa chọn của đề cũ không còn dính sang đề mới.
                 st.session_state[f"nonce_{sid}"] = uuid.uuid4().hex[:8]
             nonce = st.session_state.setdefault(f"nonce_{sid}", "0")
 
@@ -1629,7 +1593,6 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
 bai_dang_hoc = ""
 du_lieu_bai_hien_tai = {}
 
-# CSS chung cho banner, thẻ bài học, ô môn học (chỉ chèn một lần mỗi lượt hiển thị)
 st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
 
 if che_do == "🏠 Trang chủ / Hướng dẫn":
@@ -1718,8 +1681,6 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
     )
     mk = st.text_input("🔑 Mật khẩu Admin:", type="password")
 
-    # [VÁ 2 – mục 16] Sai quá 5 lần trong 10 phút -> khóa đăng nhập 10 phút.
-    # Bộ đếm dùng chung cho cả hệ thống nên tải lại trang không vượt qua được.
     SO_LAN_SAI_TOI_DA = 5
     THOI_GIAN_KHOA = 600
     now_ad = time.time()
@@ -1733,7 +1694,6 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
     dang_nhap_dung = False
     if ADMIN_PASS and mk and not bi_khoa:
         dang_nhap_dung = hmac.compare_digest(mk, ADMIN_PASS)
-        # Chỉ tính một lần sai cho mỗi mật khẩu mới nhập (không đếm lại khi trang tải lại)
         if not dang_nhap_dung and st.session_state.get("admin_mk_da_kiem") != mk:
             st.session_state["admin_mk_da_kiem"] = mk
             with GLOBALS["admin_fail_lock"]:
@@ -1821,8 +1781,6 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
             st.info("📌 Nội dung do AI bóc tách — giáo viên cần kiểm tra lại trước khi đưa vào dữ liệu chính thức.")
 
             json_out = json.dumps(bai_moi, ensure_ascii=False, indent=2)
-            # File .py do chính app sinh ra từ dữ liệu đã kiểm tra (chỉ gồm chuỗi, số, danh sách),
-            # không phải code do AI viết.
             py_out = (
                 "# -*- coding: utf-8 -*-\n"
                 "# Dữ liệu bài học do Trạm nạp dữ liệu sinh ra. Dán vào đúng Môn > Lớp > Chương > Bài.\n"
@@ -1848,7 +1806,6 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
         st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
-    # Chừa chỗ cho banner ở đầu trang, vẽ sau khi biết môn được chọn
     cho_banner_lab = st.empty()
     ds_mon_lab = [
         "📖 Môn Ngữ Văn",
@@ -1857,6 +1814,8 @@ elif che_do == "🎪 Phòng thí nghiệm ảo":
         "📐 Môn Toán"
     ]
     mon_lab = st.selectbox("🔬 Chọn môn học thực hành:", ds_mon_lab)
+    mon = mon_lab
+    bai_dang_hoc = f"Phòng thí nghiệm — {mon_lab}"
     khoa_lab = lay_chu_de(mon_lab)
     chip_lab = (
         ["🗺️ Sơ đồ tác phẩm", "🎭 Thế giới nhân vật", "📝 Lập dàn ý"]
@@ -1908,7 +1867,6 @@ elif che_do == "📖 Học theo chuyên đề":
         bai_dict = chuong_dict[chuong]
         ds_bai = list(bai_dict.keys())
         if not ds_bai:
-            # Trước đây chương rỗng (ví dụ Hóa học "Đang cập nhật") làm app lỗi KeyError
             st.info("📌 Chương này đang được cập nhật bài học.")
             bai_dang_hoc = chuong
         else:
@@ -1959,7 +1917,6 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
         khoa_nonce = f"nonce_thi_{mon}_{lop}"
         khoa_cau_hinh = f"cauhinh_thi_{mon}_{lop}"
 
-        # [VÁ 2 – mục 7] Đổi cấu trúc đề hoặc danh sách chương -> tạo đề mới ngay
         cau_hinh_hien_tai = (loai_de, tuple(chuong_chon))
         if st.session_state.get(khoa_cau_hinh) != cau_hinh_hien_tai:
             st.session_state[khoa_cau_hinh] = cau_hinh_hien_tai
@@ -1984,7 +1941,6 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                     nd_ch = ch.get("nd") or ch.get("de")
                     de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
                 st.session_state[khoa_de] = de_tron_thi
-                # [VÁ LỖI 4] Đề mới -> mã mới cho các nút chọn đáp án
                 st.session_state[khoa_nonce] = uuid.uuid4().hex[:8]
 
         if st.session_state.get(khoa_de):
@@ -2040,7 +1996,6 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
         unsafe_allow_html=True
     )
 
-    # [VÁ 2 – mục 10] Gia sư mặc định theo môn đang học/đang thi
     DS_MON_AI = ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"]
     MON_SANG_MON_AI = {
         "📐 Môn Toán": "Toán",
@@ -2060,7 +2015,6 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
             label_visibility="collapsed"
         )
     with col2:
-        # Tắt mặc định để tránh tự phát âm thanh trong lớp học
         tu_dong_doc = st.checkbox("🔊 Đọc to", value=False)
     with col3:
         nguon_ai = st.selectbox(
@@ -2133,8 +2087,6 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
                         st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
                         doc_to_an_toan(ans_cached, autoplay=tu_dong_doc)
                     else:
-                        # [VÁ 2 – mục 8] Không gửi thông báo lỗi (và câu hỏi bị lỗi
-                        # tương ứng) vào ngữ cảnh của AI.
                         g_hist = []
                         for m in st.session_state.chat_history[:-1]:
                             if m.get("loi"):
