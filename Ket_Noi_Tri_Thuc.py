@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Tổng hợp Hoàn chỉnh: Tích hợp đầy đủ Toán, Lý, Hóa, Văn và Tiếng Anh (Global Success)
-- 10 mảnh kiến thức nền ôn tập (Lớp 4–6)
-- Dữ liệu 12 Unit Tiếng Anh lớp 7 đầy đủ
-- Từ điển Anh-Việt offline & Từ của ngày
+Phiên bản Giao diện Chuẩn Nhận Diện Môn Học + Tích hợp Đầy đủ Toán, Lý, Hóa, Văn, Anh
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -527,9 +524,9 @@ try:
 except ImportError:
     HOA = {}
 try:
-    from data_anh import ANH, KIEN_THUC_NEN, TU_DIEN_OFFLINE, DS_TU_CUA_NGAY, TRA_TU_CACHE
+    from data_anh import ANH
 except ImportError:
-    ANH, KIEN_THUC_NEN, TU_DIEN_OFFLINE, DS_TU_CUA_NGAY, TRA_TU_CACHE = {}, {}, {}, [], {}
+    ANH = {}
 
 VAN_DEFAULT = {
     "Lớp 7": {
