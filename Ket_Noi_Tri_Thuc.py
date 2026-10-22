@@ -529,7 +529,15 @@ def chuan_hoa_bai_hoc(du_lieu):
         if len(set(da)) != len(da):
             canh_bao.append(f"Câu trắc nghiệm {i}: có phương án trùng nhau, đã bỏ qua.")
             continue
-        bai["cau_hoi"].append({"nd": nd, "da": da, "d": d})
+        cau = {"nd": nd, "da": da, "d": d}
+        if str(ch.get("gt", "")).strip():
+            cau["gt"] = str(ch["gt"]).strip()
+        md = str(ch.get("md", "")).strip()
+        if md in ("biet", "hieu", "van_dung"):
+            cau["md"] = md
+        elif md:
+            canh_bao.append(f"Câu trắc nghiệm {i}: mức độ '{md}' không hợp lệ, đã bỏ trường này.")
+        bai["cau_hoi"].append(cau)
 
     for nhom in ("bt_co_ban", "bt_nang_cao"):
         for i, bt in enumerate(du_lieu.get(nhom) or [], 1):
@@ -542,11 +550,17 @@ def chuan_hoa_bai_hoc(du_lieu):
             dd = [str(x).strip() for x in dd if str(x).strip()]
             if not dd:
                 canh_bao.append(f"{nhom} {i}: thiếu đáp án/gợi ý (dd).")
-            bai[nhom].append({
+            bai_tap = {
                 "de": str(bt["de"]).strip(),
                 "dd": dd or [""],
                 "lg": str(bt.get("lg", "")).strip(),
-            })
+            }
+            for truong in ("gt", "hd"):
+                if str(bt.get(truong, "")).strip():
+                    bai_tap[truong] = str(bt[truong]).strip()
+            if bt.get("kieu") == "tu_luan":
+                bai_tap["kieu"] = "tu_luan"
+            bai[nhom].append(bai_tap)
     return bai, canh_bao
 
 # ==================== NẠP DỮ LIỆU CÁC MÔN ====================
@@ -1433,6 +1447,70 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         if url_tn:
             components.iframe(url_tn, height=580, scrolling=True)
 
+def dinh_dang_doan_van(van_ban):
+    """Giữ nguyên xuống dòng và thụt đầu dòng của nội dung lý thuyết / ví dụ khi
+    hiển thị trong khung HTML (trước đây mọi dòng bị dồn thành một đoạn)."""
+    cac_dong = html.escape(str(van_ban).strip(), quote=False).split("\n")
+    ket_qua = []
+    for dong in cac_dong:
+        so_cach = len(dong) - len(dong.lstrip(" "))
+        ket_qua.append("&nbsp;" * so_cach + dong.lstrip(" "))
+    return "<br>".join(ket_qua)
+
+def la_bai_tu_luan(bt):
+    """Bài tự luận: giáo viên đánh dấu kieu='tu_luan', hoặc mọi đáp án đều là câu dài
+    (học sinh không thể gõ trùng khớp từng chữ để máy chấm)."""
+    if bt.get("kieu") == "tu_luan":
+        return True
+    dap_an = [str(x).strip() for x in bt.get("dd", []) if str(x).strip()]
+    return not any(len(x) <= 30 for x in dap_an)
+
+def hien_thi_mot_bai_tap(bt, khoa, mon):
+    """Hiển thị một bài tập: ô làm bài, gợi ý, chấm tự động hoặc tự đối chiếu, lời giải."""
+    dap_an = bt.get("dd") or [""]
+    goi_y = bt.get("hd", "")
+    giai_thich = bt.get("gt", "")
+    loi_giai = bt.get("lg", "")
+
+    if "Ngữ Văn" in mon:
+        if st.button("💡 Xem gợi ý", key=f"btn_goiy_{khoa}"):
+            st.info(f"📝 **Gợi ý:** {loi_giai or dap_an[0]}")
+        return
+
+    if goi_y and st.checkbox("💡 Gợi ý cách làm", key=f"hd_{khoa}"):
+        st.info(goi_y)
+
+    if la_bai_tu_luan(bt):
+        st.text_area("✍️ Bài làm của em:", key=f"tl_{khoa}", height=110,
+                     placeholder="Em viết câu trả lời ở đây, sau đó bấm xem đáp án để tự đối chiếu.")
+        if st.checkbox("📖 Xem đáp án để đối chiếu", key=f"xem_{khoa}"):
+            st.success(f"**Đáp án:** {dap_an[0]}")
+            if giai_thich:
+                st.caption(f"💡 {giai_thich}")
+            if loi_giai:
+                st.markdown(f"**Lời giải chi tiết:** {loi_giai}")
+        return
+
+    ans = st.text_input("Nhập kết quả:", key=f"nhap_{khoa}")
+    if st.button("Kiểm tra", key=f"kt_{khoa}"):
+        if not ans.strip():
+            st.warning("⚠️ Em nhập đáp án trước nhé!")
+        elif so_sanh_so_hoc(ans, dap_an):
+            st.markdown("""<p class="dung">✅ Chính xác! Giỏi lắm!</p>""", unsafe_allow_html=True)
+            if giai_thich:
+                st.caption(f"💡 {giai_thich}")
+        else:
+            st.markdown(
+                """<p class="sai">❌ Chưa đúng rồi. Em kiểm tra lại cách tính hoặc mở gợi ý nhé!</p>""",
+                unsafe_allow_html=True
+            )
+    if st.checkbox("📖 Xem đáp án và lời giải", key=f"lg_{khoa}"):
+        st.success(f"**Đáp án:** {dap_an[0]}")
+        if giai_thich:
+            st.caption(f"💡 {giai_thich}")
+        if loi_giai:
+            st.markdown(f"**Lời giải chi tiết:** {loi_giai}")
+
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     lt = data.get("ly_thuyet", "").strip()
     vd = data.get("vi_du", "").strip()
@@ -1464,12 +1542,12 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
             nen_lt = tron_mau(mau_mon, "#0F172A" if dark_mode else "#FFFFFF", .16 if dark_mode else .07)
             st.markdown(
                 f"""<div class="khung-lythuyet" style="border-left-color:{mau_mon};background-color:{nen_lt}">"""
-                f"""<b style="color:{mau_mon}">📚 Kiến thức trọng tâm</b><br>{lt}</div>""",
+                f"""<b style="color:{mau_mon}">📚 Kiến thức trọng tâm</b><br>{dinh_dang_doan_van(lt)}</div>""",
                 unsafe_allow_html=True
             )
         if vd:
             st.markdown(
-                f"""<div class="khung-vidu">{vd}</div>""",
+                f"""<div class="khung-vidu">{dinh_dang_doan_van(vd)}</div>""",
                 unsafe_allow_html=True
             )
 
@@ -1478,27 +1556,9 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
             st.info("Chưa có bài tập.")
         else:
             for i, bt in enumerate(bt_cb, 1):
-                with st.expander(f"Bài {i}: {bt['de']}"):
-                    if "Ngữ Văn" in mon:
-                        if st.button("💡 Xem gợi ý", key=f"btn_goiy_cb_{sid}_{i}"):
-                            goi_y = bt.get("lg", bt.get("dd", [""])[0])
-                            st.info(f"📝 **Gợi ý:** {goi_y}")
-                    else:
-                        ans = st.text_input("Nhập kết quả:", key=f"cb_{sid}_{i}")
-                        if st.button("Kiểm tra", key=f"btn_cb_{sid}_{i}"):
-                            if not ans.strip():
-                                st.warning("⚠️ Nhập đáp án trước!")
-                            elif so_sanh_so_hoc(ans, bt["dd"]):
-                                st.markdown(
-                                    """<p class="dung">✅ Chính xác!</p>""",
-                                    unsafe_allow_html=True
-                                )
-                            else:
-                                da_mau = bt["dd"][0]
-                                st.markdown(
-                                    f"""<p class="sai">❌ Sai. Gợi ý: {da_mau}</p>""",
-                                    unsafe_allow_html=True
-                                )
+                nhan_tl = " ✍️" if ("Ngữ Văn" not in mon and la_bai_tu_luan(bt)) else ""
+                with st.expander(f"Bài {i}{nhan_tl}: {bt['de']}"):
+                    hien_thi_mot_bai_tap(bt, f"cb_{sid}_{i}", mon)
 
     with tab3:
         if not bt_nc:
@@ -1506,21 +1566,10 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
         else:
             for i, nc in enumerate(bt_nc, 1):
                 de_ngan = nc['de'] if len(nc['de']) <= 60 else nc['de'][:60] + "..."
-                with st.expander(f"Bài nâng cao {i}: {de_ngan}"):
+                nhan_tl = " ✍️" if ("Ngữ Văn" not in mon and la_bai_tu_luan(nc)) else ""
+                with st.expander(f"Bài nâng cao {i}{nhan_tl}: {de_ngan}"):
                     st.markdown(f"**Đề bài:** {nc['de']}")
-                    if "Ngữ Văn" in mon:
-                        if st.button("💡 Xem gợi ý", key=f"btn_goiy_nc_{sid}_{i}"):
-                            goi_y = nc.get("lg", nc.get("dd", [""])[0])
-                            st.info(f"📝 **Gợi ý:** {goi_y}")
-                    else:
-                        ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
-                        if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
-                            if so_sanh_so_hoc(ans, nc["dd"]):
-                                st.success("🎉 Chính xác!")
-                            else:
-                                st.error(f"❌ Gợi ý: {nc['dd'][0]}")
-                        if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"):
-                            st.success(f"**Lời giải:** {nc.get('lg', '')}")
+                    hien_thi_mot_bai_tap(nc, f"nc_{sid}_{i}", mon)
 
     with tab4:
         if len(ch_list) == 0:
@@ -1533,7 +1582,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                 for ch in ch_list:
                     da_moi, vt_moi = tron_dap_an_thong_minh(ch)
                     nd_ch = ch.get("nd") or ch.get("de")
-                    de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
+                    de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
                 st.session_state[f"de_{sid}"] = de_tron
                 # [VÁ LỖI 4] Mỗi đề mới có mã riêng -> nút chọn đáp án được tạo mới,
                 # lựa chọn của đề cũ không còn dính sang đề mới.
@@ -1568,6 +1617,8 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                         da_dung = ch["da"][ch["d"]]
                         if tl[i] != da_dung:
                             st.error(f"Câu {i} sai. Đúng là: {da_dung}")
+                            if ch.get("gt"):
+                                st.caption(f"💡 {ch['gt']}")
                         else:
                             st.success(f"Câu {i}: Đúng")
 
@@ -1713,9 +1764,12 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
             '- "ly_thuyet": chuỗi, tóm tắt lý thuyết.\n'
             '- "vi_du": chuỗi, ví dụ minh họa (có thể rỗng).\n'
             '- "cau_hoi": danh sách câu trắc nghiệm, mỗi câu dạng '
-            '{"nd": "đề", "da": ["phương án 1", "phương án 2", ...], "d": chỉ số đáp án đúng, đếm từ 0}.\n'
+            '{"nd": "đề", "da": ["phương án 1", "phương án 2", ...], "d": chỉ số đáp án đúng, đếm từ 0, '
+            '"gt": "giải thích ngắn vì sao đúng", "md": "biet" | "hieu" | "van_dung"}.\n'
             '- "bt_co_ban" và "bt_nang_cao": danh sách bài tập, mỗi bài dạng '
-            '{"de": "đề bài", "dd": ["đáp án hoặc ý chính"], "lg": "lời giải hoặc gợi ý"}.\n'
+            '{"de": "đề bài", "dd": ["đáp án"], "hd": "gợi ý cách làm", "lg": "lời giải chi tiết", '
+            '"kieu": "tu_luan" nếu đáp án là câu văn cần trình bày}. '
+            'Với đáp án là số hoặc từ ngắn, "dd" chỉ ghi con số/từ đó (có thể ghi nhiều cách viết).\n'
             "Chỉ dùng nội dung có trong tài liệu, không tự bịa thêm. Viết bằng tiếng Việt."
         )
         if not HAS_GENAI:
@@ -1928,7 +1982,7 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                 for ch in ds_chon:
                     da_moi, vt_moi = tron_dap_an_thong_minh(ch)
                     nd_ch = ch.get("nd") or ch.get("de")
-                    de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
+                    de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
                 st.session_state[khoa_de] = de_tron_thi
                 # [VÁ LỖI 4] Đề mới -> mã mới cho các nút chọn đáp án
                 st.session_state[khoa_nonce] = uuid.uuid4().hex[:8]
@@ -1967,6 +2021,8 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                         da_dung = ch["da"][ch["d"]]
                         if tl_thi[i] != da_dung:
                             st.error(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
+                            if ch.get("gt"):
+                                st.caption(f"💡 {ch['gt']}")
     else:
         st.warning("⚠️ Môn này chưa có dữ liệu câu hỏi, đang được cập nhật...")
 
