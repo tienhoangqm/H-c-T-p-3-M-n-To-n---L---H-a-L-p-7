@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản nâng cấp giao diện:
-  - Thanh bên giống hệt thiết kế: logo, trạng thái trực tuyến, danh sách chức năng
-  - Tối ưu hiển thị chế độ tối/sáng, màu sắc thống nhất theo từng môn
-  - Hiệu ứng tương tác, đánh dấu mục đang chọn rõ ràng
-  - Thông tin trực tuyến cập nhật real-time
+Phiên bản vá lỗi:
+  - Sửa trộn đáp án (không còn bị khóa nhầm bởi các từ như "cảm", "cảnh")
+  - Sửa lỗi đáp án cũ dính sang đề mới (key radio có mã làm mới)
+  - Sửa nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức; chỉnh PhET đúng lớp 7
+  - Chuyển từ google-generativeai sang google-genai; cập nhật model Gemini mới
+Đợt vá 2:
+  - Báo lỗi rõ ràng khi thiếu thư viện google-genai (không còn sập trang)
+  - Sửa nút "Mở bài học" ở trang Tra cứu; Phòng thi tự tạo đề khi đổi tùy chọn
+  - Lọc tin nhắn lỗi khỏi ngữ cảnh AI; gia sư mặc định theo môn đang học
+  - Trạm nạp dữ liệu xuất JSON đã kiểm tra cấu trúc (không còn sinh code Python)
+  - Giới hạn tổng số câu hỏi AI/phút; chặn đoán mật khẩu Admin
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -26,26 +32,16 @@ import json
 import datetime
 from collections import OrderedDict, deque
 
-# ==================== TƯƠNG THÍCH KÉP THƯ VIỆN GEMINI ====================
-HAS_NEW_GENAI = False
-HAS_LEGACY_GENAI = False
-genai = types = genai_errors = legacy_genai = None
-
+# [VÁ 2] Không để cả trang sập nếu server chưa cài google-genai:
+# app vẫn chạy phần học tập, chỉ tắt gia sư AI và hiện hướng dẫn sửa.
 try:
     from google import genai
     from google.genai import types
     from google.genai import errors as genai_errors
-    HAS_NEW_GENAI = True
+    HAS_GENAI = True
 except Exception:
-    pass
-
-try:
-    import google.generativeai as legacy_genai
-    HAS_LEGACY_GENAI = True
-except Exception:
-    pass
-
-HAS_GENAI = HAS_NEW_GENAI or HAS_LEGACY_GENAI
+    genai = types = genai_errors = None
+    HAS_GENAI = False
 
 # ==================== CẤU HÌNH TRANG & ĐIỀU HƯỚNG SỚM ====================
 st.set_page_config(
@@ -55,30 +51,36 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Bấm ô môn học ở Trang chủ -> mở thẳng chế độ Học theo chuyên đề của môn đó
 if "home_jump" in st.session_state:
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = st.session_state.pop("home_jump")
 
+# [VÁ 2 – mục 6] Gán thẳng giá trị cho các widget chọn Khối/Chương/Bài.
+# Trước đây dùng tham số index=, bị Streamlit bỏ qua khi widget đã có key.
 if "search_jump" in st.session_state:
     item = st.session_state.pop("search_jump")
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = item["mon"]
-    if "lop" in item:
-        st.session_state["s_lop"] = item["lop"]
+    st.session_state["s_lop"] = item["lop"]
     st.session_state["s_chuong"] = item["chuong"]
     st.session_state["s_bai"] = item["bai"]
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
+# Ghi chú: SDK google-genai tạo client riêng cho từng API key, không còn
+# trạng thái cấu hình toàn cục như genai.configure() cũ, nên không cần khóa
+# toàn bộ lời gọi AI nữa — nhiều học sinh có thể hỏi cùng lúc.
 @st.cache_resource
 def get_global_locks():
     return {
-        "ai_api_lock": threading.Lock(),
         "user_count_lock": threading.Lock(),
         "ai_cache_lock": threading.Lock(),
         "rate_lock": threading.Lock(),
         "online_users": {},
         "ai_cache": OrderedDict(),
+        # [VÁ 2 – mục 14] Mốc thời gian các câu hỏi AI của toàn hệ thống
         "ai_request_times": deque(),
+        # [VÁ 2 – mục 16] Mốc thời gian các lần nhập sai mật khẩu Admin
         "admin_fail_lock": threading.Lock(),
         "admin_fail_times": deque(),
     }
@@ -104,6 +106,7 @@ def lay_danh_sach_gemini_keys():
             keys.extend([k.strip() for k in val.split(",") if k.strip()])
     except Exception:
         pass
+
     ds_ten_key = [
         "GEMINI_API_KEY",
         "GEMINI_API_KEY_1",
@@ -117,6 +120,7 @@ def lay_danh_sach_gemini_keys():
     return keys
 
 GEMINI_KEYS = lay_danh_sach_gemini_keys()
+
 DOLA_ENDPOINT = str(get_secret("DOLA_API_ENDPOINT")).strip()
 DOLA_KEY = str(get_secret("DOLA_API_KEY")).strip()
 DOLA_PROJECT_TIER = str(get_secret("DOLA_PROJECT_TIER", "high_limit_edu")).strip()
@@ -155,6 +159,9 @@ def cap_nhat_nguoi_online():
         bo_nho.update(ds_online)
         return len(bo_nho)
 
+# Tổng số câu hỏi AI tối đa của cả hệ thống trong 1 phút (đổi trong Secrets
+# bằng AI_MAX_PER_MINUTE). Chặn trường hợp tải lại trang để hỏi liên tục,
+# làm cạn hạn mức API của cả trường.
 def lay_gioi_han_toan_cuc():
     try:
         return max(1, int(get_secret("AI_MAX_PER_MINUTE", 30)))
@@ -163,10 +170,12 @@ def lay_gioi_han_toan_cuc():
 
 def kiem_tra_gioi_han_tan_suat(cooldown_seconds=4):
     now = time.time()
+    # 1) Giới hạn theo phiên (mỗi học sinh)
     last_time = st.session_state.get("last_ai_request_time", 0.0)
     elapsed = now - last_time
     if elapsed < cooldown_seconds:
         return False, int(cooldown_seconds - elapsed) + 1
+    # 2) [VÁ 2 – mục 14] Giới hạn tổng cho toàn hệ thống
     gioi_han = lay_gioi_han_toan_cuc()
     with GLOBALS["rate_lock"]:
         hang_doi = GLOBALS["ai_request_times"]
@@ -179,18 +188,17 @@ def kiem_tra_gioi_han_tan_suat(cooldown_seconds=4):
     st.session_state["last_ai_request_time"] = now
     return True, 0
 
-# ==================== BỘ ĐỆM AI ====================
+# ==================== BỘ ĐỆM AI (LRU CACHE) ====================
 def tao_ma_hash_cau_hoi(mon_hoc, bai_hoc, che_do, cau_hoi):
     c_clean = re.sub(r'\s+', ' ', cau_hoi.strip().lower())
     chuoi_chuan = f"{mon_hoc.strip()}_{bai_hoc.strip()}_{che_do}_{c_clean}"
     return hashlib.md5(chuoi_chuan.encode("utf-8")).hexdigest()
 
 def luu_cache_ai(ma_hash, noi_dung):
+    # [VÁ 2 – mục 11] Chỉ bỏ qua thông báo lỗi của hệ thống (bắt đầu bằng ⚠️).
+    # Trước đây lọc theo chữ "lỗi", "bận"... nên bỏ sót cả câu trả lời hợp lệ
+    # như "lỗi sai thường gặp khi...".
     if not noi_dung or "⚠️" in noi_dung:
-        return
-    nd_lower = noi_dung.lower()
-    tu_khoa_loi = ["bận", "quá tải", "lỗi", "chuyển sang", "bảo trì"]
-    if any(k in nd_lower for k in tu_khoa_loi):
         return
     with GLOBALS["ai_cache_lock"]:
         cache = GLOBALS["ai_cache"]
@@ -241,22 +249,28 @@ def so_sanh_so_hoc(nd, ds_dung):
             return True
     return False
 
+# [VÁ LỖI 1] So khớp theo nguyên từ/cụm từ, không so khớp chuỗi con.
+# Trước đây "cả" khớp nhầm vào "cảm", "cảnh", "cải"... khiến câu hỏi không
+# được trộn và đáp án đúng luôn nằm ở vị trí đầu tiên.
 PHUONG_AN_CO_DINH = re.compile(
     r'\b(?:tất cả|cả hai|cả ba|cả [a-d]|đáp án|phương án)\b',
     re.IGNORECASE
 )
 
 def tron_dap_an_thong_minh(ch):
+    """Trộn các phương án thường; các phương án kiểu 'Tất cả...', 'Cả A và B'
+    được giữ nguyên thứ tự và đặt ở cuối danh sách."""
     da_goc = list(ch["da"])
     d_dung = da_goc[ch["d"]]
     co_dinh = [x for x in da_goc if PHUONG_AN_CO_DINH.search(str(x))]
-    if co_dinh:
-        return da_goc, ch["d"]
-    tu_do = list(da_goc)
+    tu_do = [x for x in da_goc if x not in co_dinh]
     random.shuffle(tu_do)
-    return tu_do, tu_do.index(d_dung)
+    da_moi = tu_do + co_dinh
+    return da_moi, da_moi.index(d_dung)
 
 def giu_lua_chon_hop_le(key, ds_lua_chon):
+    """Xóa giá trị cũ của widget nếu nó không còn trong danh sách lựa chọn
+    (ví dụ chuyển môn khác), tránh lỗi hoặc hiển thị sai."""
     if key in st.session_state and st.session_state[key] not in ds_lua_chon:
         del st.session_state[key]
 
@@ -281,6 +295,7 @@ def ghi_nhan_lich_su(tieu_de_bai, diem, dung, tong, mon=None):
     })
 
 def thanh_tich_mon(mon):
+    """Số bài đã làm và điểm trung bình của một môn trong phiên học hiện tại."""
     ds = [x for x in st.session_state.get("lich_su_hoc_tap", []) if x.get("mon") == mon]
     if not ds:
         return 0, None
@@ -322,6 +337,8 @@ def trich_xuat_word_docx(file_bytes):
         return f"[Lỗi đọc file Word: {e}]"
 
 # ==================== GHI LOG LỖI ====================
+# [VÁ 2 – mục 8] Ghi lỗi thật vào log của server (xem ở Manage app → Logs)
+# thay vì nuốt im lặng. Che API key nếu nó lọt vào thông báo lỗi.
 def ghi_log_loi(nguon, loi):
     try:
         thong_bao = str(loi)
@@ -332,7 +349,7 @@ def ghi_log_loi(nguon, loi):
     except Exception:
         pass
 
-# ==================== GỌI AI ====================
+# ==================== GỌI AI (SDK google-genai) ====================
 def goi_dola_toi_uu(cau_hoi):
     if not DOLA_ENDPOINT or not DOLA_KEY:
         return None
@@ -357,12 +374,16 @@ def goi_dola_toi_uu(cau_hoi):
     except Exception:
         return None
 
+# Thứ tự ưu tiên model (thử lần lượt nếu model trước lỗi hoặc hết hạn mức).
+# Lưu ý: Gemini 3.1 Pro hiện chỉ có bản preview nên tên gọi trên API là
+# "gemini-3.1-pro-preview".
 MODEL_UU_TIEN = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-pro-preview",
 ]
+
+# Các dòng model chuyên dụng không dùng để trò chuyện văn bản
 TU_KHOA_MODEL_LOAI_TRU = (
     "tts", "image", "live", "embedding", "transcribe",
     "omni", "banana", "robotics", "audio"
@@ -370,47 +391,33 @@ TU_KHOA_MODEL_LOAI_TRU = (
 
 @st.cache_resource(show_spinner=False)
 def lay_client_gemini(api_key):
-    if HAS_NEW_GENAI:
-        return genai.Client(api_key=api_key)
-    return None
+    return genai.Client(api_key=api_key)
 
 @st.cache_resource(ttl=3600, show_spinner=False)
 def lay_ds_model_kha_dung(api_key):
     try:
-        if HAS_NEW_GENAI:
-            client = lay_client_gemini(api_key)
-            ds_hien_co = []
-            for m in client.models.list():
-                ten = (getattr(m, "name", "") or "").replace("models/", "")
-                if "gemini" not in ten:
-                    continue
-                if any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
-                    continue
-                hanh_dong = getattr(m, "supported_actions", None) or []
-                if hanh_dong and "generateContent" not in hanh_dong:
-                    continue
-                ds_hien_co.append(ten)
-            if ds_hien_co:
-                kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
-                kq += [m for m in ds_hien_co if m not in MODEL_UU_TIEN]
-                return kq
-        elif HAS_LEGACY_GENAI:
-            legacy_genai.configure(api_key=api_key)
-            ds_hien_co = [
-                m.name.replace("models/", "")
-                for m in legacy_genai.list_models()
-                if "generateContent" in getattr(m, "supported_generation_methods", [])
-                and not any(k in m.name for k in TU_KHOA_MODEL_LOAI_TRU)
-            ]
-            if ds_hien_co:
-                kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
-                kq += [m for m in ds_hien_co if "gemini" in m and m not in MODEL_UU_TIEN]
-                return kq
+        client = lay_client_gemini(api_key)
+        ds_hien_co = []
+        for m in client.models.list():
+            ten = (getattr(m, "name", "") or "").replace("models/", "")
+            if "gemini" not in ten:
+                continue
+            if any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
+                continue
+            hanh_dong = getattr(m, "supported_actions", None) or []
+            if hanh_dong and "generateContent" not in hanh_dong:
+                continue
+            ds_hien_co.append(ten)
+        if ds_hien_co:
+            kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
+            kq += [m for m in ds_hien_co if m not in MODEL_UU_TIEN]
+            return kq
     except Exception as e:
         ghi_log_loi("Liệt kê model Gemini", e)
     return list(MODEL_UU_TIEN)
 
 def chuyen_lich_su_gemini(history):
+    """Chuyển lịch sử dạng {'role', 'parts': [str]} sang types.Content."""
     ds = []
     for h in history or []:
         cac_phan = [
@@ -423,92 +430,66 @@ def chuyen_lich_su_gemini(history):
 
 def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=False):
     if not HAS_GENAI:
-        raise RuntimeError("Server chưa cài thư viện google-genai hoặc google-generativeai.")
+        raise RuntimeError("Server chưa cài thư viện google-genai.")
     if not GEMINI_KEYS:
         raise RuntimeError("Chưa cấu hình GEMINI_API_KEY.")
     if "key_index" not in st.session_state:
         st.session_state["key_index"] = 0
     so_luong_key = len(GEMINI_KEYS)
+    if tra_ve_json:
+        cau_hinh = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            response_mime_type="application/json"
+        )
+    else:
+        cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
+    lich_su = chuyen_lich_su_gemini(history) if history is not None else None
     last_err = None
 
-    if HAS_NEW_GENAI:
-        if tra_ve_json:
-            cau_hinh = types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                response_mime_type="application/json"
-            )
-        else:
-            cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
-        lich_su = chuyen_lich_su_gemini(history) if history is not None else None
+    for k_offset in range(so_luong_key):
+        idx = (st.session_state["key_index"] + k_offset) % so_luong_key
+        current_key = GEMINI_KEYS[idx]
+        client = lay_client_gemini(current_key)
+        ds_models = lay_ds_model_kha_dung(current_key)
 
-        for k_offset in range(so_luong_key):
-            idx = (st.session_state["key_index"] + k_offset) % so_luong_key
-            current_key = GEMINI_KEYS[idx]
-            client = lay_client_gemini(current_key)
-            ds_models = lay_ds_model_kha_dung(current_key)
-            for ten_m in ds_models:
-                for attempt in range(2):
-                    try:
-                        if lich_su is not None:
-                            chat_s = client.chats.create(
-                                model=ten_m,
-                                config=cau_hinh,
-                                history=lich_su
-                            )
-                            txt = chat_s.send_message(payload).text
-                        else:
-                            txt = client.models.generate_content(
-                                model=ten_m,
-                                contents=payload,
-                                config=cau_hinh
-                            ).text
-                        if not txt:
-                            raise RuntimeError("Model trả về phản hồi rỗng.")
-                        st.session_state["key_index"] = idx
-                        return txt
-                    except Exception as e:
-                        last_err = e
-                        ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
-                        err_code = getattr(e, "code", None)
-                        if (err_code == 429 or "429" in str(e)) and attempt == 0:
-                            time.sleep(1.0)
-                            continue
-                        break
-
-    if HAS_LEGACY_GENAI:
-        with GLOBALS["ai_api_lock"]:
-            for k_offset in range(so_luong_key):
-                idx = (st.session_state["key_index"] + k_offset) % so_luong_key
-                current_key = GEMINI_KEYS[idx]
-                legacy_genai.configure(api_key=current_key)
-                ds_models = lay_ds_model_kha_dung(current_key)
-                for ten_m in ds_models:
-                    for attempt in range(2):
-                        try:
-                            m = legacy_genai.GenerativeModel(
-                                model_name=ten_m,
-                                system_instruction=system_instruction
-                            )
-                            if history is not None:
-                                chat_s = m.start_chat(history=history)
-                                txt = chat_s.send_message(payload).text
-                            else:
-                                txt = m.generate_content(payload).text
-                            if not txt:
-                                raise RuntimeError("Model trả về phản hồi rỗng.")
-                            st.session_state["key_index"] = idx
-                            return txt
-                        except Exception as e:
-                            last_err = e
-                            ghi_log_loi(f"Legacy Gemini [{ten_m}] key#{idx}", e)
-                            if "429" in str(e) and attempt == 0:
-                                time.sleep(1.0)
-                                continue
-                            break
-
+        for ten_m in ds_models:
+            for attempt in range(2):
+                try:
+                    if lich_su is not None:
+                        chat_s = client.chats.create(
+                            model=ten_m,
+                            config=cau_hinh,
+                            history=lich_su
+                        )
+                        txt = chat_s.send_message(payload).text
+                    else:
+                        txt = client.models.generate_content(
+                            model=ten_m,
+                            contents=payload,
+                            config=cau_hinh
+                        ).text
+                    if not txt:
+                        raise RuntimeError("Model trả về phản hồi rỗng.")
+                    st.session_state["key_index"] = idx
+                    return txt
+                except genai_errors.APIError as e:
+                    last_err = e
+                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
+                    # 429: hết hạn mức tạm thời -> chờ 1 giây thử lại một lần
+                    if getattr(e, "code", None) == 429 and attempt == 0:
+                        time.sleep(1.0)
+                        continue
+                    # 404 hoặc lỗi khác -> chuyển sang model kế tiếp
+                    break
+                except Exception as e:
+                    last_err = e
+                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
+                    break
     raise last_err or RuntimeError("Không có model Gemini khả dụng.")
 
-# ==================== KIỂM TRA DỮ LIỆU BÀI HỌC ====================
+# ==================== KIỂM TRA DỮ LIỆU BÀI HỌC (TRẠM NẠP) ====================
+# [VÁ 2 – mục 13] AI chỉ trả về JSON. App tự kiểm tra cấu trúc rồi tự sinh file
+# dữ liệu, không còn dùng code Python do AI viết (tránh chạy code lạ trên server).
 def tach_json_tu_van_ban(van_ban):
     s = str(van_ban).strip()
     s = re.sub(r'^```(?:json)?\s*|\s*```$', '', s)
@@ -518,6 +499,7 @@ def tach_json_tu_van_ban(van_ban):
     return json.loads(s[dau:cuoi + 1])
 
 def chuan_hoa_bai_hoc(du_lieu):
+    """Trả về (bài học đã chuẩn hóa, danh sách cảnh báo)."""
     if not isinstance(du_lieu, dict):
         raise ValueError("Dữ liệu phải là một đối tượng (dictionary).")
     canh_bao = []
@@ -530,6 +512,7 @@ def chuan_hoa_bai_hoc(du_lieu):
     }
     if not bai["ly_thuyet"]:
         canh_bao.append("Thiếu phần lý thuyết.")
+
     for i, ch in enumerate(du_lieu.get("cau_hoi") or [], 1):
         if not isinstance(ch, dict):
             canh_bao.append(f"Câu trắc nghiệm {i}: sai định dạng, đã bỏ qua.")
@@ -555,6 +538,7 @@ def chuan_hoa_bai_hoc(du_lieu):
         elif md:
             canh_bao.append(f"Câu trắc nghiệm {i}: mức độ '{md}' không hợp lệ, đã bỏ trường này.")
         bai["cau_hoi"].append(cau)
+
     for nhom in ("bt_co_ban", "bt_nang_cao"):
         for i, bt in enumerate(du_lieu.get(nhom) or [], 1):
             if not isinstance(bt, dict) or not str(bt.get("de", "")).strip():
@@ -593,6 +577,9 @@ try:
 except ImportError:
     HOA = {}
 
+# [VÁ LỖI 5] Nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức (tập 1):
+# Bài 1 "Bầu trời tuổi thơ" và Bài 2 "Khúc nhạc tâm hồn".
+# Các bài còn lại nên được giáo viên bổ sung qua file data_van.py.
 VAN_DEFAULT = {
     "Lớp 7": {
         "Bài 1: Bầu trời tuổi thơ (Truyện)": {
@@ -717,7 +704,7 @@ VAN_DEFAULT = {
                     {
                         "de": "Vì sao bài thơ được xếp chung chủ đề 'Bầu trời tuổi thơ'?",
                         "dd": ["Cái nhìn hồn nhiên, giàu tưởng tượng của tuổi thơ"],
-                        "lg": "Liên hệ với cách hai văn bản thể hiện thế giới qua đôi mắt trẻ thơ."
+                        "lg": "Liên hệ với cách hai văn bản truyện thể hiện thế giới qua đôi mắt trẻ thơ."
                     }
                 ]
             }
@@ -848,14 +835,18 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN
 }
 
+# [VÁ LỖI 5] Mô phỏng PhET chọn theo nội dung KHTN lớp 7:
+# - Vật lý: âm thanh, ánh sáng (phản xạ), từ (nam châm).
+# - Hóa học: nguyên tử, phân tử. Đã bỏ "Cân bằng phương trình" và
+#   "Nồng độ dung dịch" vì thuộc kiến thức lớp 8.
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html"
     },
     "🔬 Môn Vật lý (KHTN)": {
         "🔊 Sóng âm – độ to và độ cao của âm": "https://phet.colorado.edu/sims/html/waves-intro/latest/waves-intro_vi.html",
-        "💡 Phản xạ ánh sáng": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html",
-        "🧲 Nam châm & từ trường": "https://phet.colorado.edu/sims/html/faradays-electromagnetic-lab/latest/faradays-electromagnetic-lab_vi.html"
+        "💡 Phản xạ ánh sáng (mô phỏng có thêm khúc xạ – kiến thức lớp 9)": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html",
+        "🧲 Nam châm & từ trường (dùng màn hình Nam châm thẳng)": "https://phet.colorado.edu/sims/html/faradays-electromagnetic-lab/latest/faradays-electromagnetic-lab_vi.html"
     },
     "🧪 Môn Hóa học (KHTN)": {
         "⚛️ Xây dựng cấu tạo Nguyên tử": "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_vi.html",
@@ -870,6 +861,7 @@ DANH_MUC_THI_NGHIEM = {
     }
 }
 
+# [VÁ LỖI 5] Mô-đun Ngữ văn dựng lại theo văn bản "Bầy chim chìa vôi"
 DATA_LAB_NGU_VAN = {
     "🗺️ Bản đồ Cấu trúc & Bối cảnh": {
         "tieu_de": "Bản đồ Cấu trúc: Bầy chim chìa vôi",
@@ -899,7 +891,7 @@ DATA_LAB_NGU_VAN = {
         ]
     },
     "✍️ Thực hành Luyện từ & Ngữ pháp": {
-        "chu_de": "Biện pháp tu từ",
+        "chu_de": "Biện pháp tu từ (ví dụ minh họa)",
         "cau_hoi_mau": [
             {"cau": "Bầy chim non bay vút lên như những mũi tên nhỏ.", "loai": "So sánh", "phan_tich": "Làm nổi bật sự nhanh nhẹn, mạnh mẽ của bầy chim non."},
             {"cau": "Những ngôi sao thức suốt đêm, chăm chỉ làm việc trên bầu trời.", "loai": "Nhân hóa", "phan_tich": "Làm các vì sao trở nên gần gũi, sinh động như con người."}
@@ -909,13 +901,121 @@ DATA_LAB_NGU_VAN = {
         "the_loai": "Phân tích đặc điểm nhân vật trong một tác phẩm văn học",
         "dan_y": [
             {"buoc": "Mở bài", "noi_dung": "Giới thiệu tác phẩm, tác giả, nhân vật và nêu nhận xét khái quát về nhân vật."},
-            {"buoc": "Thân bài", "noi_dung": "Lần lượt phân tích từng đặc điểm của nhân vật; mỗi đặc điểm có bằng chứng từ văn bản."},
+            {"buoc": "Thân bài", "noi_dung": "Lần lượt phân tích từng đặc điểm của nhân vật; mỗi đặc điểm có bằng chứng từ văn bản (lời nói, hành động, suy nghĩ)."},
             {"buoc": "Kết bài", "noi_dung": "Khẳng định ý nghĩa của nhân vật và nêu cảm nghĩ của em."}
         ]
     }
 }
 
-# ==================== BỘ GIAO DIỆN THEO MÔN HỌC (ĐÃ SỬA LỖI NGOẶC) ====================
+# ==================== GIAO DIỆN SIDEBAR ====================
+with st.sidebar:
+    st.markdown("## 🎓 KẾT NỐI TRI THỨC")
+    dark_mode = st.toggle("🌙 Chế độ tối", key="dark_mode_toggle")
+    st.markdown(f"🟢 **Đang trực tuyến: {cap_nhat_nguoi_online()}**")
+
+    if not HAS_GENAI:
+        st.error(
+            "⚠️ Gia sư AI đang tắt: server chưa cài thư viện **google-genai**. "
+            "Quản trị viên thêm dòng `google-genai` vào file requirements.txt rồi khởi động lại app."
+        )
+    elif not GEMINI_KEYS:
+        st.warning("⚠️ Chưa có API Key, chạy ở chế độ Mẫu.")
+
+    st.divider()
+
+    ds_che_do = [
+        "🏠 Trang chủ / Hướng dẫn",
+        "🔍 Tra cứu / Tìm kiếm",
+        "📖 Học theo chuyên đề",
+        "📝 Phòng thi / Kiểm tra",
+        "🎪 Phòng thí nghiệm ảo",
+        "⚙️ Trạm Nạp Dữ Liệu"
+    ]
+    che_do = st.radio("⚙️ Chức năng:", ds_che_do, key="che_do_sidebar")
+
+    if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra"]:
+        mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
+    else:
+        mon = che_do
+
+    if "lich_su_hoc_tap" in st.session_state and st.session_state.lich_su_hoc_tap:
+        st.divider()
+        st.markdown("### 📊 Lịch sử học tập")
+        so_bai = len(st.session_state.lich_su_hoc_tap)
+        tb = sum(i["diem"] for i in st.session_state.lich_su_hoc_tap) / so_bai
+        st.metric("Điểm TB", f"{tb:.1f}", f"{so_bai} bài")
+
+# ==================== CẤU HÌNH CSS ====================
+if dark_mode:
+    st.markdown("""
+    <style>
+        .stApp { background-color: #0F172A; color: #F1F5F9; }
+        .main .block-container { padding-top: 1.2rem; max-width: 95%; }
+        [data-testid="stToolbarActions"], footer { display: none !important; }
+        .hero-banner {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            color: #F8FAFC; padding: 1.5rem; border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #CBD5E1 !important; }
+        .card-home {
+            background-color: #1E293B; border: 1px solid #334155;
+            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem; color: #F1F5F9;
+        }
+        .khung-lythuyet {
+            background-color: #1E293B; padding: 1.2rem; border-radius: 10px;
+            border-left: 6px solid #3B82F6; margin-bottom: 1rem;
+        }
+        .khung-vidu {
+            background-color: #27272A; padding: 1.2rem; border-radius: 10px;
+            border-left: 6px solid #F59E0B; margin-bottom: 1rem;
+        }
+        .dung { color: #34D399; font-weight: bold; }
+        .sai { color: #F87171; font-weight: bold; }
+        .diem-thi {
+            font-size: 1.6rem; color: #F87171; text-align: center;
+            padding: 1.2rem; border: 2px dashed #EF4444; border-radius: 10px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+        .main .block-container { padding-top: 1.2rem; max-width: 95%; }
+        [data-testid="stToolbarActions"], footer { display: none !important; }
+        .hero-banner {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+            color: white; padding: 1.5rem; border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }
+        .hero-sub { font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem; color: #E2E8F0 !important; }
+        .card-home {
+            background-color: #F8FAFC; border: 1px solid #E2E8F0;
+            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
+        }
+        .khung-lythuyet {
+            background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px;
+            border-left: 6px solid #2563EB; margin-bottom: 1rem;
+        }
+        .khung-vidu {
+            background-color: #FFFBEB; padding: 1.2rem; border-radius: 10px;
+            border-left: 6px solid #F59E0B; margin-bottom: 1rem;
+        }
+        .dung { color: #059669; font-weight: bold; }
+        .sai { color: #DC2626; font-weight: bold; }
+        .diem-thi {
+            font-size: 1.6rem; color: #E11D48; text-align: center;
+            padding: 1.2rem; border: 2px dashed #F43F5E; border-radius: 10px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ==================== BỘ GIAO DIỆN THEO MÔN HỌC ====================
+# Mỗi môn có màu, biểu tượng, ký hiệu trang trí và lời nhắn riêng.
+# Muốn đổi màu một môn: sửa "sang" (chế độ sáng), "toi" (chế độ tối) và "chinh"
+# (màu nút, thẻ chọn, tab). Lời nhắn đổi theo ngày.
 CHU_DE_GIAO_DIEN = {
     "toan": {
         "icon": "📐", "ten": "Môn Toán",
@@ -979,131 +1079,314 @@ CHU_DE_GIAO_DIEN = {
         "toi": ("#1E1B4B", "#4C1D95", "#831843"),
         "nhan": "#FDE047", "chinh": "#6D28D9",
         "khau_hieu": "Kết nối tri thức với cuộc sống · Chương trình GDPT 2018",
-        "ky_hieu": ["🎓", "📐", "🔬", "🧪", "📖", "⭐", "🚀", "💡"],
+        "ky_hieu": ["📐", "⚡", "🧪", "📖", "⭐", "🏆", "💡", "🎯"],
         "loi_nhan": [
-            "Chào mừng em đến với không gian học tập thông minh lớp 7!",
-            "Học tập chủ động mỗi ngày giúp em tiến bộ vượt bậc.",
+            "Mỗi ngày học một chút, cả năm tiến một đoạn dài!",
+            "Không có câu hỏi nào là ngớ ngẩn – cứ hỏi gia sư AI nhé!",
+            "Học là để hiểu, không phải để sợ điểm.",
         ],
+    },
+    "search": {
+        "icon": "🔍", "ten": "Tìm kiếm tri thức",
+        "sang": ("#0C4A6E", "#0369A1", "#0E7490"),
+        "toi": ("#082F49", "#0C4A6E", "#164E63"),
+        "nhan": "#FDE047", "chinh": "#0369A1",
+        "khau_hieu": "Gõ tên bài, tác giả hay từ khóa – hệ thống tìm trong tất cả các môn",
+        "ky_hieu": ["🔎", "📚", "🗂️", "💡", "?", "📌", "🧭", "✨"],
+        "loi_nhan": ["Biết cách tìm kiếm là đã đi được nửa đường tới câu trả lời."],
+    },
+    "admin": {
+        "icon": "⚙️", "ten": "Trạm nạp dữ liệu",
+        "sang": ("#1F2937", "#334155", "#475569"),
+        "toi": ("#030712", "#111827", "#1F2937"),
+        "nhan": "#38BDF8", "chinh": "#0284C7",
+        "khau_hieu": "Bóc tách tài liệu bài học thành dữ liệu cho hệ thống",
+        "ky_hieu": ["⚙️", "🗄️", "📄", "🔧", "{ }", "📥", "🤖", "✅"],
+        "loi_nhan": ["Dữ liệu được kiểm tra kĩ – bài học đến tay học sinh mới chuẩn."],
     },
 }
 
-def lay_chu_de_theo_mon(mon_str):
-    s = str(mon_str).lower()
-    if "toán" in s:
-        return CHU_DE_GIAO_DIEN["toan"]
-    if "vật lý" in s:
-        return CHU_DE_GIAO_DIEN["vatly"]
-    if "hóa" in s:
-        return CHU_DE_GIAO_DIEN["hoa"]
-    if "văn" in s:
-        return CHU_DE_GIAO_DIEN["van"]
-    return CHU_DE_GIAO_DIEN["home"]
+MON_SANG_CHU_DE = {
+    "📐 Môn Toán": "toan",
+    "🔬 Môn Vật lý (KHTN)": "vatly",
+    "🧪 Môn Hóa học (KHTN)": "hoa",
+    "📖 Môn Ngữ Văn": "van",
+}
 
-# ==================== GIAO DIỆN SIDEBAR ====================
-with st.sidebar:
-    st.markdown("## 🎓 KẾT NỐI TRI THỨC")
-    st.caption("Hệ thống Ôn luyện THCS — Lớp 7")
-    dark_mode = st.toggle("🌙 Chế độ tối (Dark Mode)", key="dark_mode_toggle")
-    st.markdown(f"🟢 **Đang trực tuyến: {cap_nhat_nguoi_online()} học sinh**")
+MO_TA_MON_TRANG_CHU = {
+    "toan": "Số hữu tỉ, số thực, hình học và biểu thức đại số.",
+    "vatly": "Tốc độ, âm thanh, ánh sáng và từ trường.",
+    "hoa": "Nguyên tử, nguyên tố, phân tử và liên kết.",
+    "van": "Truyện, thơ, tùy bút và kĩ năng viết bài văn.",
+}
 
-    if not GEMINI_KEYS:
-        st.warning("⚠️ Chưa cấu hình API Key, chạy ở chế độ Mẫu.")
+# Vị trí các ký hiệu trang trí trong banner: (top %, left %, cỡ chữ rem, độ trễ giây).
+# Đặt ở nửa trên và mép phải để không đè lên dòng lời nhắn ở đáy banner.
+VI_TRI_KY_HIEU = [
+    (8, 62, 2.2, 0), (40, 74, 1.6, 1.2), (10, 86, 2.8, 2.4), (52, 90, 1.9, 0.6),
+    (30, 54, 1.3, 3.0), (22, 70, 1.4, 1.8), (5, 42, 1.2, 4.0), (44, 60, 1.1, 2.8),
+]
 
-    st.divider()
+def tron_mau(mau, nen, ti_le):
+    """Pha mau với nen theo tỉ lệ (0 = toàn nen, 1 = toàn mau). Trả về mã hex."""
+    a = [int(mau[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(nen[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x * ti_le + y * (1 - ti_le)):02X}" for x, y in zip(a, b))
 
-    ds_che_do = [
-        "🏠 Trang chủ / Hướng dẫn",
-        "🔍 Tra cứu / Tìm kiếm",
-        "📖 Học theo chuyên đề",
-        "📝 Phòng thi / Kiểm tra",
-        "🎪 Phòng thí nghiệm ảo",
-        "⚙️ Trạm Nạp Dữ Liệu"
-    ]
-    che_do = st.radio("⚙️ Chức năng:", ds_che_do, key="che_do_sidebar")
+def lay_chu_de(mon_hoac_khoa):
+    khoa = MON_SANG_CHU_DE.get(mon_hoac_khoa, mon_hoac_khoa)
+    return khoa if khoa in CHU_DE_GIAO_DIEN else "home"
 
-    if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra"]:
-        st.divider()
-        mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
+def loi_nhan_hom_nay(khoa):
+    ds = CHU_DE_GIAO_DIEN[khoa]["loi_nhan"]
+    return ds[datetime.date.today().toordinal() % len(ds)]
+
+def bien_mau(khoa, che_do_toi):
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    c1, c2, c3 = cd["toi"] if che_do_toi else cd["sang"]
+    return f"--c1:{c1};--c2:{c2};--c3:{c3};--nhan:{cd['nhan']};"
+
+def css_giao_dien_chung():
+    """CSS dùng chung cho banner, thẻ bài học, dải đề thi và ô môn học."""
+    return (
+        "<style>"
+        # ---- Banner đầu trang ----
+        ".hb{position:relative;overflow:hidden;border-radius:20px;padding:1.4rem 1.5rem;"
+        "margin:.2rem 0 1.3rem;color:#fff;"
+        "background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 55%,var(--c3) 100%);"
+        "box-shadow:0 14px 30px -12px var(--c2);}"
+        ".hb-kh{position:absolute;font-weight:800;color:#fff;opacity:.17;pointer-events:none;"
+        "user-select:none;line-height:1;white-space:nowrap;animation:hb-troi 7s ease-in-out infinite;}"
+        ".hb-than{position:relative;z-index:1;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;}"
+        ".hb-icon{flex:0 0 76px;width:76px;height:76px;border-radius:22px;display:flex;"
+        "align-items:center;justify-content:center;font-size:2.6rem;background:rgba(255,255,255,.16);"
+        "border:2px solid rgba(255,255,255,.38);animation:hb-lac 4s ease-in-out infinite;}"
+        ".hb-chu{flex:1 1 280px;min-width:0;}"
+        ".hb-nhan{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;"
+        "text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--nhan);"
+        "color:#1F2937;margin-bottom:.4rem;}"
+        ".hb-tieu-de{margin:0;font-size:2rem;font-weight:800;line-height:1.15;color:#fff !important;}"
+        ".hb-phu{margin:.3rem 0 0;font-size:1rem;color:rgba(255,255,255,.92) !important;}"
+        ".hb-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.8rem;}"
+        ".hb-chip{font-size:.82rem;font-weight:600;padding:4px 11px;border-radius:999px;"
+        "background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.3);white-space:nowrap;}"
+        ".hb-loi-nhan{position:relative;z-index:1;margin-top:1rem;padding:.6rem .9rem;border-radius:12px;"
+        "font-size:.93rem;background:rgba(0,0,0,.26);border-left:4px solid var(--nhan);}"
+        ".hb-loi-nhan b{color:var(--nhan);}"
+        # ---- Thẻ đầu bài học / dải đề thi ----
+        ".bh{border-radius:16px;padding:1rem 1.2rem;margin:.4rem 0 1rem;"
+        "background:var(--bh-nen);border:1px solid var(--bh-vien);border-left:6px solid var(--bh-c);}"
+        ".bh-duong{font-size:.82rem;color:var(--bh-phu) !important;margin:0 0 .25rem;}"
+        ".bh-tieu-de{font-size:1.35rem;font-weight:800;margin:0 0 .8rem;line-height:1.3;"
+        "color:var(--bh-chu) !important;}"
+        ".bh-o{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;}"
+        ".bh-so{border-radius:12px;padding:.6rem .75rem;background:var(--bh-o);}"
+        ".bh-so .so{font-size:1.5rem;font-weight:800;line-height:1.1;color:var(--bh-c);}"
+        ".bh-so .nhan{font-size:.8rem;color:var(--bh-phu);}"
+        ".bh-loi{margin:0;font-size:.93rem;color:var(--bh-chu) !important;}"
+        # ---- Ô môn học ở Trang chủ ----
+        ".om{position:relative;overflow:hidden;border-radius:18px;padding:1.1rem 1.1rem 1rem;"
+        "min-height:178px;color:#fff;margin-bottom:.5rem;"
+        "background:linear-gradient(150deg,var(--c1) 0%,var(--c2) 60%,var(--c3) 100%);"
+        "box-shadow:0 12px 26px -14px var(--c2);transition:transform .2s ease;}"
+        ".om:hover{transform:translateY(-3px);}"
+        ".om-icon{font-size:2.2rem;line-height:1;}"
+        ".om-ten{font-size:1.15rem;font-weight:800;margin:.5rem 0 .2rem;color:#fff !important;}"
+        ".om-mo-ta{font-size:.86rem;margin:0;color:rgba(255,255,255,.9) !important;}"
+        ".om-so{display:inline-block;margin-top:.7rem;font-size:.76rem;font-weight:700;"
+        "padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.2);}"
+        ".om-kh{position:absolute;right:-6px;bottom:-14px;font-size:4.6rem;font-weight:800;"
+        "opacity:.15;pointer-events:none;line-height:1;}"
+        # ---- Các bước học ở Trang chủ ----
+        ".buoc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.6rem 0 1rem;}"
+        ".buoc-o{border-radius:14px;padding:.8rem .9rem;background:var(--bh-nen);border:1px solid var(--bh-vien);}"
+        ".buoc-so{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;"
+        "border-radius:50%;font-weight:800;color:#fff;background:var(--bh-c);margin-bottom:.35rem;}"
+        ".buoc-o p{margin:0;font-size:.9rem;color:var(--bh-chu) !important;}"
+        # ---- Chuyển động & màn hình nhỏ ----
+        "@keyframes hb-troi{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(6deg)}}"
+        "@keyframes hb-lac{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(4deg) scale(1.04)}}"
+        "@media (max-width:640px){.hb{padding:1.1rem}.hb-tieu-de{font-size:1.45rem}"
+        ".hb-icon{flex-basis:58px;width:58px;height:58px;font-size:2rem;border-radius:16px}"
+        ".hb-kh:nth-of-type(n+5){display:none}.bh-so .so{font-size:1.2rem}"
+        ".buoc{grid-template-columns:1fr}}"
+        "@media (prefers-reduced-motion:reduce){.hb-kh,.hb-icon{animation:none}.om{transition:none}}"
+        "</style>"
+    )
+
+def bien_the_nhe(khoa, che_do_toi):
+    """Biến màu cho các thẻ nền nhạt (thẻ bài học, dải đề thi, các bước)."""
+    c = CHU_DE_GIAO_DIEN[khoa]["chinh"]
+    if che_do_toi:
+        return (f"--bh-c:{tron_mau(c, '#FFFFFF', .75)};--bh-nen:{tron_mau(c, '#0F172A', .16)};"
+                f"--bh-vien:{tron_mau(c, '#0F172A', .35)};--bh-o:{tron_mau(c, '#0F172A', .26)};"
+                "--bh-chu:#F1F5F9;--bh-phu:#CBD5E1;")
+    return (f"--bh-c:{c};--bh-nen:{tron_mau(c, '#FFFFFF', .06)};"
+            f"--bh-vien:{tron_mau(c, '#FFFFFF', .22)};--bh-o:#FFFFFF;"
+            "--bh-chu:#0F172A;--bh-phu:#475569;")
+
+def css_widget_theo_mon(khoa):
+    """Tô màu nút chính, thẻ đã chọn và tab đang mở theo màu của môn."""
+    c = CHU_DE_GIAO_DIEN[khoa]["chinh"]
+    nut = ("[data-testid='stBaseButton-primary'],[data-testid='stBaseButton-primaryFormSubmit'],"
+           "button[kind='primary'],button[kind='primaryFormSubmit']")
+    return (
+        "<style>"
+        f"{nut}{{background:{c} !important;border-color:{c} !important;color:#fff !important;}}"
+        f"{nut.replace(',', ':hover,')}:hover{{filter:brightness(1.1);}}"
+        f"span[data-baseweb='tag']{{background-color:{c} !important;}}"
+        f"button[data-baseweb='tab'][aria-selected='true'] p{{color:{c} !important;font-weight:700;}}"
+        f"div[data-baseweb='tab-highlight']{{background-color:{c} !important;}}"
+        "</style>"
+    )
+
+def tao_hero(khoa, che_do_toi, nhan, tieu_de=None, phu_de=None, chips=None, hien_loi_nhan=True):
+    """Banner đầu trang theo chủ đề môn học."""
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    ky_hieu = "".join(
+        f'<span class="hb-kh" style="top:{t}%;left:{l}%;font-size:{s}rem;animation-delay:{d}s">'
+        f'{html.escape(k)}</span>'
+        for k, (t, l, s, d) in zip(cd["ky_hieu"], VI_TRI_KY_HIEU)
+    )
+    the_chip = "".join(f'<span class="hb-chip">{html.escape(c)}</span>' for c in (chips or []))
+    khoi_chip = f'<div class="hb-chips">{the_chip}</div>' if the_chip else ""
+    loi = ""
+    if hien_loi_nhan:
+        loi = f'<div class="hb-loi-nhan"><b>💬 Lời nhắn hôm nay:</b> {html.escape(loi_nhan_hom_nay(khoa))}</div>'
+    return (
+        f'<div class="hb" style="{bien_mau(khoa, che_do_toi)}">{ky_hieu}'
+        '<div class="hb-than">'
+        f'<div class="hb-icon">{cd["icon"]}</div>'
+        '<div class="hb-chu">'
+        f'<span class="hb-nhan">{html.escape(nhan)}</span>'
+        f'<p class="hb-tieu-de">{html.escape(tieu_de or cd["ten"])}</p>'
+        f'<p class="hb-phu">{html.escape(phu_de or cd["khau_hieu"])}</p>'
+        f'{khoi_chip}'
+        '</div></div>'
+        f'{loi}</div>'
+    )
+
+def tao_the_bai_hoc(khoa, che_do_toi, lop, chuong, ten_bai, so_tn, so_cb, so_nc):
+    """Thẻ đầu mục của một bài học: đường dẫn, tên bài và 3 ô số liệu."""
+    o = (
+        f'<div class="bh-so"><div class="so">{so_tn}</div><div class="nhan">📝 câu trắc nghiệm</div></div>'
+        f'<div class="bh-so"><div class="so">{so_cb}</div><div class="nhan">✏️ bài cơ bản</div></div>'
+        f'<div class="bh-so"><div class="so">{so_nc}</div><div class="nhan">🔥 bài nâng cao</div></div>'
+    )
+    return (
+        f'<div class="bh" style="{bien_the_nhe(khoa, che_do_toi)}">'
+        f'<p class="bh-duong">{html.escape(str(lop))} › {html.escape(str(chuong))}</p>'
+        f'<p class="bh-tieu-de">{CHU_DE_GIAO_DIEN[khoa]["icon"]} {html.escape(str(ten_bai))}</p>'
+        f'<div class="bh-o">{o}</div></div>'
+    )
+
+def tao_dai_de_thi(khoa, che_do_toi, loai_de, so_cau):
+    return (
+        f'<div class="bh" style="{bien_the_nhe(khoa, che_do_toi)}">'
+        f'<p class="bh-tieu-de" style="margin-bottom:.3rem">📝 {html.escape(loai_de)} · {so_cau} câu</p>'
+        '<p class="bh-loi">Đọc kĩ từng câu, chọn đáp án em thấy đúng nhất rồi bấm Nộp bài. '
+        'Chúc em làm bài thật tốt! 🍀</p></div>'
+    )
+
+def tao_o_mon(khoa, che_do_toi, so_bai):
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    return (
+        f'<div class="om" style="{bien_mau(khoa, che_do_toi)}">'
+        f'<span class="om-kh">{html.escape(cd["ky_hieu"][0])}</span>'
+        f'<div class="om-icon">{cd["icon"]}</div>'
+        f'<p class="om-ten">{html.escape(cd["ten"])}</p>'
+        f'<p class="om-mo-ta">{html.escape(MO_TA_MON_TRANG_CHU.get(khoa, ""))}</p>'
+        f'<span class="om-so">{"📚 " + str(so_bai) + " bài học" if so_bai else "🛠️ Đang cập nhật"}</span>'
+        '</div>'
+    )
+
+def chip_thanh_tich(mon):
+    so, tb = thanh_tich_mon(mon)
+    return f"⭐ Đã làm {so} bài · Điểm TB {tb:.1f}" if so else "🚀 Làm bài đầu tiên nào!"
+
+def dem_chuong_bai(mon):
+    lop_dict = DATABASE.get(mon) or {}
+    so_chuong = sum(len(c) for c in lop_dict.values())
+    so_bai = sum(len(b) for c in lop_dict.values() for b in c.values())
+    return so_chuong, so_bai
+
+# ==================== BANNER GIA SƯ AI ====================
+def tao_banner_gia_su(che_do_toi, bai_hien_tai="", ai_san_sang=True, co_anh=True, co_mic=True):
+    """Tạo HTML cho banner 'Gia sư AI 24/7'. Muốn đổi màu, sửa NEN/BONG bên dưới;
+    muốn đổi linh vật, sửa LINH_VAT."""
+    LINH_VAT = "🦉"
+    if che_do_toi:
+        NEN = "linear-gradient(135deg, #312E81 0%, #6D28D9 55%, #9D174D 100%)"
+        BONG = "0 10px 28px rgba(0,0,0,0.45)"
     else:
-        mon = che_do
+        NEN = "linear-gradient(135deg, #4F46E5 0%, #7C3AED 55%, #EC4899 100%)"
+        BONG = "0 10px 28px rgba(124,58,237,0.30)"
 
-    if "lich_su_hoc_tap" in st.session_state and st.session_state.lich_su_hoc_tap:
-        st.divider()
-        st.markdown("### 📊 Lịch sử học tập")
-        so_bai = len(st.session_state.lich_su_hoc_tap)
-        tb = sum(i["diem"] for i in st.session_state.lich_su_hoc_tap) / so_bai
-        st.metric("Điểm Trung Bình", f"{tb:.1f} / 10", f"Đã luyện {so_bai} bài")
+    if ai_san_sang:
+        trang_thai, mau_cham, hieu_ung = "Sẵn sàng trả lời", "#34D399", "gs-pulse 1.8s infinite"
+    else:
+        trang_thai, mau_cham, hieu_ung = "Đang tạm nghỉ", "#FBBF24", "none"
 
-# ==================== CẤU HÌNH CSS ĐỘNG THEO CHỦ ĐỀ MÔN HỌC ====================
-chu_de_hien_tai = lay_chu_de_theo_mon(mon)
-mau_nen_gradient = chu_de_hien_tai["toi"] if dark_mode else chu_de_hien_tai["sang"]
-mau_chinh = chu_de_hien_tai["chinh"]
+    the_tinh_nang = ["📚 Bám sát sách Kết nối tri thức", "🪜 Gợi ý từng bước"]
+    if co_anh:
+        the_tinh_nang.append("📸 Gửi ảnh đề bài")
+    if co_mic:
+        the_tinh_nang.append("🎤 Hỏi bằng giọng nói")
+    chips = "".join(f'<span class="gs-chip">{t}</span>' for t in the_tinh_nang)
 
-if dark_mode:
-    st.markdown(f"""
-    <style>
-        .stApp {{ background-color: #0F172A; color: #F1F5F9; }}
-        .main .block-container {{ padding-top: 1.2rem; max-width: 95%; }}
-        [data-testid="stToolbarActions"], footer {{ display: none !important; }}
-        .hero-banner {{
-            background: linear-gradient(135deg, {mau_nen_gradient[0]} 0%, {mau_nen_gradient[1]} 55%, {mau_nen_gradient[2]} 100%);
-            color: #F8FAFC; padding: 1.5rem; border-radius: 14px;
-            margin-bottom: 1.5rem; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35);
-        }}
-        .hero-title {{ font-size: 1.55rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }}
-        .hero-sub {{ font-size: 0.95rem; opacity: 0.92; margin-top: 0.35rem; color: #E2E8F0 !important; }}
-        .card-home {{
-            background-color: #1E293B; border: 1px solid #334155;
-            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem; color: #F1F5F9;
-        }}
-        .khung-lythuyet {{
-            background-color: #1E293B; padding: 1.2rem; border-radius: 10px;
-            border-left: 6px solid {mau_chinh}; margin-bottom: 1rem;
-        }}
-        .khung-vidu {{
-            background-color: #27272A; padding: 1.2rem; border-radius: 10px;
-            border-left: 6px solid #F59E0B; margin-bottom: 1rem;
-        }}
-        .dung {{ color: #34D399; font-weight: bold; }}
-        .sai {{ color: #F87171; font-weight: bold; }}
-        .diem-thi {{
-            font-size: 1.6rem; color: #F87171; text-align: center;
-            padding: 1.2rem; border: 2px dashed #EF4444; border-radius: 10px;
-        }}
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown(f"""
-    <style>
-        .main .block-container {{ padding-top: 1.2rem; max-width: 95%; }}
-        [data-testid="stToolbarActions"], footer {{ display: none !important; }}
-        .hero-banner {{
-            background: linear-gradient(135deg, {mau_nen_gradient[0]} 0%, {mau_nen_gradient[1]} 55%, {mau_nen_gradient[2]} 100%);
-            color: white; padding: 1.5rem; border-radius: 14px;
-            margin-bottom: 1.5rem; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
-        }}
-        .hero-title {{ font-size: 1.55rem; font-weight: 700; margin: 0; color: #FFFFFF !important; }}
-        .hero-sub {{ font-size: 0.95rem; opacity: 0.95; margin-top: 0.35rem; color: #F1F5F9 !important; }}
-        .card-home {{
-            background-color: #F8FAFC; border: 1px solid #E2E8F0;
-            padding: 1.4rem; border-radius: 12px; margin-bottom: 1rem;
-        }}
-        .khung-lythuyet {{
-            background-color: #EFF6FF; padding: 1.2rem; border-radius: 10px;
-            border-left: 6px solid {mau_chinh}; margin-bottom: 1rem; color: #1E293B;
-        }}
-        .khung-vidu {{
-            background-color: #FFFBEB; padding: 1.2rem; border-radius: 10px;
-            border-left: 6px solid #F59E0B; margin-bottom: 1rem; color: #1E293B;
-        }}
-        .dung {{ color: #059669; font-weight: bold; }}
-        .sai {{ color: #DC2626; font-weight: bold; }}
-        .diem-thi {{
-            font-size: 1.6rem; color: #E11D48; text-align: center;
-            padding: 1.2rem; border: 2px dashed #F43F5E; border-radius: 10px;
-        }}
-    </style>
-    """, unsafe_allow_html=True)
+    dong_bai = ""
+    if bai_hien_tai:
+        dong_bai = f'<div class="gs-bai">📖 Em đang học: <b>{html.escape(bai_hien_tai)}</b></div>'
+
+    css = (
+        "<style>"
+        ".gs-banner{position:relative;overflow:hidden;display:flex;align-items:center;gap:1rem;"
+        "flex-wrap:wrap;padding:1.15rem 1.3rem;margin:.4rem 0 1.1rem;border-radius:18px;"
+        f"background:{NEN};box-shadow:{BONG};color:#fff;}}"
+        ".gs-banner::before,.gs-banner::after{content:'';position:absolute;border-radius:50%;"
+        "background:rgba(255,255,255,.12);pointer-events:none;}"
+        ".gs-banner::before{width:180px;height:180px;right:-50px;top:-70px;}"
+        ".gs-banner::after{width:110px;height:110px;right:90px;bottom:-60px;}"
+        ".gs-avatar{position:relative;z-index:1;flex:0 0 64px;width:64px;height:64px;border-radius:50%;"
+        "display:flex;align-items:center;justify-content:center;font-size:2.1rem;"
+        "background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.5);"
+        "animation:gs-float 3s ease-in-out infinite;}"
+        ".gs-noi-dung{position:relative;z-index:1;flex:1 1 260px;min-width:0;}"
+        ".gs-tieu-de{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin:0;"
+        "font-size:1.5rem;font-weight:800;line-height:1.25;color:#fff !important;}"
+        ".gs-247{font-size:.8rem;font-weight:800;padding:2px 9px;border-radius:999px;"
+        "background:#FDE047;color:#4C1D95;}"
+        ".gs-phu{margin:.3rem 0 .6rem;font-size:.95rem;color:#F5F3FF !important;opacity:.95;}"
+        ".gs-chips{display:flex;flex-wrap:wrap;gap:.4rem;}"
+        ".gs-chip{font-size:.8rem;padding:3px 10px;border-radius:999px;white-space:nowrap;"
+        "background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);}"
+        ".gs-bai{margin-top:.6rem;font-size:.85rem;padding:4px 10px;border-radius:6px;"
+        "background:rgba(255,255,255,.14);border-left:3px solid #FDE047;}"
+        ".gs-trang-thai{position:relative;z-index:1;display:inline-flex;align-items:center;gap:.45rem;"
+        "padding:6px 12px;border-radius:999px;font-size:.85rem;font-weight:600;white-space:nowrap;"
+        "background:rgba(15,23,42,.28);}"
+        f".gs-cham{{width:10px;height:10px;border-radius:50%;background:{mau_cham};animation:{hieu_ung};}}"
+        "@keyframes gs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}"
+        "@keyframes gs-pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}"
+        "70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}"
+        "@media (max-width:640px){.gs-tieu-de{font-size:1.2rem}"
+        ".gs-avatar{flex-basis:52px;width:52px;height:52px;font-size:1.7rem}}"
+        "@media (prefers-reduced-motion:reduce){.gs-avatar,.gs-cham{animation:none}}"
+        "</style>"
+    )
+    noi_dung = (
+        '<div class="gs-banner">'
+        f'<div class="gs-avatar">{LINH_VAT}</div>'
+        '<div class="gs-noi-dung">'
+        '<p class="gs-tieu-de">Gia sư AI <span class="gs-247">24/7</span></p>'
+        '<p class="gs-phu">Em cứ hỏi nhé! Thầy cô AI sẽ gợi mở từng bước để em tự tìm ra đáp án.</p>'
+        f'<div class="gs-chips">{chips}</div>'
+        f'{dong_bai}'
+        '</div>'
+        f'<div class="gs-trang-thai"><span class="gs-cham"></span>{trang_thai}</div>'
+        '</div>'
+    )
+    return css + noi_dung
 
 # ==================== HIỂN THỊ PHÒNG THÍ NGHIỆM & BÀI HỌC ====================
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
@@ -1118,7 +1401,7 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         if "Bản đồ Cấu trúc" in chon_modul:
             data = DATA_LAB_NGU_VAN["🗺️ Bản đồ Cấu trúc & Bối cảnh"]
             st.markdown(f"### 🗺️ {data['tieu_de']}")
-            st.info(f"⏳ **Khái quát:** {data.get('khai_quat', '')}")
+            st.info(f"📌 **Khái quát:** {data['khai_quat']}")
             for item in data["bo_cuc"]:
                 with st.expander(f"🔹 {item['phan']}"):
                     st.write(item["noi_dung"])
@@ -1127,7 +1410,7 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
             data = DATA_LAB_NGU_VAN["🎭 Biểu đồ Tương tác Nhân vật"]
             st.markdown(f"### 🎭 {data['nhan_vat']}")
             st.markdown(f"⭐ **Đặc điểm:** {data['dac_diem']}")
-            st.markdown(f"🎯 **Hành vi tiêu biểu:** {data['hanh_vi_tieu_bieu']}")
+            st.markdown(f"🎯 **Hành vi:** {data['hanh_vi_tieu_bieu']}")
             st.markdown("#### 📈 Diễn biến tâm lý:")
             for stage in data["dien_bien_tam_ly"]:
                 st.markdown(f"* **{stage['giai_doan']}:** {stage['tam_trang']}")
@@ -1164,8 +1447,71 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         if url_tn:
             components.iframe(url_tn, height=580, scrolling=True)
 
+def dinh_dang_doan_van(van_ban):
+    """Giữ nguyên xuống dòng và thụt đầu dòng của nội dung lý thuyết / ví dụ khi
+    hiển thị trong khung HTML (trước đây mọi dòng bị dồn thành một đoạn)."""
+    cac_dong = html.escape(str(van_ban).strip(), quote=False).split("\n")
+    ket_qua = []
+    for dong in cac_dong:
+        so_cach = len(dong) - len(dong.lstrip(" "))
+        ket_qua.append("&nbsp;" * so_cach + dong.lstrip(" "))
+    return "<br>".join(ket_qua)
+
+def la_bai_tu_luan(bt):
+    """Bài tự luận: giáo viên đánh dấu kieu='tu_luan', hoặc mọi đáp án đều là câu dài
+    (học sinh không thể gõ trùng khớp từng chữ để máy chấm)."""
+    if bt.get("kieu") == "tu_luan":
+        return True
+    dap_an = [str(x).strip() for x in bt.get("dd", []) if str(x).strip()]
+    return not any(len(x) <= 30 for x in dap_an)
+
+def hien_thi_mot_bai_tap(bt, khoa, mon):
+    """Hiển thị một bài tập: ô làm bài, gợi ý, chấm tự động hoặc tự đối chiếu, lời giải."""
+    dap_an = bt.get("dd") or [""]
+    goi_y = bt.get("hd", "")
+    giai_thich = bt.get("gt", "")
+    loi_giai = bt.get("lg", "")
+
+    if "Ngữ Văn" in mon:
+        if st.button("💡 Xem gợi ý", key=f"btn_goiy_{khoa}"):
+            st.info(f"📝 **Gợi ý:** {loi_giai or dap_an[0]}")
+        return
+
+    if goi_y and st.checkbox("💡 Gợi ý cách làm", key=f"hd_{khoa}"):
+        st.info(goi_y)
+
+    if la_bai_tu_luan(bt):
+        st.text_area("✍️ Bài làm của em:", key=f"tl_{khoa}", height=110,
+                     placeholder="Em viết câu trả lời ở đây, sau đó bấm xem đáp án để tự đối chiếu.")
+        if st.checkbox("📖 Xem đáp án để đối chiếu", key=f"xem_{khoa}"):
+            st.success(f"**Đáp án:** {dap_an[0]}")
+            if giai_thich:
+                st.caption(f"💡 {giai_thich}")
+            if loi_giai:
+                st.markdown(f"**Lời giải chi tiết:** {loi_giai}")
+        return
+
+    ans = st.text_input("Nhập kết quả:", key=f"nhap_{khoa}")
+    if st.button("Kiểm tra", key=f"kt_{khoa}"):
+        if not ans.strip():
+            st.warning("⚠️ Em nhập đáp án trước nhé!")
+        elif so_sanh_so_hoc(ans, dap_an):
+            st.markdown("""<p class="dung">✅ Chính xác! Giỏi lắm!</p>""", unsafe_allow_html=True)
+            if giai_thich:
+                st.caption(f"💡 {giai_thich}")
+        else:
+            st.markdown(
+                """<p class="sai">❌ Chưa đúng rồi. Em kiểm tra lại cách tính hoặc mở gợi ý nhé!</p>""",
+                unsafe_allow_html=True
+            )
+    if st.checkbox("📖 Xem đáp án và lời giải", key=f"lg_{khoa}"):
+        st.success(f"**Đáp án:** {dap_an[0]}")
+        if giai_thich:
+            st.caption(f"💡 {giai_thich}")
+        if loi_giai:
+            st.markdown(f"**Lời giải chi tiết:** {loi_giai}")
+
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
-    st.markdown(f"### 📖 {ten_bai}")
     lt = data.get("ly_thuyet", "").strip()
     vd = data.get("vi_du", "").strip()
     ch_list = data.get("cau_hoi", [])
@@ -1173,10 +1519,13 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     bt_nc = data.get("bt_nang_cao", [])
     sid = lam_sach_id(f"{mon}_{lop}_{chuong}_{ten_bai}")
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("📝 Trắc nghiệm", f"{len(ch_list)} câu")
-    c2.metric("✏️ Cơ bản", f"{len(bt_cb)} bài")
-    c3.metric("🔥 Nâng cao", f"{len(bt_nc)} bài")
+    st.markdown(
+        tao_the_bai_hoc(
+            lay_chu_de(mon), dark_mode, lop, chuong, ten_bai,
+            len(ch_list), len(bt_cb), len(bt_nc)
+        ),
+        unsafe_allow_html=True
+    )
 
     ds_tabs = [
         "📚 Lý thuyết",
@@ -1189,13 +1538,16 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
 
     with tab1:
         if lt:
+            mau_mon = CHU_DE_GIAO_DIEN[lay_chu_de(mon)]["chinh"]
+            nen_lt = tron_mau(mau_mon, "#0F172A" if dark_mode else "#FFFFFF", .16 if dark_mode else .07)
             st.markdown(
-                f"""<div class="khung-lythuyet">{lt}</div>""",
+                f"""<div class="khung-lythuyet" style="border-left-color:{mau_mon};background-color:{nen_lt}">"""
+                f"""<b style="color:{mau_mon}">📚 Kiến thức trọng tâm</b><br>{dinh_dang_doan_van(lt)}</div>""",
                 unsafe_allow_html=True
             )
         if vd:
             st.markdown(
-                f"""<div class="khung-vidu">{vd}</div>""",
+                f"""<div class="khung-vidu">{dinh_dang_doan_van(vd)}</div>""",
                 unsafe_allow_html=True
             )
 
@@ -1204,48 +1556,20 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
             st.info("Chưa có bài tập.")
         else:
             for i, bt in enumerate(bt_cb, 1):
-                with st.expander(f"Bài {i}: {bt['de']}"):
-                    if "Ngữ Văn" in mon or bt.get("kieu") == "tu_luan":
-                        if st.button("💡 Xem gợi ý", key=f"btn_goiy_cb_{sid}_{i}"):
-                            goi_y = bt.get("lg") or bt.get("dd", [""])[0]
-                            st.info(f"📝 **Gợi ý:** {goi_y}")
-                    else:
-                        ans = st.text_input("Nhập kết quả:", key=f"cb_{sid}_{i}")
-                        if st.button("Kiểm tra", key=f"btn_cb_{sid}_{i}"):
-                            if not ans.strip():
-                                st.warning("⚠️ Nhập đáp án trước!")
-                            elif so_sanh_so_hoc(ans, bt["dd"]):
-                                st.markdown(
-                                    """<p class="dung">✅ Chính xác!</p>""",
-                                    unsafe_allow_html=True
-                                )
-                            else:
-                                da_mau = bt["dd"][0]
-                                st.markdown(
-                                    f"""<p class="sai">❌ Sai. Gợi ý: {da_mau}</p>""",
-                                    unsafe_allow_html=True
-                                )
+                nhan_tl = " ✍️" if ("Ngữ Văn" not in mon and la_bai_tu_luan(bt)) else ""
+                with st.expander(f"Bài {i}{nhan_tl}: {bt['de']}"):
+                    hien_thi_mot_bai_tap(bt, f"cb_{sid}_{i}", mon)
 
     with tab3:
         if not bt_nc:
             st.info("Chưa có bài tập nâng cao.")
         else:
             for i, nc in enumerate(bt_nc, 1):
-                with st.expander(f"Bài nâng cao {i}: {nc['de'][:60]}..."):
+                de_ngan = nc['de'] if len(nc['de']) <= 60 else nc['de'][:60] + "..."
+                nhan_tl = " ✍️" if ("Ngữ Văn" not in mon and la_bai_tu_luan(nc)) else ""
+                with st.expander(f"Bài nâng cao {i}{nhan_tl}: {de_ngan}"):
                     st.markdown(f"**Đề bài:** {nc['de']}")
-                    if "Ngữ Văn" in mon or nc.get("kieu") == "tu_luan":
-                        if st.button("💡 Xem gợi ý", key=f"btn_goiy_nc_{sid}_{i}"):
-                            goi_y = nc.get("lg") or nc.get("dd", [""])[0]
-                            st.info(f"📝 **Gợi ý:** {goi_y}")
-                    else:
-                        ans = st.text_input("Nhập kết quả:", key=f"nc_{sid}_{i}")
-                        if st.button("Kiểm tra", key=f"btn_nc_{sid}_{i}"):
-                            if so_sanh_so_hoc(ans, nc["dd"]):
-                                st.success("🎉 Chính xác!")
-                            else:
-                                st.error(f"❌ Gợi ý: {nc['dd'][0]}")
-                        if st.checkbox("📖 Xem lời giải", key=f"lg_{sid}_{i}"):
-                            st.success(f"**Lời giải:** {nc.get('lg', '')}")
+                    hien_thi_mot_bai_tap(nc, f"nc_{sid}_{i}", mon)
 
     with tab4:
         if len(ch_list) == 0:
@@ -1258,8 +1582,12 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                 for ch in ch_list:
                     da_moi, vt_moi = tron_dap_an_thong_minh(ch)
                     nd_ch = ch.get("nd") or ch.get("de")
-                    de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
+                    de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
                 st.session_state[f"de_{sid}"] = de_tron
+                # [VÁ LỖI 4] Mỗi đề mới có mã riêng -> nút chọn đáp án được tạo mới,
+                # lựa chọn của đề cũ không còn dính sang đề mới.
+                st.session_state[f"nonce_{sid}"] = uuid.uuid4().hex[:8]
+            nonce = st.session_state.setdefault(f"nonce_{sid}", "0")
 
             with st.form(f"f_{sid}"):
                 tl = {}
@@ -1268,7 +1596,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     tl[i] = st.radio(
                         "Chọn:",
                         ch["da"],
-                        key=f"r_{sid}_{i}",
+                        key=f"r_{sid}_{nonce}_{i}",
                         index=None,
                         label_visibility="collapsed"
                     )
@@ -1289,6 +1617,8 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                         da_dung = ch["da"][ch["d"]]
                         if tl[i] != da_dung:
                             st.error(f"Câu {i} sai. Đúng là: {da_dung}")
+                            if ch.get("gt"):
+                                st.caption(f"💡 {ch['gt']}")
                         else:
                             st.success(f"Câu {i}: Đúng")
 
@@ -1299,47 +1629,59 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
 bai_dang_hoc = ""
 du_lieu_bai_hien_tai = {}
 
+# CSS chung cho banner, thẻ bài học, ô môn học (chỉ chèn một lần mỗi lượt hiển thị)
+st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
+
 if che_do == "🏠 Trang chủ / Hướng dẫn":
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">{CHU_DE_GIAO_DIEN["home"]["khau_hieu"]}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(css_widget_theo_mon("home"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "home", dark_mode,
+            nhan="Chào mừng em!",
+            chips=["📚 4 môn học", "🎪 Phòng thí nghiệm ảo", "📝 Thi thử", "🦉 Gia sư AI 24/7"],
+        ),
+        unsafe_allow_html=True
+    )
 
-    c1, c2 = st.columns(2)
-    c1.markdown("""
-    <div class="card-home">
-        <h3>🌟 Không gian học tập đa môn</h3>
-        <p>Tích hợp đầy đủ lý thuyết trọng tâm, bài tập cơ bản, nâng cao và phòng thí nghiệm tương tác cho Toán, Vật lý, Hóa học và Ngữ Văn lớp 7.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    c2.markdown("""
-    <div class="card-home">
-        <h3>💬 Trợ lý Gia Sư AI 24/7</h3>
-        <p>Gợi mở tư duy theo phương pháp Socratic, hỗ trợ nhận diện ảnh bài tập và đọc giọng nói tiếng Việt tự nhiên.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("### 📚 Chọn nhanh môn học")
-    cols_mon = st.columns(4)
-    for idx_m, ten_m in enumerate(DATABASE.keys()):
-        with cols_mon[idx_m]:
-            so_lan, diem_tb_m = thanh_tich_mon(ten_m)
-            phu_de = f"Đã làm {so_lan} bài (TB: {diem_tb_m:.1f}đ)" if diem_tb_m is not None else "Bắt đầu ôn luyện ngay"
-            st.info(f"**{ten_m}**\n\n{phu_de}")
-            if st.button(f"Vào học {ten_m}", key=f"quick_jump_{idx_m}", use_container_width=True):
-                st.session_state["home_jump"] = ten_m
+    st.markdown("#### 👇 Hôm nay em muốn học môn nào?")
+    cot_mon = st.columns(4)
+    for cot, (mon_o, khoa_o) in zip(cot_mon, MON_SANG_CHU_DE.items()):
+        with cot:
+            st.markdown(tao_o_mon(khoa_o, dark_mode, dem_chuong_bai(mon_o)[1]), unsafe_allow_html=True)
+            ten_ngan = {"toan": "Toán", "vatly": "Vật lý", "hoa": "Hóa học", "van": "Ngữ văn"}[khoa_o]
+            if st.button(
+                f"Vào học {ten_ngan} →",
+                key=f"vao_hoc_{khoa_o}",
+                use_container_width=True
+            ):
+                st.session_state["home_jump"] = mon_o
                 st.rerun()
 
+    st.markdown("#### 🧭 Học thế nào cho hiệu quả?")
+    st.markdown(
+        f'<div class="buoc" style="{bien_the_nhe("home", dark_mode)}">'
+        '<div class="buoc-o"><span class="buoc-so">1</span>'
+        '<p><b>Đọc lý thuyết</b> và ví dụ trong mục “Học theo chuyên đề”.</p></div>'
+        '<div class="buoc-o"><span class="buoc-so">2</span>'
+        '<p><b>Luyện bài tập</b> cơ bản, nâng cao và trắc nghiệm, xem gợi ý khi cần.</p></div>'
+        '<div class="buoc-o"><span class="buoc-so">3</span>'
+        '<p><b>Thi thử</b> để tự kiểm tra – chỗ nào chưa hiểu thì hỏi Gia sư AI.</p></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 elif che_do == "🔍 Tra cứu / Tìm kiếm":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🔍 Tra Cứu & Tìm Kiếm Tri Thức</p>
-        <p class="hero-sub">Gõ từ khóa bất kỳ để tìm nhanh bài học trong toàn bộ hệ thống</p>
-    </div>
-    """, unsafe_allow_html=True)
-    tu_khoa = st.text_input("🔎 Nhập từ khóa cần tìm:")
+    st.markdown(css_widget_theo_mon("search"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "search", dark_mode,
+            nhan="Tra cứu",
+            chips=["📐 Toán", "🔬 Vật lý", "🧪 Hóa học", "📖 Ngữ văn"],
+            hien_loi_nhan=False,
+        ),
+        unsafe_allow_html=True
+    )
+    tu_khoa = st.text_input("🔎 Nhập từ khóa:", placeholder="Ví dụ: Bầy chim chìa vôi, số hữu tỉ, nguyên tử...")
     if tu_khoa.strip():
         kw = tu_khoa.strip().lower()
         ket_qua_tim = []
@@ -1355,110 +1697,159 @@ elif che_do == "🔍 Tra cứu / Tìm kiếm":
                                 "chuong": chuong,
                                 "bai": t_bai
                             })
-        st.markdown(f"### 📋 Kết quả tìm kiếm: {len(ket_qua_tim)} bài học")
+        st.markdown(f"### 📋 Kết quả: {len(ket_qua_tim)}")
         for idx, item in enumerate(ket_qua_tim, 1):
-            tieu_de_exp = f"{idx}. [{item['mon']}] {item['chuong']} — {item['bai']}"
+            tieu_de_exp = f"{idx}. [{item['mon']}] {item['chuong']} - {item['bai']}"
             with st.expander(tieu_de_exp):
-                if st.button("📖 Mở ngay bài học này", key=f"btn_jump_{idx}"):
+                if st.button("Mở bài học", key=f"btn_jump_{idx}"):
                     st.session_state["search_jump"] = item
                     st.rerun()
 
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p>
-        <p class="hero-sub">Công cụ dành riêng cho Quản trị viên bóc tách học liệu chuẩn hóa</p>
-    </div>
-    """, unsafe_allow_html=True)
-    mk = st.text_input("🔑 Nhập mật khẩu Admin:", type="password")
+    st.markdown(css_widget_theo_mon("admin"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "admin", dark_mode,
+            nhan="Dành cho giáo viên",
+            chips=["📄 Word · PDF · Ảnh · Văn bản", "🤖 AI bóc tách", "✅ Tự kiểm tra cấu trúc"],
+            hien_loi_nhan=False,
+        ),
+        unsafe_allow_html=True
+    )
+    mk = st.text_input("🔑 Mật khẩu Admin:", type="password")
+
+    # [VÁ 2 – mục 16] Sai quá 5 lần trong 10 phút -> khóa đăng nhập 10 phút.
+    # Bộ đếm dùng chung cho cả hệ thống nên tải lại trang không vượt qua được.
+    SO_LAN_SAI_TOI_DA = 5
+    THOI_GIAN_KHOA = 600
+    now_ad = time.time()
+    with GLOBALS["admin_fail_lock"]:
+        ds_sai = GLOBALS["admin_fail_times"]
+        while ds_sai and now_ad - ds_sai[0] > THOI_GIAN_KHOA:
+            ds_sai.popleft()
+        bi_khoa = len(ds_sai) >= SO_LAN_SAI_TOI_DA
+        con_lai = int(THOI_GIAN_KHOA - (now_ad - ds_sai[0])) + 1 if bi_khoa else 0
+
+    dang_nhap_dung = False
+    if ADMIN_PASS and mk and not bi_khoa:
+        dang_nhap_dung = hmac.compare_digest(mk, ADMIN_PASS)
+        # Chỉ tính một lần sai cho mỗi mật khẩu mới nhập (không đếm lại khi trang tải lại)
+        if not dang_nhap_dung and st.session_state.get("admin_mk_da_kiem") != mk:
+            st.session_state["admin_mk_da_kiem"] = mk
+            with GLOBALS["admin_fail_lock"]:
+                GLOBALS["admin_fail_times"].append(now_ad)
 
     if not ADMIN_PASS:
         st.error("⚠️ Hệ thống chưa thiết lập ADMIN_PASSWORD trong Secrets.")
-    elif mk:
-        now_ts = time.time()
-        with GLOBALS["admin_fail_lock"]:
-            q_fail = GLOBALS["admin_fail_times"]
-            while q_fail and now_ts - q_fail[0] > 300:
-                q_fail.popleft()
-            bi_khoa = len(q_fail) >= 5
-
-        if bi_khoa:
-            st.error("🚫 Nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau 5 phút.")
-        elif hmac.compare_digest(mk, ADMIN_PASS):
-            st.success("✅ Xác thực thành công. Hệ thống nạp file đã mở!")
-            tab_upfile, tab_paste = st.tabs(["📁 Tải File Lên", "📝 Dán Văn Bản Thô"])
-            danh_sach_files = []
-            with tab_upfile:
-                uploaded_files = st.file_uploader(
-                    "Chọn file (docx, pdf, ảnh, txt):",
-                    type=["docx", "pdf", "png", "jpg", "jpeg", "txt"],
-                    accept_multiple_files=True
-                )
-                if uploaded_files:
-                    danh_sach_files = uploaded_files
-            with tab_paste:
-                raw_text = st.text_area("Dán nội dung văn bản gốc vào đây:", height=220)
-
-            PROMPT_PARSER = (
-                'Chuyển đổi nội dung thành JSON chuẩn gồm các khóa: '
-                '"ly_thuyet", "vi_du", "cau_hoi", "bt_co_ban", "bt_nang_cao".'
+    elif bi_khoa:
+        st.error(f"🔒 Nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau khoảng {con_lai // 60 + 1} phút.")
+    elif dang_nhap_dung:
+        st.success("Xác thực thành công. Tính năng nạp file đang mở...")
+        tab_upfile, tab_paste = st.tabs(["📁 Tải File Lên", "📝 Dán Văn Bản Thô"])
+        danh_sach_files = []
+        with tab_upfile:
+            uploaded_files = st.file_uploader(
+                "Chọn file (docx, pdf, ảnh, txt):",
+                type=["docx", "pdf", "png", "jpg", "jpeg", "txt"],
+                accept_multiple_files=True
             )
-            if st.button("⚡ Bóc tách & Chuẩn hóa dữ liệu", type="primary", use_container_width=True):
-                if not danh_sach_files and not raw_text.strip():
-                    st.warning("⚠️ Vui lòng tải file hoặc dán văn bản!")
-                else:
-                    with st.spinner("🤖 Trợ lý AI đang phân tích và kiểm định cấu trúc..."):
-                        try:
-                            payload = []
-                            for f in danh_sach_files:
-                                if f.name.endswith(".docx"):
-                                    payload.append(trich_xuat_word_docx(f.read()))
-                                elif f.name.endswith((".png", ".jpg", ".jpeg")) and HAS_PIL:
-                                    payload.append(Image.open(io.BytesIO(f.read())))
-                                else:
-                                    payload.append(f.read().decode("utf-8", errors="ignore"))
-                            if raw_text.strip():
-                                payload.append(raw_text.strip())
-                            ket_qua = goi_gemini_an_toan(
-                                payload,
-                                system_instruction=PROMPT_PARSER,
-                                tra_ve_json=True
-                            )
-                            du_lieu_json = tach_json_tu_van_ban(ket_qua)
-                            bai_chuan, ds_canh_bao = chuan_hoa_bai_hoc(du_lieu_json)
-                            st.session_state["parsed_code_result"] = json.dumps(
-                                bai_chuan, ensure_ascii=False, indent=4
-                            )
-                            st.session_state["parsed_warnings"] = ds_canh_bao
-                        except Exception as e:
-                            st.error(f"❌ Lỗi xử lý: {e}")
+            if uploaded_files:
+                danh_sach_files = uploaded_files
+        with tab_paste:
+            raw_text = st.text_area("Dán nội dung văn bản gốc vào đây:", height=220)
 
-            if st.session_state.get("parsed_warnings"):
-                for cb in st.session_state["parsed_warnings"]:
-                    st.warning(f"⚠️ {cb}")
+        PROMPT_PARSER = (
+            "Bạn chuyển tài liệu bài học thành MỘT đối tượng JSON duy nhất, không kèm lời giải thích, "
+            "với đúng các khóa sau:\n"
+            '- "ly_thuyet": chuỗi, tóm tắt lý thuyết.\n'
+            '- "vi_du": chuỗi, ví dụ minh họa (có thể rỗng).\n'
+            '- "cau_hoi": danh sách câu trắc nghiệm, mỗi câu dạng '
+            '{"nd": "đề", "da": ["phương án 1", "phương án 2", ...], "d": chỉ số đáp án đúng, đếm từ 0, '
+            '"gt": "giải thích ngắn vì sao đúng", "md": "biet" | "hieu" | "van_dung"}.\n'
+            '- "bt_co_ban" và "bt_nang_cao": danh sách bài tập, mỗi bài dạng '
+            '{"de": "đề bài", "dd": ["đáp án"], "hd": "gợi ý cách làm", "lg": "lời giải chi tiết", '
+            '"kieu": "tu_luan" nếu đáp án là câu văn cần trình bày}. '
+            'Với đáp án là số hoặc từ ngắn, "dd" chỉ ghi con số/từ đó (có thể ghi nhiều cách viết).\n'
+            "Chỉ dùng nội dung có trong tài liệu, không tự bịa thêm. Viết bằng tiếng Việt."
+        )
+        if not HAS_GENAI:
+            st.error("⚠️ Chức năng cần thư viện google-genai. Hãy thêm `google-genai` vào requirements.txt.")
+        elif st.button("⚡ Bóc tách dữ liệu", type="primary", use_container_width=True):
+            if not danh_sach_files and not raw_text.strip():
+                st.warning("⚠️ Vui lòng tải file hoặc dán văn bản!")
+            else:
+                with st.spinner("🤖 Trợ lý AI đang phân tích cấu trúc..."):
+                    try:
+                        payload = []
+                        for f in danh_sach_files:
+                            if f.name.endswith(".docx"):
+                                payload.append(trich_xuat_word_docx(f.read()))
+                            elif f.name.endswith(".pdf"):
+                                payload.append(types.Part.from_bytes(
+                                    data=f.read(),
+                                    mime_type="application/pdf"
+                                ))
+                            elif f.name.endswith((".png", ".jpg", ".jpeg")) and HAS_PIL:
+                                payload.append(Image.open(io.BytesIO(f.read())))
+                            else:
+                                payload.append(f.read().decode("utf-8", errors="ignore"))
+                        if raw_text.strip():
+                            payload.append(raw_text.strip())
+                        ket_qua = goi_gemini_an_toan(
+                            payload,
+                            system_instruction=PROMPT_PARSER,
+                            tra_ve_json=True
+                        )
+                        bai_moi, canh_bao = chuan_hoa_bai_hoc(tach_json_tu_van_ban(ket_qua))
+                        st.session_state["parsed_lesson"] = bai_moi
+                        st.session_state["parsed_warnings"] = canh_bao
+                    except Exception as e:
+                        ghi_log_loi("Trạm nạp dữ liệu", e)
+                        st.error(f"❌ Không bóc tách được dữ liệu: {e}")
 
-            if st.session_state.get("parsed_code_result"):
-                code_out = st.session_state["parsed_code_result"]
-                st.success("✅ Bóc tách dữ liệu thành công!")
-                st.download_button(
-                    "💾 Tải Dữ liệu về máy (.py)",
-                    data=code_out.encode("utf-8"),
-                    file_name="data_moi.py",
-                    mime="text/x-python"
-                )
-                st.code(code_out, language="python")
-        else:
-            with GLOBALS["admin_fail_lock"]:
-                GLOBALS["admin_fail_times"].append(now_ts)
-            st.error("❌ Sai mật khẩu!")
+        if st.session_state.get("parsed_lesson"):
+            bai_moi = st.session_state["parsed_lesson"]
+            canh_bao = st.session_state.get("parsed_warnings", [])
+            st.success(
+                f"✅ Bóc tách xong: {len(bai_moi['cau_hoi'])} câu trắc nghiệm, "
+                f"{len(bai_moi['bt_co_ban'])} bài cơ bản, {len(bai_moi['bt_nang_cao'])} bài nâng cao."
+            )
+            if canh_bao:
+                with st.expander(f"⚠️ {len(canh_bao)} cảnh báo cần giáo viên xem lại", expanded=True):
+                    for cb in canh_bao:
+                        st.markdown(f"- {cb}")
+            st.info("📌 Nội dung do AI bóc tách — giáo viên cần kiểm tra lại trước khi đưa vào dữ liệu chính thức.")
+
+            json_out = json.dumps(bai_moi, ensure_ascii=False, indent=2)
+            # File .py do chính app sinh ra từ dữ liệu đã kiểm tra (chỉ gồm chuỗi, số, danh sách),
+            # không phải code do AI viết.
+            py_out = (
+                "# -*- coding: utf-8 -*-\n"
+                "# Dữ liệu bài học do Trạm nạp dữ liệu sinh ra. Dán vào đúng Môn > Lớp > Chương > Bài.\n"
+                f"BAI_MOI = {json_out}\n"
+            )
+            c_tai1, c_tai2 = st.columns(2)
+            c_tai1.download_button(
+                "💾 Tải dữ liệu (.json)",
+                data=json_out.encode("utf-8"),
+                file_name="bai_moi.json",
+                mime="application/json",
+                use_container_width=True
+            )
+            c_tai2.download_button(
+                "💾 Tải dữ liệu (.py)",
+                data=py_out.encode("utf-8"),
+                file_name="data_moi.py",
+                mime="text/x-python",
+                use_container_width=True
+            )
+            st.json(bai_moi)
+    elif mk:
+        st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác</p>
-        <p class="hero-sub">Trực quan hóa kiến thức Khoa học Tự nhiên, Toán học & Ngữ Văn</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Chừa chỗ cho banner ở đầu trang, vẽ sau khi biết môn được chọn
+    cho_banner_lab = st.empty()
     ds_mon_lab = [
         "📖 Môn Ngữ Văn",
         "🔬 Môn Vật lý (KHTN)",
@@ -1466,16 +1857,40 @@ elif che_do == "🎪 Phòng thí nghiệm ảo":
         "📐 Môn Toán"
     ]
     mon_lab = st.selectbox("🔬 Chọn môn học thực hành:", ds_mon_lab)
+    khoa_lab = lay_chu_de(mon_lab)
+    chip_lab = (
+        ["🗺️ Sơ đồ tác phẩm", "🎭 Thế giới nhân vật", "📝 Lập dàn ý"]
+        if khoa_lab == "van" else
+        ["🧪 Mô phỏng tương tác", "🌐 PhET – ĐH Colorado", "🖱️ Kéo, thả, tự thử nghiệm"]
+    )
+    cho_banner_lab.markdown(
+        css_widget_theo_mon(khoa_lab) + tao_hero(
+            khoa_lab, dark_mode,
+            nhan="Phòng thí nghiệm ảo",
+            phu_de=("Khám phá tác phẩm qua sơ đồ, nhân vật và dàn ý" if khoa_lab == "van"
+                    else "Tự tay làm thí nghiệm – quan sát, thay đổi, rút ra kết luận"),
+            chips=chip_lab,
+        ),
+        unsafe_allow_html=True
+    )
     hien_thi_phong_thi_nghiem(mon_lab, key_prefix="main_lab")
 
 elif che_do == "📖 Học theo chuyên đề":
-    loi_nhan_ngau_nhien = random.choice(chu_de_hien_tai["loi_nhan"])
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">{chu_de_hien_tai["icon"]} {mon} — Kết Nối Tri Thức Lớp 7</p>
-        <p class="hero-sub">💡 {loi_nhan_ngau_nhien}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    khoa_mon = lay_chu_de(mon)
+    so_chuong, so_bai_mon = dem_chuong_bai(mon)
+    st.markdown(css_widget_theo_mon(khoa_mon), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            khoa_mon, dark_mode,
+            nhan="Học theo chuyên đề · Lớp 7",
+            chips=[
+                "📚 Kết nối tri thức",
+                f"📂 {so_chuong} chương · {so_bai_mon} bài" if so_bai_mon else "🛠️ Đang cập nhật bài học",
+                chip_thanh_tich(mon),
+            ],
+        ),
+        unsafe_allow_html=True
+    )
 
     lop_dict = DATABASE[mon]
     if not lop_dict:
@@ -1484,34 +1899,43 @@ elif che_do == "📖 Học theo chuyên đề":
         c_lop, c_chuong, c_bai = st.columns([1, 2, 2])
         ds_lop = list(lop_dict.keys())
         giu_lua_chon_hop_le("s_lop", ds_lop)
-        lop = c_lop.selectbox("🏫 Khối:", ds_lop, key="s_lop")
-
+        lop = c_lop.selectbox("Khối:", ds_lop, key="s_lop")
         chuong_dict = lop_dict[lop]
         ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
         giu_lua_chon_hop_le("s_chuong", ds_chuong)
-        chuong = c_chuong.selectbox("📂 Chương:", ds_chuong, key="s_chuong")
+        chuong = c_chuong.selectbox("Chương:", ds_chuong, key="s_chuong")
 
         bai_dict = chuong_dict[chuong]
         ds_bai = list(bai_dict.keys())
-        giu_lua_chon_hop_le("s_bai", ds_bai)
-        bai = c_bai.selectbox("📘 Bài học:", ds_bai, key="s_bai")
+        if not ds_bai:
+            # Trước đây chương rỗng (ví dụ Hóa học "Đang cập nhật") làm app lỗi KeyError
+            st.info("📌 Chương này đang được cập nhật bài học.")
+            bai_dang_hoc = chuong
+        else:
+            giu_lua_chon_hop_le("s_bai", ds_bai)
+            bai = c_bai.selectbox("Bài:", ds_bai, key="s_bai")
 
-        bai_dang_hoc = f"{chuong} - {bai}"
-        du_lieu_bai_hien_tai = bai_dict[bai]
+            bai_dang_hoc = f"{chuong} - {bai}"
+            du_lieu_bai_hien_tai = bai_dict[bai]
 
-        st.markdown("---")
-        hien_thi_bai(mon, lop, chuong, bai, du_lieu_bai_hien_tai)
+            hien_thi_bai(mon, lop, chuong, bai, du_lieu_bai_hien_tai)
 
 elif che_do == "📝 Phòng thi / Kiểm tra":
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">⏱️ Phòng Thi Thử & Kiểm Tra Định Kì — {mon}</p>
-        <p class="hero-sub">{chu_de_hien_tai["khau_hieu"]}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    khoa_mon = lay_chu_de(mon)
+    st.markdown(css_widget_theo_mon(khoa_mon), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            khoa_mon, dark_mode,
+            nhan="Phòng thi thử · Kiểm tra định kì",
+            chips=["⏱️ 15 phút · Giữa kì · Học kì", "🔀 Đề trộn ngẫu nhiên", chip_thanh_tich(mon)],
+        ),
+        unsafe_allow_html=True
+    )
     lop_dict = DATABASE[mon]
     if lop_dict:
-        lop = st.selectbox("🏫 Khối:", list(lop_dict.keys()), key="s_lop_thi")
+        ds_lop_thi = list(lop_dict.keys())
+        giu_lua_chon_hop_le("s_lop_thi", ds_lop_thi)
+        lop = st.selectbox("Khối:", ds_lop_thi, key="s_lop_thi")
         chuong_dict = lop_dict[lop]
         ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
 
@@ -1531,10 +1955,20 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
             "Giữa kì (20 câu)": 20,
             "Học kì (40 câu)": 40
         }
-        if st.button("🚀 TẠO ĐỀ THI LẠI / MỚI", type="primary"):
-            st.session_state[f"dethi_{mon}_{lop}"] = None
+        khoa_de = f"dethi_{mon}_{lop}"
+        khoa_nonce = f"nonce_thi_{mon}_{lop}"
+        khoa_cau_hinh = f"cauhinh_thi_{mon}_{lop}"
 
-        if st.session_state.get(f"dethi_{mon}_{lop}") is None:
+        # [VÁ 2 – mục 7] Đổi cấu trúc đề hoặc danh sách chương -> tạo đề mới ngay
+        cau_hinh_hien_tai = (loai_de, tuple(chuong_chon))
+        if st.session_state.get(khoa_cau_hinh) != cau_hinh_hien_tai:
+            st.session_state[khoa_cau_hinh] = cau_hinh_hien_tai
+            st.session_state[khoa_de] = None
+
+        if st.button("🚀 TẠO ĐỀ THI LẠI / MỚI", type="primary"):
+            st.session_state[khoa_de] = None
+
+        if st.session_state.get(khoa_de) is None:
             all_questions = []
             for c in chuong_chon:
                 for b, data in chuong_dict[c].items():
@@ -1548,11 +1982,18 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                 for ch in ds_chon:
                     da_moi, vt_moi = tron_dap_an_thong_minh(ch)
                     nd_ch = ch.get("nd") or ch.get("de")
-                    de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
-                st.session_state[f"dethi_{mon}_{lop}"] = de_tron_thi
+                    de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi, "gt": ch.get("gt", "")})
+                st.session_state[khoa_de] = de_tron_thi
+                # [VÁ LỖI 4] Đề mới -> mã mới cho các nút chọn đáp án
+                st.session_state[khoa_nonce] = uuid.uuid4().hex[:8]
 
-        if st.session_state.get(f"dethi_{mon}_{lop}"):
-            de_thi = st.session_state[f"dethi_{mon}_{lop}"]
+        if st.session_state.get(khoa_de):
+            de_thi = st.session_state[khoa_de]
+            nonce_thi = st.session_state.setdefault(khoa_nonce, "0")
+            st.markdown(
+                tao_dai_de_thi(khoa_mon, dark_mode, loai_de.split(" (")[0], len(de_thi)),
+                unsafe_allow_html=True
+            )
             with st.form(f"form_thi_{mon}_{lop}"):
                 tl_thi = {}
                 for i, ch in enumerate(de_thi, 1):
@@ -1560,7 +2001,7 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                     tl_thi[i] = st.radio(
                         f"Đ/á {i}:",
                         ch["da"],
-                        key=f"thi_{mon}_{lop}_{i}",
+                        key=f"thi_{mon}_{lop}_{nonce_thi}_{i}",
                         index=None,
                         label_visibility="collapsed"
                     )
@@ -1580,24 +2021,47 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                         da_dung = ch["da"][ch["d"]]
                         if tl_thi[i] != da_dung:
                             st.error(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
-                        else:
-                            st.success(f"✅ Câu {i}: Đúng")
+                            if ch.get("gt"):
+                                st.caption(f"💡 {ch['gt']}")
+    else:
+        st.warning("⚠️ Môn này chưa có dữ liệu câu hỏi, đang được cập nhật...")
 
 # ==================== KHU VỰC GIA SƯ AI ====================
 if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "🎪 Phòng thí nghiệm ảo"]:
     st.divider()
-    st.header("💬 Gia sư AI 24/7")
+    st.markdown(
+        tao_banner_gia_su(
+            che_do_toi=dark_mode,
+            bai_hien_tai=bai_dang_hoc,
+            ai_san_sang=bool(HAS_GENAI and GEMINI_KEYS),
+            co_anh=HAS_PIL,
+            co_mic=HAS_MIC,
+        ),
+        unsafe_allow_html=True
+    )
+
+    # [VÁ 2 – mục 10] Gia sư mặc định theo môn đang học/đang thi
+    DS_MON_AI = ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"]
+    MON_SANG_MON_AI = {
+        "📐 Môn Toán": "Toán",
+        "🔬 Môn Vật lý (KHTN)": "Vật Lý",
+        "🧪 Môn Hóa học (KHTN)": "Hóa Học",
+        "📖 Môn Ngữ Văn": "Ngữ Văn",
+    }
+    mon_mac_dinh = MON_SANG_MON_AI.get(mon, "Toán")
 
     col1, col2, col3, col4 = st.columns([2.2, 1, 1.8, 1])
     with col1:
         mon_ai = st.radio(
             "Môn:",
-            ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"],
+            DS_MON_AI,
+            index=DS_MON_AI.index(mon_mac_dinh),
             horizontal=True,
             label_visibility="collapsed"
         )
     with col2:
-        tu_dong_doc = st.checkbox("🔊 Đọc to", value=True)
+        # Tắt mặc định để tránh tự phát âm thanh trong lớp học
+        tu_dong_doc = st.checkbox("🔊 Đọc to", value=False)
     with col3:
         nguon_ai = st.selectbox(
             "Nguồn:",
@@ -1611,7 +2075,7 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
 
     sys_prompt = (
         f"Bạn là gia sư {mon_ai} lớp 7 sách Kết Nối Tri Thức. "
-        f"Đang học: {bai_dang_hoc}. Gợi mở từng bước theo phương pháp Socratic, không giải hộ hoàn toàn."
+        f"Đang học: {bai_dang_hoc}. Gợi mở từng bước, không giải hộ hoàn toàn."
     )
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
@@ -1644,7 +2108,9 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
     )
 
     if prompt:
-        if not GEMINI_KEYS:
+        if not HAS_GENAI:
+            st.error("⚠️ Gia sư AI đang tắt vì server chưa cài thư viện google-genai.")
+        elif not GEMINI_KEYS:
             st.error("⚠️ Hệ thống chưa được cấu hình API Key trong phần Secrets.")
         else:
             ok, giay = kiem_tra_gioi_han_tan_suat()
@@ -1667,11 +2133,20 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
                         st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
                         doc_to_an_toan(ans_cached, autoplay=tu_dong_doc)
                     else:
-                        g_hist = [
-                            {"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]}
-                            for m in st.session_state.chat_history[:-1]
-                        ]
+                        # [VÁ 2 – mục 8] Không gửi thông báo lỗi (và câu hỏi bị lỗi
+                        # tương ứng) vào ngữ cảnh của AI.
+                        g_hist = []
+                        for m in st.session_state.chat_history[:-1]:
+                            if m.get("loi"):
+                                if g_hist and g_hist[-1]["role"] == "user":
+                                    g_hist.pop()
+                                continue
+                            g_hist.append({
+                                "role": "user" if m["role"] == "user" else "model",
+                                "parts": [m["content"]]
+                            })
                         luu_kq = ""
+                        la_loi = False
                         try:
                             with st.spinner("🤖 Gia sư AI đang suy nghĩ..."):
                                 payload = [prompt, img_gui] if img_gui else prompt
@@ -1685,12 +2160,18 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
                                 else:
                                     luu_kq = goi_gemini_an_toan(payload, sys_prompt, g_hist)
                                 st.markdown(luu_kq)
-                        except Exception:
+                        except Exception as e:
+                            ghi_log_loi("Gia sư AI", e)
+                            la_loi = True
                             luu_kq = "⚠️ Đường truyền AI đang bận xử lý, em thử lại câu hỏi sau vài giây nhé."
                             st.error(luu_kq)
 
-                        st.session_state.chat_history.append({"role": "assistant", "content": luu_kq})
-                        if h_key:
+                        st.session_state.chat_history.append({
+                            "role": "assistant",
+                            "content": luu_kq,
+                            "loi": la_loi
+                        })
+                        if h_key and not la_loi:
                             luu_cache_ai(h_key, luu_kq)
-                        if luu_kq and "⚠️" not in luu_kq:
+                        if luu_kq and not la_loi:
                             doc_to_an_toan(luu_kq, autoplay=tu_dong_doc)
