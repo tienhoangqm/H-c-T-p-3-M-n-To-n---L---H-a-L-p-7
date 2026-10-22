@@ -861,7 +861,6 @@ CHU_DE_GIAO_DIEN = {
             "Sai một bước không sao – tìm ra vì sao sai là em đã tiến thêm một bước.",
             "Toán không phải để học thuộc, mà để hiểu và suy luận.",
             "Kiên nhẫn từng dòng tính, đáp án sẽ tự hiện ra.",
-        ],
     },
     "vatly": {
         "icon": "🔬", "ten": "Vật lý (KHTN)",
