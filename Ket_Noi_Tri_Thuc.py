@@ -480,6 +480,11 @@ MO_TA_MON_TRANG_CHU = {
     "anh": "12 Unit Global Success, từ vựng."
 }
 
+VI_TRI_KY_HIEU = [
+    (8, 62, 2.2, 0), (40, 74, 1.6, 1.2), (10, 86, 2.8, 2.4), (52, 90, 1.9, 0.6),
+    (30, 54, 1.3, 3.0), (22, 70, 1.4, 1.8), (5, 42, 1.2, 4.0), (44, 60, 1.1, 2.8),
+]
+
 def bien_mau(khoa, che_do_toi):
     cd = CHU_DE_GIAO_DIEN[khoa]
     c1, c2, c3 = cd["toi"] if che_do_toi else cd["sang"]
@@ -502,7 +507,6 @@ def css_giao_dien_chung():
         "color:#1F2937;margin-bottom:.4rem;}"
         ".hb-tieu-de{margin:0;font-size:2rem;font-weight:800;line-height:1.15;color:#FFFFFF !important;}"
         ".hb-phu{margin:.3rem 0 0;font-size:1rem;color:#FFFFFF !important;opacity:.95;}"
-        /* Cố định chiều cao tuyệt đối cho các thẻ môn học để chúng đều tăm tắp, không bị to nhỏ, tràn dòng */
         ".om{"
             "position:relative;overflow:hidden;border-radius:18px;padding:1.2rem;"
             "height:210px;display:flex;flex-direction:column;justify-content:space-between;"
