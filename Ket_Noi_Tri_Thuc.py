@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Sửa lỗi Biểu tượng Tiếng Anh + Giao diện Cân Đối Tuyệt Đối
+Phiên bản Sửa lỗi Cú pháp CSS + Giao diện Cân Đối Tuyệt Đối
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -458,7 +458,6 @@ CHU_DE_GIAO_DIEN = {
     "vatly": {"icon": "🔬", "ten": "Vật lý", "sang": ("#1E1B4B", "#4C1D95", "#7C3AED"), "toi": ("#0F0A2E", "#2E1065", "#5B21B6"), "nhan": "#FACC15", "chinh": "#7C3AED", "khau_hieu": "Khám phá thế giới", "ky_hieu": ["⚡", "🔭"], "loi_nhan": ["Tuyệt vời!"]},
     "hoa": {"icon": "🧪", "ten": "Hóa học", "sang": ("#064E3B", "#047857", "#0D9488"), "toi": ("#022C22", "#065F46", "#115E59"), "nhan": "#A3E635", "chinh": "#059669", "khau_hieu": "Thế giới nguyên tử", "ky_hieu": ["⚛", "H₂O"], "loi_nhan": ["Cẩn thận thí nghiệm!"]},
     "van": {"icon": "📖", "ten": "Ngữ văn", "sang": ("#881337", "#BE123C", "#C2410C"), "toi": ("#4C0519", "#881337", "#9A3412"), "nhan": "#FDE68A", "chinh": "#E11D48", "khau_hieu": "Chân trời sách", "ky_hieu": ["✒️", "🌸"], "loi_nhan": ["Đọc sách mỗi ngày!"]},
-    # Sử dụng biểu tượng "🔤" (chữ cái) thay cho cờ Anh (🇬🇧) để tránh lỗi font chữ/hiển thị thành chữ "GB" trên Windows và các thiết bị khác
     "anh": {"icon": "🔤", "ten": "Môn Tiếng Anh", "sang": ("#0F766E", "#0D9488", "#14B8A6"), "toi": ("#042F2E", "#115E59", "#0F766E"), "nhan": "#FDE047", "chinh": "#0D9488", "khau_hieu": "Global Success – Chinh phục ngoại ngữ toàn cầu", "ky_hieu": ["abc", "🎧"], "loi_nhan": ["Practice makes perfect!"]},
     "home": {"icon": "🎓", "ten": "Trang chủ", "sang": ("#3730A3", "#6D28D9", "#DB2777"), "toi": ("#1E1B4B", "#4C1D95", "#831843"), "nhan": "#FDE047", "chinh": "#6D28D9", "khau_hieu": "Kết nối tri thức", "ky_hieu": ["🎓"], "loi_nhan": ["Chào mừng!"]},
     "search": {"icon": "🔍", "ten": "Tìm kiếm", "sang": ("#0C4A6E", "#0369A1", "#0E7490"), "toi": ("#082F49", "#0C4A6E", "#164E63"), "nhan": "#FDE047", "chinh": "#0369A1", "khau_hieu": "Tra cứu", "ky_hieu": ["🔎"], "loi_nhan": ["Tìm kiếm nhanh chóng!"]},
@@ -508,7 +507,6 @@ def css_giao_dien_chung():
         "color:#1F2937;margin-bottom:.4rem;}"
         ".hb-tieu-de{margin:0;font-size:2rem;font-weight:800;line-height:1.15;color:#FFFFFF !important;}"
         ".hb-phu{margin:.3rem 0 0;font-size:1rem;color:#FFFFFF !important;opacity:.95;}"
-        /* Cố định chiều cao tuyệt đối và canh đều flex cho các thẻ môn học để chúng đều tăm tắp, không bị to nhỏ, tràn dòng */
         ".om{"
             "position:relative;overflow:hidden;border-radius:18px;padding:1.2rem;"
             "height:210px;display:flex;flex-direction:column;justify-content:space-between;"
@@ -601,4 +599,4 @@ elif che_do == "📖 Học theo chuyên đề":
         st.markdown(f"<div style='padding:1rem;background:#EFF6FF;border-left:6px solid #2563EB;border-radius:10px;'><b>Lý thuyết:</b><br>{bai_dict[bai].get('ly_thuyet','')}</div>", unsafe_allow_html=True)
 
 else:
-    st.write(f"Đang hiển thị chế độ: {che_do}")
+    st.write(f"Di chuyển đến chức năng: {che_do}")
