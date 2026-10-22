@@ -910,4 +910,6 @@ CHU_DE_GIAO_DIEN = {
         "sang": ("#3730A3", "#6D28D9", "#DB2777"),
         "toi": ("#1E1B4B", "#4C1D95", "#831843"),
         "nhan": "#FDE047", "chinh": "#6D28D9",
-        "khau_hieu": "Kết nối tri thức với cuộc sống · Chương trình GDPT
+    "khau_hieu": "Kết nối tri thức với cuộc sống · Chương trình GDPT",
+    # các trường khác...
+}
