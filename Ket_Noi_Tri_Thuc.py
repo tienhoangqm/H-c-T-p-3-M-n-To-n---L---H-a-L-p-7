@@ -27,6 +27,7 @@ import os
 import hashlib
 import threading
 import hmac
+import html
 import json
 from collections import OrderedDict, deque
 
@@ -983,6 +984,84 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
+# ==================== BANNER GIA SƯ AI ====================
+def tao_banner_gia_su(che_do_toi, bai_hien_tai="", ai_san_sang=True, co_anh=True, co_mic=True):
+    """Tạo HTML cho banner 'Gia sư AI 24/7'. Muốn đổi màu, sửa NEN/BONG bên dưới;
+    muốn đổi linh vật, sửa LINH_VAT."""
+    LINH_VAT = "🦉"
+    if che_do_toi:
+        NEN = "linear-gradient(135deg, #312E81 0%, #6D28D9 55%, #9D174D 100%)"
+        BONG = "0 10px 28px rgba(0,0,0,0.45)"
+    else:
+        NEN = "linear-gradient(135deg, #4F46E5 0%, #7C3AED 55%, #EC4899 100%)"
+        BONG = "0 10px 28px rgba(124,58,237,0.30)"
+
+    if ai_san_sang:
+        trang_thai, mau_cham, hieu_ung = "Sẵn sàng trả lời", "#34D399", "gs-pulse 1.8s infinite"
+    else:
+        trang_thai, mau_cham, hieu_ung = "Đang tạm nghỉ", "#FBBF24", "none"
+
+    the_tinh_nang = ["📚 Bám sát sách Kết nối tri thức", "🪜 Gợi ý từng bước"]
+    if co_anh:
+        the_tinh_nang.append("📸 Gửi ảnh đề bài")
+    if co_mic:
+        the_tinh_nang.append("🎤 Hỏi bằng giọng nói")
+    chips = "".join(f'<span class="gs-chip">{t}</span>' for t in the_tinh_nang)
+
+    dong_bai = ""
+    if bai_hien_tai:
+        dong_bai = f'<div class="gs-bai">📖 Em đang học: <b>{html.escape(bai_hien_tai)}</b></div>'
+
+    css = (
+        "<style>"
+        ".gs-banner{position:relative;overflow:hidden;display:flex;align-items:center;gap:1rem;"
+        "flex-wrap:wrap;padding:1.15rem 1.3rem;margin:.4rem 0 1.1rem;border-radius:18px;"
+        f"background:{NEN};box-shadow:{BONG};color:#fff;}}"
+        ".gs-banner::before,.gs-banner::after{content:'';position:absolute;border-radius:50%;"
+        "background:rgba(255,255,255,.12);pointer-events:none;}"
+        ".gs-banner::before{width:180px;height:180px;right:-50px;top:-70px;}"
+        ".gs-banner::after{width:110px;height:110px;right:90px;bottom:-60px;}"
+        ".gs-avatar{position:relative;z-index:1;flex:0 0 64px;width:64px;height:64px;border-radius:50%;"
+        "display:flex;align-items:center;justify-content:center;font-size:2.1rem;"
+        "background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.5);"
+        "animation:gs-float 3s ease-in-out infinite;}"
+        ".gs-noi-dung{position:relative;z-index:1;flex:1 1 260px;min-width:0;}"
+        ".gs-tieu-de{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin:0;"
+        "font-size:1.5rem;font-weight:800;line-height:1.25;color:#fff !important;}"
+        ".gs-247{font-size:.8rem;font-weight:800;padding:2px 9px;border-radius:999px;"
+        "background:#FDE047;color:#4C1D95;}"
+        ".gs-phu{margin:.3rem 0 .6rem;font-size:.95rem;color:#F5F3FF !important;opacity:.95;}"
+        ".gs-chips{display:flex;flex-wrap:wrap;gap:.4rem;}"
+        ".gs-chip{font-size:.8rem;padding:3px 10px;border-radius:999px;white-space:nowrap;"
+        "background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);}"
+        ".gs-bai{margin-top:.6rem;font-size:.85rem;padding:4px 10px;border-radius:6px;"
+        "background:rgba(255,255,255,.14);border-left:3px solid #FDE047;}"
+        ".gs-trang-thai{position:relative;z-index:1;display:inline-flex;align-items:center;gap:.45rem;"
+        "padding:6px 12px;border-radius:999px;font-size:.85rem;font-weight:600;white-space:nowrap;"
+        "background:rgba(15,23,42,.28);}"
+        f".gs-cham{{width:10px;height:10px;border-radius:50%;background:{mau_cham};animation:{hieu_ung};}}"
+        "@keyframes gs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}"
+        "@keyframes gs-pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}"
+        "70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}"
+        "@media (max-width:640px){.gs-tieu-de{font-size:1.2rem}"
+        ".gs-avatar{flex-basis:52px;width:52px;height:52px;font-size:1.7rem}}"
+        "@media (prefers-reduced-motion:reduce){.gs-avatar,.gs-cham{animation:none}}"
+        "</style>"
+    )
+    noi_dung = (
+        '<div class="gs-banner">'
+        f'<div class="gs-avatar">{LINH_VAT}</div>'
+        '<div class="gs-noi-dung">'
+        '<p class="gs-tieu-de">Gia sư AI <span class="gs-247">24/7</span></p>'
+        '<p class="gs-phu">Em cứ hỏi nhé! Thầy cô AI sẽ gợi mở từng bước để em tự tìm ra đáp án.</p>'
+        f'<div class="gs-chips">{chips}</div>'
+        f'{dong_bai}'
+        '</div>'
+        f'<div class="gs-trang-thai"><span class="gs-cham"></span>{trang_thai}</div>'
+        '</div>'
+    )
+    return css + noi_dung
+
 # ==================== HIỂN THỊ PHÒNG THÍ NGHIỆM & BÀI HỌC ====================
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
     if mon_hien_tai == "📖 Môn Ngữ Văn":
@@ -1517,7 +1596,16 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
 # ==================== KHU VỰC GIA SƯ AI ====================
 if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "🎪 Phòng thí nghiệm ảo"]:
     st.divider()
-    st.header("💬 Gia sư AI 24/7")
+    st.markdown(
+        tao_banner_gia_su(
+            che_do_toi=dark_mode,
+            bai_hien_tai=bai_dang_hoc,
+            ai_san_sang=bool(HAS_GENAI and GEMINI_KEYS),
+            co_anh=HAS_PIL,
+            co_mic=HAS_MIC,
+        ),
+        unsafe_allow_html=True
+    )
 
     # [VÁ 2 – mục 10] Gia sư mặc định theo môn đang học/đang thi
     DS_MON_AI = ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"]
