@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Hoàn Chỉnh: Giao diện Sắc Nét, Không Lỗi Biến, Đầy Đủ Toán, Lý, Hóa, Văn, Anh
+Phiên bản Khởi tạo Biến An Toàn + Giao diện Cân Đối Tuyệt Đối
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -235,185 +235,6 @@ def thanh_tich_mon(mon):
         return 0, None
     return len(ds), sum(x["diem"] for x in ds) / len(ds)
 
-def lam_sach_van_ban_doc(text):
-    s = str(text)
-    s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1 phần \2', s)
-    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ').replace('^2', ' bình phương ').replace('^3', ' lập phương ')
-    s = re.sub(r'[$*#_`~\\{}]', ' ', s)
-    return re.sub(r'\s+', ' ', s).strip()
-
-def doc_to_an_toan(text, autoplay=True):
-    if not HAS_TTS or not text:
-        return
-    try:
-        clean_text = lam_sach_van_ban_doc(text)
-        if clean_text:
-            afp = io.BytesIO()
-            gTTS(text=clean_text, lang="vi").write_to_fp(afp)
-            afp.seek(0)
-            st.audio(afp, format="audio/mp3", autoplay=autoplay)
-    except Exception:
-        pass
-
-def trich_xuat_word_docx(file_bytes):
-    try:
-        with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
-            xml_content = z.read("word/document.xml")
-        tree = ET.fromstring(xml_content)
-        ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-        return "\n".join(["".join([t.text for t in p.iter(f"{ns}t") if t.text]) for p in tree.iter(f"{ns}p") if any(t.text for t in p.iter(f"{ns}t"))])
-    except Exception as e:
-        return f"[Lỗi đọc file Word: {e}]"
-
-def ghi_log_loi(nguon, loi):
-    try:
-        thong_bao = str(loi)
-        for k in GEMINI_KEYS + [DOLA_KEY]:
-            if k:
-                thong_bao = thong_bao.replace(k, "***")
-        print(f"[LỖI] {nguon}: {type(loi).__name__}: {thong_bao[:500]}", flush=True)
-    except Exception:
-        pass
-
-def goi_dola_toi_uu(cau_hoi):
-    if not DOLA_ENDPOINT or not DOLA_KEY:
-        return None
-    try:
-        phan_hoi = requests.post(
-            DOLA_ENDPOINT,
-            headers={"Authorization": f"Bearer {DOLA_KEY}", "X-Project-Quota-Tier": DOLA_PROJECT_TIER},
-            json={"cau_hoi": cau_hoi, "chuong_trinh": "ket_noi_tri_thuc_lop7", "che_do": "chuan_sgk"},
-            timeout=4.0
-        )
-        if phan_hoi.status_code == 200:
-            return phan_hoi.json().get("noi_dung_chuan", "").strip() or None
-        return None
-    except Exception:
-        return None
-
-MODEL_UU_TIEN = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
-TU_KHOA_MODEL_LOAI_TRU = ("tts", "image", "live", "embedding", "transcribe", "omni", "banana", "robotics", "audio")
-
-@st.cache_resource(show_spinner=False)
-def lay_client_gemini(api_key):
-    return genai.Client(api_key=api_key)
-
-@st.cache_resource(ttl=3600, show_spinner=False)
-def lay_ds_model_kha_dung(api_key):
-    try:
-        client = lay_client_gemini(api_key)
-        ds_hien_co = []
-        for m in client.models.list():
-            ten = (getattr(m, "name", "") or "").replace("models/", "")
-            if "gemini" not in ten or any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
-                continue
-            hanh_dong = getattr(m, "supported_actions", None) or []
-            if hanh_dong and "generateContent" not in hanh_dong:
-                continue
-            ds_hien_co.append(ten)
-        if ds_hien_co:
-            kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
-            kq += [m for m in ds_hien_co if m not in MODEL_UU_TIEN]
-            return kq
-    except Exception as e:
-        ghi_log_loi("Liệt kê model Gemini", e)
-    return list(MODEL_UU_TIEN)
-
-def chuyen_lich_su_gemini(history):
-    ds = []
-    for h in history or []:
-        cac_phan = [types.Part.from_text(text=str(p)) for p in h.get("parts", []) if str(p).strip()]
-        if cac_phan:
-            ds.append(types.Content(role=h["role"], parts=cac_phan))
-    return ds
-
-def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=False):
-    if not HAS_GENAI:
-        raise RuntimeError("Server chưa cài thư viện google-genai.")
-    if not GEMINI_KEYS:
-        raise RuntimeError("Chưa cấu hình GEMINI_API_KEY.")
-    if "key_index" not in st.session_state:
-        st.session_state["key_index"] = 0
-    so_luong_key = len(GEMINI_KEYS)
-    cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction, response_mime_type="application/json") if tra_ve_json else types.GenerateContentConfig(system_instruction=system_instruction)
-    lich_su = chuyen_lich_su_gemini(history) if history is not None else None
-    last_err = None
-    for k_offset in range(so_luong_key):
-        idx = (st.session_state["key_index"] + k_offset) % so_luong_key
-        current_key = GEMINI_KEYS[idx]
-        client = lay_client_gemini(current_key)
-        ds_models = lay_ds_model_kha_dung(current_key)
-        for ten_m in ds_models:
-            for attempt in range(2):
-                try:
-                    if lich_su is not None:
-                        chat_s = client.chats.create(model=ten_m, config=cau_hinh, history=lich_su)
-                        txt = chat_s.send_message(payload).text
-                    else:
-                        txt = client.models.generate_content(model=ten_m, contents=payload, config=cau_hinh).text
-                    if not txt:
-                        raise RuntimeError("Model trả về phản hồi rỗng.")
-                    st.session_state["key_index"] = idx
-                    return txt
-                except genai_errors.APIError as e:
-                    last_err = e
-                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
-                    if getattr(e, "code", None) == 429 and attempt == 0:
-                        time.sleep(1.0)
-                        continue
-                    break
-                except Exception as e:
-                    last_err = e
-                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
-                    break
-    raise last_err or RuntimeError("Không có model Gemini khả dụng.")
-
-def tach_json_tu_van_ban(van_ban):
-    s = str(van_ban).strip()
-    s = re.sub(r'^```(?:json)?\s*|\s*```$', '', s)
-    dau, cuoi = s.find("{"), s.rfind("}")
-    if dau == -1 or cuoi <= dau:
-        raise ValueError("Không tìm thấy dữ liệu JSON trong phản hồi của AI.")
-    return json.loads(s[dau:cuoi + 1])
-
-def chuan_hoa_bai_hoc(du_lieu):
-    if not isinstance(du_lieu, dict):
-        raise ValueError("Dữ liệu phải là một đối tượng (dictionary).")
-    canh_bao = []
-    bai = {"ly_thuyet": str(du_lieu.get("ly_thuyet", "")).strip(), "vi_du": str(du_lieu.get("vi_du", "")).strip(), "cau_hoi": [], "bt_co_ban": [], "bt_nang_cao": []}
-    if not bai["ly_thuyet"]:
-        canh_bao.append("Thiếu phần lý thuyết.")
-    for i, ch in enumerate(du_lieu.get("cau_hoi") or [], 1):
-        if not isinstance(ch, dict):
-            canh_bao.append(f"Câu trắc nghiệm {i}: sai định dạng, đã bỏ qua.")
-            continue
-        nd = str(ch.get("nd", "")).strip()
-        da = [str(x).strip() for x in (ch.get("da") or []) if str(x).strip()]
-        try:
-            d = int(ch.get("d", -1))
-        except (TypeError, ValueError):
-            d = -1
-        if not nd or len(da) < 2 or not (0 <= d < len(da)) or len(set(da)) != len(da):
-            canh_bao.append(f"Câu trắc nghiệm {i}: thiếu đề, phương án hoặc sai đáp án.")
-            continue
-        cau = {"nd": nd, "da": da, "d": d}
-        if str(ch.get("gt", "")).strip():
-            cau["gt"] = str(ch["gt"]).strip()
-        bai["cau_hoi"].append(cau)
-    for nhom in ("bt_co_ban", "bt_nang_cao"):
-        for i, bt in enumerate(du_lieu.get(nhom) or [], 1):
-            if not isinstance(bt, dict) or not str(bt.get("de", "")).strip():
-                continue
-            dd = bt.get("dd", [])
-            if isinstance(dd, (str, int, float)):
-                dd = [dd]
-            dd = [str(x).strip() for x in dd if str(x).strip()]
-            bai_tap = {"de": str(bt["de"]).strip(), "dd": dd or [""], "lg": str(bt.get("lg", "")).strip()}
-            if bt.get("kieu") == "tu_luan":
-                bai_tap["kieu"] = "tu_luan"
-            bai[nhom].append(bai_tap)
-    return bai, canh_bao
-
 try:
     from data_toan import TOAN
 except ImportError:
@@ -437,8 +258,6 @@ VAN_DEFAULT = {
             "Văn bản 1: Bầy chim chìa vôi (Nguyễn Quang Thiều)": {
                 "ly_thuyet": "Truyện kể về hai anh em Mon và Mên lo lắng cho bầy chim chìa vôi non.",
                 "cau_hoi": [{"nd": "Truyện 'Bầy chim chìa vôi' là của tác giả nào?", "da": ["Đoàn Giỏi", "Nguyễn Quang Thiều", "Võ Quảng"], "d": 1}],
-                "bt_co_ban": [{"de": "Chi tiết nào cho thấy sự lo lắng?", "dd": ["Thao thức giữa đêm"], "lg": "Chú ý hành động thao thức."}],
-                "bt_nang_cao": [{"de": "Nhận xét tính cách Mon và Mên?", "dd": ["Nhân hậu, yêu thương loài vật"], "lg": "Tấm lòng trong sáng."}]
             }
         }
     }
@@ -570,7 +389,7 @@ with st.sidebar:
     if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra"]:
         mon = st.radio("👉 Chọn môn học:", list(DATABASE.keys()), key="mon_main")
     else:
-        mon = che_do
+        mon = list(DATABASE.keys())[0]  # Khởi tạo giá trị mặc định an toàn cho biến mon
 
 st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
 
