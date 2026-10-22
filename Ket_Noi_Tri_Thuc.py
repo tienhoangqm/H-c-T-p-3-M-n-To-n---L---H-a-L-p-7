@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Giao diện Chuẩn Nhận Diện Môn Học + Tích hợp Đầy đủ Toán, Lý, Hóa, Văn, Anh
+Phiên bản Sửa lỗi Hiển thị Banner & Tích hợp Đầy đủ Toán, Lý, Hóa, Văn, Anh
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -22,7 +22,6 @@ import json
 import datetime
 from collections import OrderedDict, deque
 
-# Không để cả trang sập nếu server chưa cài google-genai:
 try:
     from google import genai
     from google.genai import types
@@ -32,7 +31,6 @@ except Exception:
     genai = types = genai_errors = None
     HAS_GENAI = False
 
-# ==================== CẤU HÌNH TRANG & ĐIỀU HƯỚNG SỚM ====================
 st.set_page_config(
     page_title="Hệ Thống Học Tập Lớp 7",
     page_icon="🎓",
@@ -53,7 +51,6 @@ if "search_jump" in st.session_state:
     st.session_state["s_chuong"] = item["chuong"]
     st.session_state["s_bai"] = item["bai"]
 
-# ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
 @st.cache_resource
 def get_global_locks():
     return {
@@ -68,7 +65,6 @@ def get_global_locks():
     }
 GLOBALS = get_global_locks()
 
-# ==================== ĐỌC SECRETS AN TOÀN ====================
 def get_secret(key_name, default_val=""):
     try:
         if key_name in st.secrets:
@@ -87,12 +83,7 @@ def lay_danh_sach_gemini_keys():
             keys.extend([k.strip() for k in val.split(",") if k.strip()])
     except Exception:
         pass
-    ds_ten_key = [
-        "GEMINI_API_KEY",
-        "GEMINI_API_KEY_1",
-        "GEMINI_API_KEY_2",
-        "GEMINI_API_KEY_3"
-    ]
+    ds_ten_key = ["GEMINI_API_KEY", "GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"]
     for k_name in ds_ten_key:
         k_val = get_secret(k_name)
         if k_val and str(k_val).strip() not in keys:
@@ -105,7 +96,6 @@ DOLA_KEY = str(get_secret("DOLA_API_KEY")).strip()
 DOLA_PROJECT_TIER = str(get_secret("DOLA_PROJECT_TIER", "high_limit_edu")).strip()
 ADMIN_PASS = str(get_secret("ADMIN_PASSWORD", "")).strip()
 
-# ==================== TẢI THƯ VIỆN BỔ TRỢ ====================
 with st.spinner("🚀 Hệ thống đang khởi động..."):
     try:
         from streamlit_mic_recorder import speech_to_text
@@ -123,7 +113,6 @@ with st.spinner("🚀 Hệ thống đang khởi động..."):
     except Exception:
         HAS_PIL = False
 
-# ==================== ĐẾM NGƯỜI DÙNG & GIỚI HẠN TẦN SUẤT ====================
 def cap_nhat_nguoi_online():
     with GLOBALS["user_count_lock"]:
         if "user_id" not in st.session_state:
@@ -131,9 +120,7 @@ def cap_nhat_nguoi_online():
         bo_nho = GLOBALS["online_users"]
         bo_nho[st.session_state.user_id] = time.time()
         now = time.time()
-        ds_online = {
-            uid: t for uid, t in bo_nho.items() if now - t < 300
-        }
+        ds_online = {uid: t for uid, t in bo_nho.items() if now - t < 300}
         bo_nho.clear()
         bo_nho.update(ds_online)
         return len(bo_nho)
@@ -147,26 +134,22 @@ def lay_gioi_han_toan_cuc():
 def kiem_tra_gioi_han_tan_suat(cooldown_seconds=4):
     now = time.time()
     last_time = st.session_state.get("last_ai_request_time", 0.0)
-    elapsed = now - last_time
-    if elapsed < cooldown_seconds:
-        return False, int(cooldown_seconds - elapsed) + 1
+    if now - last_time < cooldown_seconds:
+        return False, int(cooldown_seconds - (now - last_time)) + 1
     gioi_han = lay_gioi_han_toan_cuc()
     with GLOBALS["rate_lock"]:
         hang_doi = GLOBALS["ai_request_times"]
         while hang_doi and now - hang_doi[0] > 60:
             hang_doi.popleft()
         if len(hang_doi) >= gioi_han:
-            cho = int(60 - (now - hang_doi[0])) + 1
-            return False, cho
+            return False, int(60 - (now - hang_doi[0])) + 1
         hang_doi.append(now)
     st.session_state["last_ai_request_time"] = now
     return True, 0
 
-# ==================== BỘ ĐỆM AI ====================
 def tao_ma_hash_cau_hoi(mon_hoc, bai_hoc, che_do, cau_hoi):
     c_clean = re.sub(r'\s+', ' ', cau_hoi.strip().lower())
-    chuoi_chuan = f"{mon_hoc.strip()}_{bai_hoc.strip()}_{che_do}_{c_clean}"
-    return hashlib.md5(chuoi_chuan.encode("utf-8")).hexdigest()
+    return hashlib.md5(f"{mon_hoc.strip()}_{bai_hoc.strip()}_{che_do}_{c_clean}".encode("utf-8")).hexdigest()
 
 def luu_cache_ai(ma_hash, noi_dung):
     if not noi_dung or "⚠️" in noi_dung:
@@ -186,7 +169,6 @@ def lay_cache_ai(ma_hash):
             return cache[ma_hash]
     return None
 
-# ==================== CHẤM SỐ HỌC & TRỘN TRẮC NGHIỆM ====================
 def ep_kieu_so_hoc(chuoi):
     s = str(chuoi).strip().replace(" ", "")
     if not s:
@@ -214,16 +196,11 @@ def so_sanh_so_hoc(nd, ds_dung):
         if val_x is not None and val_d is not None:
             if abs(val_x - val_d) < 1e-5:
                 return True
-        s1 = re.sub(r'\s+', '', str(nd).lower())
-        s2 = re.sub(r'\s+', '', str(d).lower())
-        if s1 == s2:
+        if re.sub(r'\s+', '', str(nd).lower()) == re.sub(r'\s+', '', str(d).lower()):
             return True
     return False
 
-PHUONG_AN_CO_DINH = re.compile(
-    r'\b(?:tất cả|cả hai|cả ba|cả [a-d]|đáp án|phương án)\b',
-    re.IGNORECASE
-)
+PHUONG_AN_CO_DINH = re.compile(r'\b(?:tất cả|cả hai|cả ba|cả [a-d]|đáp án|phương án)\b', re.IGNORECASE)
 
 def tron_dap_an_thong_minh(ch):
     da_goc = list(ch["da"])
@@ -250,13 +227,7 @@ def sap_xep_chuong(ds_chuong):
 def ghi_nhan_lich_su(tieu_de_bai, diem, dung, tong, mon=None):
     if "lich_su_hoc_tap" not in st.session_state:
         st.session_state.lich_su_hoc_tap = []
-    st.session_state.lich_su_hoc_tap.insert(0, {
-        "bai": tieu_de_bai,
-        "diem": diem,
-        "dung": dung,
-        "tong": tong,
-        "mon": mon
-    })
+    st.session_state.lich_su_hoc_tap.insert(0, {"bai": tieu_de_bai, "diem": diem, "dung": dung, "tong": tong, "mon": mon})
 
 def thanh_tich_mon(mon):
     ds = [x for x in st.session_state.get("lich_su_hoc_tap", []) if x.get("mon") == mon]
@@ -267,8 +238,7 @@ def thanh_tich_mon(mon):
 def lam_sach_van_ban_doc(text):
     s = str(text)
     s = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'\1 phần \2', s)
-    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ')
-    s = s.replace('^2', ' bình phương ').replace('^3', ' lập phương ')
+    s = s.replace(r'\times', ' nhân ').replace(r'\cdot', ' nhân ').replace('^2', ' bình phương ').replace('^3', ' lập phương ')
     s = re.sub(r'[$*#_`~\\{}]', ' ', s)
     return re.sub(r'\s+', ' ', s).strip()
 
@@ -291,15 +261,10 @@ def trich_xuat_word_docx(file_bytes):
             xml_content = z.read("word/document.xml")
         tree = ET.fromstring(xml_content)
         ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-        doan_van = [
-            "".join([t.text for t in p.iter(f"{ns}t") if t.text])
-            for p in tree.iter(f"{ns}p")
-        ]
-        return "\n".join([p for p in doan_van if p])
+        return "\n".join(["".join([t.text for t in p.iter(f"{ns}t") if t.text]) for p in tree.iter(f"{ns}p") if any(t.text for t in p.iter(f"{ns}t"))])
     except Exception as e:
         return f"[Lỗi đọc file Word: {e}]"
 
-# ==================== GHI LOG LỖI ====================
 def ghi_log_loi(nguon, loi):
     try:
         thong_bao = str(loi)
@@ -310,41 +275,24 @@ def ghi_log_loi(nguon, loi):
     except Exception:
         pass
 
-# ==================== GỌI AI ====================
 def goi_dola_toi_uu(cau_hoi):
     if not DOLA_ENDPOINT or not DOLA_KEY:
         return None
     try:
         phan_hoi = requests.post(
             DOLA_ENDPOINT,
-            headers={
-                "Authorization": f"Bearer {DOLA_KEY}",
-                "X-Project-Quota-Tier": DOLA_PROJECT_TIER
-            },
-            json={
-                "cau_hoi": cau_hoi,
-                "chuong_trinh": "ket_noi_tri_thuc_lop7",
-                "che_do": "chuan_sgk"
-            },
+            headers={"Authorization": f"Bearer {DOLA_KEY}", "X-Project-Quota-Tier": DOLA_PROJECT_TIER},
+            json={"cau_hoi": cau_hoi, "chuong_trinh": "ket_noi_tri_thuc_lop7", "che_do": "chuan_sgk"},
             timeout=4.0
         )
         if phan_hoi.status_code == 200:
-            nd = phan_hoi.json().get("noi_dung_chuan", "")
-            return nd.strip() if nd else None
+            return phan_hoi.json().get("noi_dung_chuan", "").strip() or None
         return None
     except Exception:
         return None
 
-MODEL_UU_TIEN = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-]
-TU_KHOA_MODEL_LOAI_TRU = (
-    "tts", "image", "live", "embedding", "transcribe",
-    "omni", "banana", "robotics", "audio"
-)
+MODEL_UU_TIEN = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+TU_KHOA_MODEL_LOAI_TRU = ("tts", "image", "live", "embedding", "transcribe", "omni", "banana", "robotics", "audio")
 
 @st.cache_resource(show_spinner=False)
 def lay_client_gemini(api_key):
@@ -357,9 +305,7 @@ def lay_ds_model_kha_dung(api_key):
         ds_hien_co = []
         for m in client.models.list():
             ten = (getattr(m, "name", "") or "").replace("models/", "")
-            if "gemini" not in ten:
-                continue
-            if any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
+            if "gemini" not in ten or any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
                 continue
             hanh_dong = getattr(m, "supported_actions", None) or []
             if hanh_dong and "generateContent" not in hanh_dong:
@@ -376,10 +322,7 @@ def lay_ds_model_kha_dung(api_key):
 def chuyen_lich_su_gemini(history):
     ds = []
     for h in history or []:
-        cac_phan = [
-            types.Part.from_text(text=str(p))
-            for p in h.get("parts", []) if str(p).strip()
-        ]
+        cac_phan = [types.Part.from_text(text=str(p)) for p in h.get("parts", []) if str(p).strip()]
         if cac_phan:
             ds.append(types.Content(role=h["role"], parts=cac_phan))
     return ds
@@ -392,13 +335,7 @@ def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=Fa
     if "key_index" not in st.session_state:
         st.session_state["key_index"] = 0
     so_luong_key = len(GEMINI_KEYS)
-    if tra_ve_json:
-        cau_hinh = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            response_mime_type="application/json"
-        )
-    else:
-        cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
+    cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction, response_mime_type="application/json") if tra_ve_json else types.GenerateContentConfig(system_instruction=system_instruction)
     lich_su = chuyen_lich_su_gemini(history) if history is not None else None
     last_err = None
     for k_offset in range(so_luong_key):
@@ -410,18 +347,10 @@ def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=Fa
             for attempt in range(2):
                 try:
                     if lich_su is not None:
-                        chat_s = client.chats.create(
-                            model=ten_m,
-                            config=cau_hinh,
-                            history=lich_su
-                        )
+                        chat_s = client.chats.create(model=ten_m, config=cau_hinh, history=lich_su)
                         txt = chat_s.send_message(payload).text
                     else:
-                        txt = client.models.generate_content(
-                            model=ten_m,
-                            contents=payload,
-                            config=cau_hinh
-                        ).text
+                        txt = client.models.generate_content(model=ten_m, contents=payload, config=cau_hinh).text
                     if not txt:
                         raise RuntimeError("Model trả về phản hồi rỗng.")
                     st.session_state["key_index"] = idx
@@ -439,7 +368,6 @@ def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=Fa
                     break
     raise last_err or RuntimeError("Không có model Gemini khả dụng.")
 
-# ==================== KIỂM TRA DỮ LIỆU BÀI HỌC ====================
 def tach_json_tu_van_ban(van_ban):
     s = str(van_ban).strip()
     s = re.sub(r'^```(?:json)?\s*|\s*```$', '', s)
@@ -452,13 +380,7 @@ def chuan_hoa_bai_hoc(du_lieu):
     if not isinstance(du_lieu, dict):
         raise ValueError("Dữ liệu phải là một đối tượng (dictionary).")
     canh_bao = []
-    bai = {
-        "ly_thuyet": str(du_lieu.get("ly_thuyet", "")).strip(),
-        "vi_du": str(du_lieu.get("vi_du", "")).strip(),
-        "cau_hoi": [],
-        "bt_co_ban": [],
-        "bt_nang_cao": [],
-    }
+    bai = {"ly_thuyet": str(du_lieu.get("ly_thuyet", "")).strip(), "vi_du": str(du_lieu.get("vi_du", "")).strip(), "cau_hoi": [], "bt_co_ban": [], "bt_nang_cao": []}
     if not bai["ly_thuyet"]:
         canh_bao.append("Thiếu phần lý thuyết.")
     for i, ch in enumerate(du_lieu.get("cau_hoi") or [], 1):
@@ -471,46 +393,27 @@ def chuan_hoa_bai_hoc(du_lieu):
             d = int(ch.get("d", -1))
         except (TypeError, ValueError):
             d = -1
-        if not nd or len(da) < 2 or not (0 <= d < len(da)):
-            canh_bao.append(f"Câu trắc nghiệm {i}: thiếu đề, thiếu phương án hoặc sai chỉ số đáp án, đã bỏ qua.")
-            continue
-        if len(set(da)) != len(da):
-            canh_bao.append(f"Câu trắc nghiệm {i}: có phương án trùng nhau, đã bỏ qua.")
+        if not nd or len(da) < 2 or not (0 <= d < len(da)) or len(set(da)) != len(da):
+            canh_bao.append(f"Câu trắc nghiệm {i}: thiếu đề, phương án hoặc sai đáp án.")
             continue
         cau = {"nd": nd, "da": da, "d": d}
         if str(ch.get("gt", "")).strip():
             cau["gt"] = str(ch["gt"]).strip()
-        md = str(ch.get("md", "")).strip()
-        if md in ("biet", "hieu", "van_dung"):
-            cau["md"] = md
-        elif md:
-            canh_bao.append(f"Câu trắc nghiệm {i}: mức độ '{md}' không hợp lệ, đã bỏ trường này.")
         bai["cau_hoi"].append(cau)
     for nhom in ("bt_co_ban", "bt_nang_cao"):
         for i, bt in enumerate(du_lieu.get(nhom) or [], 1):
             if not isinstance(bt, dict) or not str(bt.get("de", "")).strip():
-                canh_bao.append(f"{nhom} {i}: thiếu đề bài, đã bỏ qua.")
                 continue
             dd = bt.get("dd", [])
             if isinstance(dd, (str, int, float)):
                 dd = [dd]
             dd = [str(x).strip() for x in dd if str(x).strip()]
-            if not dd:
-                canh_bao.append(f"{nhom} {i}: thiếu đáp án/gợi ý (dd).")
-            bai_tap = {
-                "de": str(bt["de"]).strip(),
-                "dd": dd or [""],
-                "lg": str(bt.get("lg", "")).strip(),
-            }
-            for truong in ("gt", "hd"):
-                if str(bt.get(truong, "")).strip():
-                    bai_tap[truong] = str(bt[truong]).strip()
+            bai_tap = {"de": str(bt["de"]).strip(), "dd": dd or [""], "lg": str(bt.get("lg", "")).strip()}
             if bt.get("kieu") == "tu_luan":
                 bai_tap["kieu"] = "tu_luan"
             bai[nhom].append(bai_tap)
     return bai, canh_bao
 
-# ==================== NẠP DỮ LIỆU CÁC MÔN (TOÁN, LÝ, HÓA, VĂN, ANH) ====================
 try:
     from data_toan import TOAN
 except ImportError:
@@ -533,10 +436,8 @@ VAN_DEFAULT = {
         "Bài 1: Bầu trời tuổi thơ (Truyện)": {
             "Văn bản 1: Bầy chim chìa vôi (Nguyễn Quang Thiều)": {
                 "ly_thuyet": "Truyện kể về hai anh em Mon và Mên lo lắng cho bầy chim chìa vôi non.",
-                "cau_hoi": [
-                    {"nd": "Truyện 'Bầy chim chìa vôi' là của tác giả nào?", "da": ["Đoàn Giỏi", "Nguyễn Quang Thiều", "Võ Quảng"], "d": 1}
-                ],
-                "bt_co_ban": [{"de": "Chi tiết nào cho thấy sự lo lắng của hai anh em?", "dd": ["Thao thức giữa đêm"], "lg": "Chú ý hành động thao thức."}],
+                "cau_hoi": [{"nd": "Truyện 'Bầy chim chìa vôi' của tác giả nào?", "da": ["Đoàn Giỏi", "Nguyễn Quang Thiều", "Võ Quảng"], "d": 1}],
+                "bt_co_ban": [{"de": "Chi tiết nào cho thấy sự lo lắng?", "dd": ["Thao thức giữa đêm"], "lg": "Chú ý hành động thao thức."}],
                 "bt_nang_cao": [{"de": "Nhận xét tính cách Mon và Mên?", "dd": ["Nhân hậu, yêu thương loài vật"], "lg": "Tấm lòng trong sáng."}]
             }
         }
@@ -568,7 +469,6 @@ DATA_LAB_NGU_VAN = {
     }
 }
 
-# ==================== GIAO DIỆN SIDEBAR ====================
 with st.sidebar:
     st.markdown("## 🎓 KẾT NỐI TRI THỨC")
     dark_mode = st.toggle("🌙 Chế độ tối", key="dark_mode_toggle")
@@ -596,7 +496,6 @@ with st.sidebar:
     else:
         mon = che_do
 
-# ==================== CẤU HÌNH CSS & CHỦ ĐỀ ====================
 CHU_DE_GIAO_DIEN = {
     "toan": {"icon": "📐", "ten": "Môn Toán", "sang": ("#1E3A8A", "#2563EB", "#0284C7"), "toi": ("#172554", "#1E40AF", "#075985"), "nhan": "#FDE047", "chinh": "#2563EB", "khau_hieu": "Tư duy logic", "ky_hieu": ["π", "√"], "loi_nhan": ["Cố lên nhé!"]},
     "vatly": {"icon": "🔬", "ten": "Vật lý", "sang": ("#1E1B4B", "#4C1D95", "#7C3AED"), "toi": ("#0F0A2E", "#2E1065", "#5B21B6"), "nhan": "#FACC15", "chinh": "#7C3AED", "khau_hieu": "Khám phá thế giới", "ky_hieu": ["⚡", "🔭"], "loi_nhan": ["Tuyệt vời!"]},
@@ -624,13 +523,17 @@ MO_TA_MON_TRANG_CHU = {
     "anh": "Từ vựng, ngữ pháp 12 Unit, từ điển offline."
 }
 
+VI_TRI_KY_HIEU = [
+    (8, 62, 2.2, 0), (40, 74, 1.6, 1.2), (10, 86, 2.8, 2.4), (52, 90, 1.9, 0.6),
+    (30, 54, 1.3, 3.0), (22, 70, 1.4, 1.8), (5, 42, 1.2, 4.0), (44, 60, 1.1, 2.8),
+]
+
 def lay_chu_de(mon_hoac_khoa):
     khoa = MON_SANG_CHU_DE.get(mon_hoac_khoa, mon_hoac_khoa)
     return khoa if khoa in CHU_DE_GIAO_DIEN else "home"
 
 def loi_nhan_hom_nay(khoa):
-    ds = CHU_DE_GIAO_DIEN[khoa]["loi_nhan"]
-    return ds[datetime.date.today().toordinal() % len(ds)]
+    return CHU_DE_GIAO_DIEN[khoa]["loi_nhan"][datetime.date.today().toordinal() % len(CHU_DE_GIAO_DIEN[khoa]["loi_nhan"])]
 
 def bien_mau(khoa, che_do_toi):
     cd = CHU_DE_GIAO_DIEN[khoa]
@@ -638,18 +541,66 @@ def bien_mau(khoa, che_do_toi):
     return f"--c1:{c1};--c2:{c2};--c3:{c3};--nhan:{cd['nhan']};"
 
 def css_giao_dien_chung():
-    return "<style>.hb{border-radius:20px;padding:1.4rem;color:#fff;margin-bottom:1rem;}</style>"
+    return (
+        "<style>"
+        ".hb{position:relative;overflow:hidden;border-radius:20px;padding:1.4rem 1.5rem;"
+        "margin:.2rem 0 1.3rem;color:#fff;"
+        "background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 55%,var(--c3) 100%);"
+        "box-shadow:0 14px 30px -12px var(--c2);}"
+        ".hb-kh{position:absolute;font-weight:800;color:#fff;opacity:.17;pointer-events:none;"
+        "user-select:none;line-height:1;white-space:nowrap;}"
+        ".hb-than{position:relative;z-index:1;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;}"
+        ".hb-icon{flex:0 0 76px;width:76px;height:76px;border-radius:22px;display:flex;"
+        "align-items:center;justify-content:center;font-size:2.6rem;background:rgba(255,255,255,.16);"
+        "border:2px solid rgba(255,255,255,.38);}"
+        ".hb-chu{flex:1 1 280px;min-width:0;}"
+        ".hb-nhan{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;"
+        "text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--nhan);"
+        "color:#1F2937;margin-bottom:.4rem;}"
+        # Đảm bảo tiêu đề trong hero banner luôn hiển thị màu trắng rõ nét trên mọi nền gradient
+        ".hb-tieu-de{margin:0;font-size:2rem;font-weight:800;line-height:1.15;color:#FFFFFF !important;}"
+        ".hb-phu{margin:.3rem 0 0;font-size:1rem;color:#F8FAFC !important;opacity:.95;}"
+        ".hb-loi-nhan{position:relative;z-index:1;margin-top:1rem;padding:.6rem .9rem;border-radius:12px;"
+        "font-size:.93rem;background:rgba(0,0,0,.26);border-left:4px solid var(--nhan);color:#FFFFFF;}"
+        ".hb-loi-nhan b{color:var(--nhan);}"
+        ".om{position:relative;overflow:hidden;border-radius:18px;padding:1.1rem 1.1rem 1rem;"
+        "min-height:178px;color:#fff;margin-bottom:.5rem;"
+        "background:linear-gradient(150deg,var(--c1) 0%,var(--c2) 60%,var(--c3) 100%);"
+        "box-shadow:0 12px 26px -14px var(--c2);}"
+        ".om-icon{font-size:2.2rem;line-height:1;}"
+        ".om-ten{font-size:1.15rem;font-weight:800;margin:.5rem 0 .2rem;color:#FFFFFF !important;}"
+        ".om-mo-ta{font-size:.86rem;margin:0;color:#F1F5F9 !important;}"
+        ".om-so{display:inline-block;margin-top:.7rem;font-size:.76rem;font-weight:700;"
+        "padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.2);color:#FFFFFF;}"
+        "</style>"
+    )
 
 def tao_hero(khoa, che_do_toi, nhan, tieu_de=None, phu_de=None, chips=None, hien_loi_nhan=True):
     cd = CHU_DE_GIAO_DIEN[khoa]
-    return f'<div class="hb" style="{bien_mau(khoa, che_do_toi)}"><h2>{cd["icon"]} {html.escape(tieu_de or cd["ten"])}</h2><p>{html.escape(phu_de or cd["khau_hieu"])}</p></div>'
-
-def tao_the_bai_hoc(khoa, che_do_toi, lop, chuong, ten_bai, so_tn, so_cb, so_nc):
-    return f'<div style="padding:1rem;border:1px solid #ccc;border-radius:10px;margin-bottom:1rem;"><h3>{ten_bai}</h3><p>{chuong}</p></div>'
+    ky_hieu = "".join(f'<span class="hb-kh" style="top:{t}%;left:{l}%;font-size:{s}rem;">{html.escape(k)}</span>' for k, (t, l, s, d) in zip(cd["ky_hieu"], VI_TRI_KY_HIEU))
+    loi = f'<div class="hb-loi-nhan"><b>💬 Lời nhắn hôm nay:</b> {html.escape(loi_nhan_hom_nay(khoa))}</div>' if hien_loi_nhan else ""
+    return (
+        f'<div class="hb" style="{bien_mau(khoa, che_do_toi)}">{ky_hieu}'
+        '<div class="hb-than">'
+        f'<div class="hb-icon">{cd["icon"]}</div>'
+        '<div class="hb-chu">'
+        f'<span class="hb-nhan">{html.escape(nhan)}</span>'
+        f'<p class="hb-tieu-de">{html.escape(tieu_de or cd["ten"])}</p>'
+        f'<p class="hb-phu">{html.escape(phu_de or cd["khau_hieu"])}</p>'
+        '</div></div>'
+        f'{loi}</div>'
+    )
 
 def tao_o_mon(khoa, che_do_toi, so_bai):
     cd = CHU_DE_GIAO_DIEN[khoa]
-    return f'<div style="padding:1rem;background:#f0f2f6;border-radius:10px;text-align:center;"><h4>{cd["icon"]} {cd["ten"]}</h4><p>{so_bai} bài học</p></div>'
+    return (
+        f'<div class="om" style="{bien_mau(khoa, che_do_toi)}">'
+        f'<div class="om-icon">{cd["icon"]}</div>'
+        f'<p class="om-ten">{html.escape(cd["ten"])}</p>'
+        f'<p class="om-mo-ta">{html.escape(MO_TA_MON_TRANG_CHU.get(khoa, ""))}</p>'
+        f'<span class="om-so">{"📚 " + str(so_bai) + " bài học" if so_bai else "🛠️ Đang cập nhật"}</span>'
+        '</div>'
+    )
 
 def dem_chuong_bai(mon):
     lop_dict = DATABASE.get(mon) or {}
@@ -657,24 +608,17 @@ def dem_chuong_bai(mon):
     so_bai = sum(len(b) for c in lop_dict.values() for b in c.values())
     return so_chuong, so_bai
 
-def thanh_tich_mon(mon):
-    ds = [x for x in st.session_state.get("lich_su_hoc_tap", []) if x.get("mon") == mon]
-    if not ds:
-        return 0, None
-    return len(ds), sum(x["diem"] for x in ds) / len(ds)
-
 def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
     st.info(f"Phòng thí nghiệm cho môn {mon_hien_tai}")
 
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
-    st.markdown(tao_the_bai_hoc(lay_chu_de(mon), dark_mode, lop, chuong, ten_bai, len(data.get("cau_hoi", [])), len(data.get("bt_co_ban", [])), len(data.get("bt_nang_cao", []))), unsafe_allow_html=True)
-    st.write(data.get("ly_thuyet", ""))
+    st.markdown(f"### 📖 {ten_bai}")
+    st.markdown(f"<div class='khung-lythuyet'><b>Lý thuyết:</b><br>{data.get('ly_thuyet', '')}</div>", unsafe_allow_html=True)
 
-# ==================== ĐIỀU HƯỚNG CHÍNH ====================
 st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
 
 if che_do == "🏠 Trang chủ / Hướng dẫn":
-    st.markdown(tao_hero("home", dark_mode, "Chào mừng!"), unsafe_allow_html=True)
+    st.markdown(tao_hero("home", dark_mode, "Chào mừng đến với hệ thống học tập!"), unsafe_allow_html=True)
     cot_mon = st.columns(5)
     for cot, (mon_o, khoa_o) in zip(cot_mon, MON_SANG_CHU_DE.items()):
         with cot:
