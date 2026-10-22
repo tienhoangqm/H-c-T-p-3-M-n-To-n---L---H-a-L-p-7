@@ -29,6 +29,7 @@ import threading
 import hmac
 import html
 import json
+import datetime
 from collections import OrderedDict, deque
 
 # [VÁ 2] Không để cả trang sập nếu server chưa cài google-genai:
@@ -49,6 +50,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Bấm ô môn học ở Trang chủ -> mở thẳng chế độ Học theo chuyên đề của môn đó
+if "home_jump" in st.session_state:
+    st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
+    st.session_state["mon_main"] = st.session_state.pop("home_jump")
 
 # [VÁ 2 – mục 6] Gán thẳng giá trị cho các widget chọn Khối/Chương/Bài.
 # Trước đây dùng tham số index=, bị Streamlit bỏ qua khi widget đã có key.
@@ -277,15 +283,23 @@ def sap_xep_chuong(ds_chuong):
         return int(m.group(0)) if m else 999
     return sorted(ds_chuong, key=lay_so)
 
-def ghi_nhan_lich_su(tieu_de_bai, diem, dung, tong):
+def ghi_nhan_lich_su(tieu_de_bai, diem, dung, tong, mon=None):
     if "lich_su_hoc_tap" not in st.session_state:
         st.session_state.lich_su_hoc_tap = []
     st.session_state.lich_su_hoc_tap.insert(0, {
         "bai": tieu_de_bai,
         "diem": diem,
         "dung": dung,
-        "tong": tong
+        "tong": tong,
+        "mon": mon
     })
+
+def thanh_tich_mon(mon):
+    """Số bài đã làm và điểm trung bình của một môn trong phiên học hiện tại."""
+    ds = [x for x in st.session_state.get("lich_su_hoc_tap", []) if x.get("mon") == mon]
+    if not ds:
+        return 0, None
+    return len(ds), sum(x["diem"] for x in ds) / len(ds)
 
 def lam_sach_van_ban_doc(text):
     s = str(text)
@@ -984,6 +998,304 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
+# ==================== BỘ GIAO DIỆN THEO MÔN HỌC ====================
+# Mỗi môn có màu, biểu tượng, ký hiệu trang trí và lời nhắn riêng.
+# Muốn đổi màu một môn: sửa "sang" (chế độ sáng), "toi" (chế độ tối) và "chinh"
+# (màu nút, thẻ chọn, tab). Lời nhắn đổi theo ngày.
+CHU_DE_GIAO_DIEN = {
+    "toan": {
+        "icon": "📐", "ten": "Môn Toán",
+        "sang": ("#1E3A8A", "#2563EB", "#0284C7"),
+        "toi": ("#172554", "#1E40AF", "#075985"),
+        "nhan": "#FDE047", "chinh": "#2563EB",
+        "khau_hieu": "Tư duy logic – Giải mã những con số",
+        "ky_hieu": ["π", "√", "∑", "÷", "×", "∞", "△", "x²"],
+        "loi_nhan": [
+            "Mỗi bài toán khó là một câu đố đang chờ em giải mã!",
+            "Sai một bước không sao – tìm ra vì sao sai là em đã tiến thêm một bước.",
+            "Toán không phải để học thuộc, mà để hiểu và suy luận.",
+            "Kiên nhẫn từng dòng tính, đáp án sẽ tự hiện ra.",
+        ],
+    },
+    "vatly": {
+        "icon": "🔬", "ten": "Vật lý (KHTN)",
+        "sang": ("#1E1B4B", "#4C1D95", "#7C3AED"),
+        "toi": ("#0F0A2E", "#2E1065", "#5B21B6"),
+        "nhan": "#FACC15", "chinh": "#7C3AED",
+        "khau_hieu": "Khám phá quy luật của thế giới quanh em",
+        "ky_hieu": ["⚡", "🔭", "🧲", "💡", "∿", "v = s/t", "🔊", "☀️"],
+        "loi_nhan": [
+            "Mọi hiện tượng quanh em đều có một lời giải thích khoa học.",
+            "Hãy hỏi “Tại sao?” – đó là bước đầu của mọi nhà khoa học.",
+            "Quan sát kĩ, đo cẩn thận, kết luận trung thực.",
+            "Âm thanh, ánh sáng, nam châm… thế giới đang chờ em khám phá!",
+        ],
+    },
+    "hoa": {
+        "icon": "🧪", "ten": "Hóa học (KHTN)",
+        "sang": ("#064E3B", "#047857", "#0D9488"),
+        "toi": ("#022C22", "#065F46", "#115E59"),
+        "nhan": "#A3E635", "chinh": "#059669",
+        "khau_hieu": "Bước vào thế giới của nguyên tử và phân tử",
+        "ky_hieu": ["⚛", "H₂O", "O₂", "CO₂", "⚗️", "🧬", "NaCl", "🔬"],
+        "loi_nhan": [
+            "Mọi vật quanh em đều được tạo nên từ những nguyên tử bé xíu.",
+            "Thí nghiệm hôm nay, phát minh ngày mai!",
+            "Hiểu cấu tạo nguyên tử là nắm chìa khóa của Hóa học.",
+            "An toàn trước, tò mò sau – nhà hóa học nhí luôn cẩn thận.",
+        ],
+    },
+    "van": {
+        "icon": "📖", "ten": "Môn Ngữ văn",
+        "sang": ("#881337", "#BE123C", "#C2410C"),
+        "toi": ("#4C0519", "#881337", "#9A3412"),
+        "nhan": "#FDE68A", "chinh": "#E11D48",
+        "khau_hieu": "Mỗi trang sách mở ra một chân trời",
+        "ky_hieu": ["✒️", "❝", "❞", "📜", "🌸", "Aa", "🍃", "✍️"],
+        "loi_nhan": [
+            "Mỗi trang sách mở ra một chân trời mới.",
+            "Đọc chậm một chút, em sẽ nghe thấy tiếng lòng của nhân vật.",
+            "Viết bằng cả trái tim, em sẽ chạm tới trái tim người đọc.",
+            "Một câu văn hay bắt đầu từ một cảm xúc thật.",
+        ],
+    },
+    "home": {
+        "icon": "🎓", "ten": "Hệ thống học tập lớp 7",
+        "sang": ("#3730A3", "#6D28D9", "#DB2777"),
+        "toi": ("#1E1B4B", "#4C1D95", "#831843"),
+        "nhan": "#FDE047", "chinh": "#6D28D9",
+        "khau_hieu": "Kết nối tri thức với cuộc sống · Chương trình GDPT 2018",
+        "ky_hieu": ["📐", "⚡", "🧪", "📖", "⭐", "🏆", "💡", "🎯"],
+        "loi_nhan": [
+            "Mỗi ngày học một chút, cả năm tiến một đoạn dài!",
+            "Không có câu hỏi nào là ngớ ngẩn – cứ hỏi gia sư AI nhé!",
+            "Học là để hiểu, không phải để sợ điểm.",
+        ],
+    },
+    "search": {
+        "icon": "🔍", "ten": "Tìm kiếm tri thức",
+        "sang": ("#0C4A6E", "#0369A1", "#0E7490"),
+        "toi": ("#082F49", "#0C4A6E", "#164E63"),
+        "nhan": "#FDE047", "chinh": "#0369A1",
+        "khau_hieu": "Gõ tên bài, tác giả hay từ khóa – hệ thống tìm trong tất cả các môn",
+        "ky_hieu": ["🔎", "📚", "🗂️", "💡", "?", "📌", "🧭", "✨"],
+        "loi_nhan": ["Biết cách tìm kiếm là đã đi được nửa đường tới câu trả lời."],
+    },
+    "admin": {
+        "icon": "⚙️", "ten": "Trạm nạp dữ liệu",
+        "sang": ("#1F2937", "#334155", "#475569"),
+        "toi": ("#030712", "#111827", "#1F2937"),
+        "nhan": "#38BDF8", "chinh": "#0284C7",
+        "khau_hieu": "Bóc tách tài liệu bài học thành dữ liệu cho hệ thống",
+        "ky_hieu": ["⚙️", "🗄️", "📄", "🔧", "{ }", "📥", "🤖", "✅"],
+        "loi_nhan": ["Dữ liệu được kiểm tra kĩ – bài học đến tay học sinh mới chuẩn."],
+    },
+}
+
+MON_SANG_CHU_DE = {
+    "📐 Môn Toán": "toan",
+    "🔬 Môn Vật lý (KHTN)": "vatly",
+    "🧪 Môn Hóa học (KHTN)": "hoa",
+    "📖 Môn Ngữ Văn": "van",
+}
+
+MO_TA_MON_TRANG_CHU = {
+    "toan": "Số hữu tỉ, số thực, hình học và biểu thức đại số.",
+    "vatly": "Tốc độ, âm thanh, ánh sáng và từ trường.",
+    "hoa": "Nguyên tử, nguyên tố, phân tử và liên kết.",
+    "van": "Truyện, thơ, tùy bút và kĩ năng viết bài văn.",
+}
+
+# Vị trí các ký hiệu trang trí trong banner: (top %, left %, cỡ chữ rem, độ trễ giây).
+# Đặt ở nửa trên và mép phải để không đè lên dòng lời nhắn ở đáy banner.
+VI_TRI_KY_HIEU = [
+    (8, 62, 2.2, 0), (40, 74, 1.6, 1.2), (10, 86, 2.8, 2.4), (52, 90, 1.9, 0.6),
+    (30, 54, 1.3, 3.0), (22, 70, 1.4, 1.8), (5, 42, 1.2, 4.0), (44, 60, 1.1, 2.8),
+]
+
+def tron_mau(mau, nen, ti_le):
+    """Pha mau với nen theo tỉ lệ (0 = toàn nen, 1 = toàn mau). Trả về mã hex."""
+    a = [int(mau[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(nen[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x * ti_le + y * (1 - ti_le)):02X}" for x, y in zip(a, b))
+
+def lay_chu_de(mon_hoac_khoa):
+    khoa = MON_SANG_CHU_DE.get(mon_hoac_khoa, mon_hoac_khoa)
+    return khoa if khoa in CHU_DE_GIAO_DIEN else "home"
+
+def loi_nhan_hom_nay(khoa):
+    ds = CHU_DE_GIAO_DIEN[khoa]["loi_nhan"]
+    return ds[datetime.date.today().toordinal() % len(ds)]
+
+def bien_mau(khoa, che_do_toi):
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    c1, c2, c3 = cd["toi"] if che_do_toi else cd["sang"]
+    return f"--c1:{c1};--c2:{c2};--c3:{c3};--nhan:{cd['nhan']};"
+
+def css_giao_dien_chung():
+    """CSS dùng chung cho banner, thẻ bài học, dải đề thi và ô môn học."""
+    return (
+        "<style>"
+        # ---- Banner đầu trang ----
+        ".hb{position:relative;overflow:hidden;border-radius:20px;padding:1.4rem 1.5rem;"
+        "margin:.2rem 0 1.3rem;color:#fff;"
+        "background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 55%,var(--c3) 100%);"
+        "box-shadow:0 14px 30px -12px var(--c2);}"
+        ".hb-kh{position:absolute;font-weight:800;color:#fff;opacity:.17;pointer-events:none;"
+        "user-select:none;line-height:1;white-space:nowrap;animation:hb-troi 7s ease-in-out infinite;}"
+        ".hb-than{position:relative;z-index:1;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;}"
+        ".hb-icon{flex:0 0 76px;width:76px;height:76px;border-radius:22px;display:flex;"
+        "align-items:center;justify-content:center;font-size:2.6rem;background:rgba(255,255,255,.16);"
+        "border:2px solid rgba(255,255,255,.38);animation:hb-lac 4s ease-in-out infinite;}"
+        ".hb-chu{flex:1 1 280px;min-width:0;}"
+        ".hb-nhan{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;"
+        "text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--nhan);"
+        "color:#1F2937;margin-bottom:.4rem;}"
+        ".hb-tieu-de{margin:0;font-size:2rem;font-weight:800;line-height:1.15;color:#fff !important;}"
+        ".hb-phu{margin:.3rem 0 0;font-size:1rem;color:rgba(255,255,255,.92) !important;}"
+        ".hb-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.8rem;}"
+        ".hb-chip{font-size:.82rem;font-weight:600;padding:4px 11px;border-radius:999px;"
+        "background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.3);white-space:nowrap;}"
+        ".hb-loi-nhan{position:relative;z-index:1;margin-top:1rem;padding:.6rem .9rem;border-radius:12px;"
+        "font-size:.93rem;background:rgba(0,0,0,.26);border-left:4px solid var(--nhan);}"
+        ".hb-loi-nhan b{color:var(--nhan);}"
+        # ---- Thẻ đầu bài học / dải đề thi ----
+        ".bh{border-radius:16px;padding:1rem 1.2rem;margin:.4rem 0 1rem;"
+        "background:var(--bh-nen);border:1px solid var(--bh-vien);border-left:6px solid var(--bh-c);}"
+        ".bh-duong{font-size:.82rem;color:var(--bh-phu) !important;margin:0 0 .25rem;}"
+        ".bh-tieu-de{font-size:1.35rem;font-weight:800;margin:0 0 .8rem;line-height:1.3;"
+        "color:var(--bh-chu) !important;}"
+        ".bh-o{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;}"
+        ".bh-so{border-radius:12px;padding:.6rem .75rem;background:var(--bh-o);}"
+        ".bh-so .so{font-size:1.5rem;font-weight:800;line-height:1.1;color:var(--bh-c);}"
+        ".bh-so .nhan{font-size:.8rem;color:var(--bh-phu);}"
+        ".bh-loi{margin:0;font-size:.93rem;color:var(--bh-chu) !important;}"
+        # ---- Ô môn học ở Trang chủ ----
+        ".om{position:relative;overflow:hidden;border-radius:18px;padding:1.1rem 1.1rem 1rem;"
+        "min-height:178px;color:#fff;margin-bottom:.5rem;"
+        "background:linear-gradient(150deg,var(--c1) 0%,var(--c2) 60%,var(--c3) 100%);"
+        "box-shadow:0 12px 26px -14px var(--c2);transition:transform .2s ease;}"
+        ".om:hover{transform:translateY(-3px);}"
+        ".om-icon{font-size:2.2rem;line-height:1;}"
+        ".om-ten{font-size:1.15rem;font-weight:800;margin:.5rem 0 .2rem;color:#fff !important;}"
+        ".om-mo-ta{font-size:.86rem;margin:0;color:rgba(255,255,255,.9) !important;}"
+        ".om-so{display:inline-block;margin-top:.7rem;font-size:.76rem;font-weight:700;"
+        "padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.2);}"
+        ".om-kh{position:absolute;right:-6px;bottom:-14px;font-size:4.6rem;font-weight:800;"
+        "opacity:.15;pointer-events:none;line-height:1;}"
+        # ---- Các bước học ở Trang chủ ----
+        ".buoc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.6rem 0 1rem;}"
+        ".buoc-o{border-radius:14px;padding:.8rem .9rem;background:var(--bh-nen);border:1px solid var(--bh-vien);}"
+        ".buoc-so{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;"
+        "border-radius:50%;font-weight:800;color:#fff;background:var(--bh-c);margin-bottom:.35rem;}"
+        ".buoc-o p{margin:0;font-size:.9rem;color:var(--bh-chu) !important;}"
+        # ---- Chuyển động & màn hình nhỏ ----
+        "@keyframes hb-troi{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(6deg)}}"
+        "@keyframes hb-lac{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(4deg) scale(1.04)}}"
+        "@media (max-width:640px){.hb{padding:1.1rem}.hb-tieu-de{font-size:1.45rem}"
+        ".hb-icon{flex-basis:58px;width:58px;height:58px;font-size:2rem;border-radius:16px}"
+        ".hb-kh:nth-of-type(n+5){display:none}.bh-so .so{font-size:1.2rem}"
+        ".buoc{grid-template-columns:1fr}}"
+        "@media (prefers-reduced-motion:reduce){.hb-kh,.hb-icon{animation:none}.om{transition:none}}"
+        "</style>"
+    )
+
+def bien_the_nhe(khoa, che_do_toi):
+    """Biến màu cho các thẻ nền nhạt (thẻ bài học, dải đề thi, các bước)."""
+    c = CHU_DE_GIAO_DIEN[khoa]["chinh"]
+    if che_do_toi:
+        return (f"--bh-c:{tron_mau(c, '#FFFFFF', .75)};--bh-nen:{tron_mau(c, '#0F172A', .16)};"
+                f"--bh-vien:{tron_mau(c, '#0F172A', .35)};--bh-o:{tron_mau(c, '#0F172A', .26)};"
+                "--bh-chu:#F1F5F9;--bh-phu:#CBD5E1;")
+    return (f"--bh-c:{c};--bh-nen:{tron_mau(c, '#FFFFFF', .06)};"
+            f"--bh-vien:{tron_mau(c, '#FFFFFF', .22)};--bh-o:#FFFFFF;"
+            "--bh-chu:#0F172A;--bh-phu:#475569;")
+
+def css_widget_theo_mon(khoa):
+    """Tô màu nút chính, thẻ đã chọn và tab đang mở theo màu của môn."""
+    c = CHU_DE_GIAO_DIEN[khoa]["chinh"]
+    nut = ("[data-testid='stBaseButton-primary'],[data-testid='stBaseButton-primaryFormSubmit'],"
+           "button[kind='primary'],button[kind='primaryFormSubmit']")
+    return (
+        "<style>"
+        f"{nut}{{background:{c} !important;border-color:{c} !important;color:#fff !important;}}"
+        f"{nut.replace(',', ':hover,')}:hover{{filter:brightness(1.1);}}"
+        f"span[data-baseweb='tag']{{background-color:{c} !important;}}"
+        f"button[data-baseweb='tab'][aria-selected='true'] p{{color:{c} !important;font-weight:700;}}"
+        f"div[data-baseweb='tab-highlight']{{background-color:{c} !important;}}"
+        "</style>"
+    )
+
+def tao_hero(khoa, che_do_toi, nhan, tieu_de=None, phu_de=None, chips=None, hien_loi_nhan=True):
+    """Banner đầu trang theo chủ đề môn học."""
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    ky_hieu = "".join(
+        f'<span class="hb-kh" style="top:{t}%;left:{l}%;font-size:{s}rem;animation-delay:{d}s">'
+        f'{html.escape(k)}</span>'
+        for k, (t, l, s, d) in zip(cd["ky_hieu"], VI_TRI_KY_HIEU)
+    )
+    the_chip = "".join(f'<span class="hb-chip">{html.escape(c)}</span>' for c in (chips or []))
+    khoi_chip = f'<div class="hb-chips">{the_chip}</div>' if the_chip else ""
+    loi = ""
+    if hien_loi_nhan:
+        loi = f'<div class="hb-loi-nhan"><b>💬 Lời nhắn hôm nay:</b> {html.escape(loi_nhan_hom_nay(khoa))}</div>'
+    return (
+        f'<div class="hb" style="{bien_mau(khoa, che_do_toi)}">{ky_hieu}'
+        '<div class="hb-than">'
+        f'<div class="hb-icon">{cd["icon"]}</div>'
+        '<div class="hb-chu">'
+        f'<span class="hb-nhan">{html.escape(nhan)}</span>'
+        f'<p class="hb-tieu-de">{html.escape(tieu_de or cd["ten"])}</p>'
+        f'<p class="hb-phu">{html.escape(phu_de or cd["khau_hieu"])}</p>'
+        f'{khoi_chip}'
+        '</div></div>'
+        f'{loi}</div>'
+    )
+
+def tao_the_bai_hoc(khoa, che_do_toi, lop, chuong, ten_bai, so_tn, so_cb, so_nc):
+    """Thẻ đầu mục của một bài học: đường dẫn, tên bài và 3 ô số liệu."""
+    o = (
+        f'<div class="bh-so"><div class="so">{so_tn}</div><div class="nhan">📝 câu trắc nghiệm</div></div>'
+        f'<div class="bh-so"><div class="so">{so_cb}</div><div class="nhan">✏️ bài cơ bản</div></div>'
+        f'<div class="bh-so"><div class="so">{so_nc}</div><div class="nhan">🔥 bài nâng cao</div></div>'
+    )
+    return (
+        f'<div class="bh" style="{bien_the_nhe(khoa, che_do_toi)}">'
+        f'<p class="bh-duong">{html.escape(str(lop))} › {html.escape(str(chuong))}</p>'
+        f'<p class="bh-tieu-de">{CHU_DE_GIAO_DIEN[khoa]["icon"]} {html.escape(str(ten_bai))}</p>'
+        f'<div class="bh-o">{o}</div></div>'
+    )
+
+def tao_dai_de_thi(khoa, che_do_toi, loai_de, so_cau):
+    return (
+        f'<div class="bh" style="{bien_the_nhe(khoa, che_do_toi)}">'
+        f'<p class="bh-tieu-de" style="margin-bottom:.3rem">📝 {html.escape(loai_de)} · {so_cau} câu</p>'
+        '<p class="bh-loi">Đọc kĩ từng câu, chọn đáp án em thấy đúng nhất rồi bấm Nộp bài. '
+        'Chúc em làm bài thật tốt! 🍀</p></div>'
+    )
+
+def tao_o_mon(khoa, che_do_toi, so_bai):
+    cd = CHU_DE_GIAO_DIEN[khoa]
+    return (
+        f'<div class="om" style="{bien_mau(khoa, che_do_toi)}">'
+        f'<span class="om-kh">{html.escape(cd["ky_hieu"][0])}</span>'
+        f'<div class="om-icon">{cd["icon"]}</div>'
+        f'<p class="om-ten">{html.escape(cd["ten"])}</p>'
+        f'<p class="om-mo-ta">{html.escape(MO_TA_MON_TRANG_CHU.get(khoa, ""))}</p>'
+        f'<span class="om-so">{"📚 " + str(so_bai) + " bài học" if so_bai else "🛠️ Đang cập nhật"}</span>'
+        '</div>'
+    )
+
+def chip_thanh_tich(mon):
+    so, tb = thanh_tich_mon(mon)
+    return f"⭐ Đã làm {so} bài · Điểm TB {tb:.1f}" if so else "🚀 Làm bài đầu tiên nào!"
+
+def dem_chuong_bai(mon):
+    lop_dict = DATABASE.get(mon) or {}
+    so_chuong = sum(len(c) for c in lop_dict.values())
+    so_bai = sum(len(b) for c in lop_dict.values() for b in c.values())
+    return so_chuong, so_bai
+
 # ==================== BANNER GIA SƯ AI ====================
 def tao_banner_gia_su(che_do_toi, bai_hien_tai="", ai_san_sang=True, co_anh=True, co_mic=True):
     """Tạo HTML cho banner 'Gia sư AI 24/7'. Muốn đổi màu, sửa NEN/BONG bên dưới;
@@ -1122,7 +1434,6 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
             components.iframe(url_tn, height=580, scrolling=True)
 
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
-    st.markdown(f"### 📖 {ten_bai}")
     lt = data.get("ly_thuyet", "").strip()
     vd = data.get("vi_du", "").strip()
     ch_list = data.get("cau_hoi", [])
@@ -1130,10 +1441,13 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     bt_nc = data.get("bt_nang_cao", [])
     sid = lam_sach_id(f"{mon}_{lop}_{chuong}_{ten_bai}")
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("📝 Trắc nghiệm", f"{len(ch_list)} câu")
-    c2.metric("✏️ Cơ bản", f"{len(bt_cb)} bài")
-    c3.metric("🔥 Nâng cao", f"{len(bt_nc)} bài")
+    st.markdown(
+        tao_the_bai_hoc(
+            lay_chu_de(mon), dark_mode, lop, chuong, ten_bai,
+            len(ch_list), len(bt_cb), len(bt_nc)
+        ),
+        unsafe_allow_html=True
+    )
 
     ds_tabs = [
         "📚 Lý thuyết",
@@ -1146,8 +1460,11 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
 
     with tab1:
         if lt:
+            mau_mon = CHU_DE_GIAO_DIEN[lay_chu_de(mon)]["chinh"]
+            nen_lt = tron_mau(mau_mon, "#0F172A" if dark_mode else "#FFFFFF", .16 if dark_mode else .07)
             st.markdown(
-                f"""<div class="khung-lythuyet">{lt}</div>""",
+                f"""<div class="khung-lythuyet" style="border-left-color:{mau_mon};background-color:{nen_lt}">"""
+                f"""<b style="color:{mau_mon}">📚 Kiến thức trọng tâm</b><br>{lt}</div>""",
                 unsafe_allow_html=True
             )
         if vd:
@@ -1242,7 +1559,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                         if tl[i] == ch["da"][ch["d"]]
                     )
                     diem = dung / len(ch_list) * 10
-                    ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(ch_list))
+                    ghi_nhan_lich_su(f"Trắc nghiệm: {ten_bai}", diem, dung, len(ch_list), mon=mon)
                     st.markdown(
                         f"""<div class="diem-thi">🏆 ĐIỂM: {diem:.1f} / 10</div>""",
                         unsafe_allow_html=True
@@ -1261,34 +1578,59 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
 bai_dang_hoc = ""
 du_lieu_bai_hien_tai = {}
 
+# CSS chung cho banner, thẻ bài học, ô môn học (chỉ chèn một lần mỗi lượt hiển thị)
+st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
+
 if che_do == "🏠 Trang chủ / Hướng dẫn":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎓 HỆ THỐNG HỌC TẬP THCS — KẾT NỐI TRI THỨC (LỚP 7)</p>
-        <p class="hero-sub">Không gian ôn luyện thông minh đa môn học</p>
-    </div>
-    """, unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    c1.markdown("""
-    <div class="card-home">
-        <h3>🌟 Tính năng nổi bật</h3>
-        <p>Học tập chuyên đề, Tra cứu thông minh, Mô phỏng tương tác.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    c2.markdown("""
-    <div class="card-home">
-        <h3>💬 Gia Sư AI An Toàn</h3>
-        <p>Bộ đệm tốc độ cao, luân phiên khóa API chống sập.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(css_widget_theo_mon("home"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "home", dark_mode,
+            nhan="Chào mừng em!",
+            chips=["📚 4 môn học", "🎪 Phòng thí nghiệm ảo", "📝 Thi thử", "🦉 Gia sư AI 24/7"],
+        ),
+        unsafe_allow_html=True
+    )
+
+    st.markdown("#### 👇 Hôm nay em muốn học môn nào?")
+    cot_mon = st.columns(4)
+    for cot, (mon_o, khoa_o) in zip(cot_mon, MON_SANG_CHU_DE.items()):
+        with cot:
+            st.markdown(tao_o_mon(khoa_o, dark_mode, dem_chuong_bai(mon_o)[1]), unsafe_allow_html=True)
+            ten_ngan = {"toan": "Toán", "vatly": "Vật lý", "hoa": "Hóa học", "van": "Ngữ văn"}[khoa_o]
+            if st.button(
+                f"Vào học {ten_ngan} →",
+                key=f"vao_hoc_{khoa_o}",
+                use_container_width=True
+            ):
+                st.session_state["home_jump"] = mon_o
+                st.rerun()
+
+    st.markdown("#### 🧭 Học thế nào cho hiệu quả?")
+    st.markdown(
+        f'<div class="buoc" style="{bien_the_nhe("home", dark_mode)}">'
+        '<div class="buoc-o"><span class="buoc-so">1</span>'
+        '<p><b>Đọc lý thuyết</b> và ví dụ trong mục “Học theo chuyên đề”.</p></div>'
+        '<div class="buoc-o"><span class="buoc-so">2</span>'
+        '<p><b>Luyện bài tập</b> cơ bản, nâng cao và trắc nghiệm, xem gợi ý khi cần.</p></div>'
+        '<div class="buoc-o"><span class="buoc-so">3</span>'
+        '<p><b>Thi thử</b> để tự kiểm tra – chỗ nào chưa hiểu thì hỏi Gia sư AI.</p></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 elif che_do == "🔍 Tra cứu / Tìm kiếm":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🔍 Tra Cứu & Tìm Kiếm Tri Thức</p>
-    </div>
-    """, unsafe_allow_html=True)
-    tu_khoa = st.text_input("🔎 Nhập từ khóa:")
+    st.markdown(css_widget_theo_mon("search"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "search", dark_mode,
+            nhan="Tra cứu",
+            chips=["📐 Toán", "🔬 Vật lý", "🧪 Hóa học", "📖 Ngữ văn"],
+            hien_loi_nhan=False,
+        ),
+        unsafe_allow_html=True
+    )
+    tu_khoa = st.text_input("🔎 Nhập từ khóa:", placeholder="Ví dụ: Bầy chim chìa vôi, số hữu tỉ, nguyên tử...")
     if tu_khoa.strip():
         kw = tu_khoa.strip().lower()
         ket_qua_tim = []
@@ -1313,11 +1655,16 @@ elif che_do == "🔍 Tra cứu / Tìm kiếm":
                     st.rerun()
 
 elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">⚙️ Trạm Nạp Dữ Liệu Tự Động (Auto-Parser)</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(css_widget_theo_mon("admin"), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            "admin", dark_mode,
+            nhan="Dành cho giáo viên",
+            chips=["📄 Word · PDF · Ảnh · Văn bản", "🤖 AI bóc tách", "✅ Tự kiểm tra cấu trúc"],
+            hien_loi_nhan=False,
+        ),
+        unsafe_allow_html=True
+    )
     mk = st.text_input("🔑 Mật khẩu Admin:", type="password")
 
     # [VÁ 2 – mục 16] Sai quá 5 lần trong 10 phút -> khóa đăng nhập 10 phút.
@@ -1447,11 +1794,8 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
         st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
-    st.markdown("""
-    <div class="hero-banner">
-        <p class="hero-title">🎪 Phòng Thí Nghiệm & Mô Phỏng Tương Tác</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Chừa chỗ cho banner ở đầu trang, vẽ sau khi biết môn được chọn
+    cho_banner_lab = st.empty()
     ds_mon_lab = [
         "📖 Môn Ngữ Văn",
         "🔬 Môn Vật lý (KHTN)",
@@ -1459,15 +1803,40 @@ elif che_do == "🎪 Phòng thí nghiệm ảo":
         "📐 Môn Toán"
     ]
     mon_lab = st.selectbox("🔬 Chọn môn học thực hành:", ds_mon_lab)
+    khoa_lab = lay_chu_de(mon_lab)
+    chip_lab = (
+        ["🗺️ Sơ đồ tác phẩm", "🎭 Thế giới nhân vật", "📝 Lập dàn ý"]
+        if khoa_lab == "van" else
+        ["🧪 Mô phỏng tương tác", "🌐 PhET – ĐH Colorado", "🖱️ Kéo, thả, tự thử nghiệm"]
+    )
+    cho_banner_lab.markdown(
+        css_widget_theo_mon(khoa_lab) + tao_hero(
+            khoa_lab, dark_mode,
+            nhan="Phòng thí nghiệm ảo",
+            phu_de=("Khám phá tác phẩm qua sơ đồ, nhân vật và dàn ý" if khoa_lab == "van"
+                    else "Tự tay làm thí nghiệm – quan sát, thay đổi, rút ra kết luận"),
+            chips=chip_lab,
+        ),
+        unsafe_allow_html=True
+    )
     hien_thi_phong_thi_nghiem(mon_lab, key_prefix="main_lab")
 
 elif che_do == "📖 Học theo chuyên đề":
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">{mon} — Chương trình GDPT 2018 (Kết Nối Tri Thức)</p>
-        <p class="hero-sub">Hệ thống học tập thông minh lớp 7</p>
-    </div>
-    """, unsafe_allow_html=True)
+    khoa_mon = lay_chu_de(mon)
+    so_chuong, so_bai_mon = dem_chuong_bai(mon)
+    st.markdown(css_widget_theo_mon(khoa_mon), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            khoa_mon, dark_mode,
+            nhan="Học theo chuyên đề · Lớp 7",
+            chips=[
+                "📚 Kết nối tri thức",
+                f"📂 {so_chuong} chương · {so_bai_mon} bài" if so_bai_mon else "🛠️ Đang cập nhật bài học",
+                chip_thanh_tich(mon),
+            ],
+        ),
+        unsafe_allow_html=True
+    )
 
     lop_dict = DATABASE[mon]
     if not lop_dict:
@@ -1495,15 +1864,19 @@ elif che_do == "📖 Học theo chuyên đề":
             bai_dang_hoc = f"{chuong} - {bai}"
             du_lieu_bai_hien_tai = bai_dict[bai]
 
-            st.markdown("---")
             hien_thi_bai(mon, lop, chuong, bai, du_lieu_bai_hien_tai)
 
 elif che_do == "📝 Phòng thi / Kiểm tra":
-    st.markdown(f"""
-    <div class="hero-banner">
-        <p class="hero-title">⏱️ Phòng Thi Thử & Kiểm Tra Định Kì — {mon}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    khoa_mon = lay_chu_de(mon)
+    st.markdown(css_widget_theo_mon(khoa_mon), unsafe_allow_html=True)
+    st.markdown(
+        tao_hero(
+            khoa_mon, dark_mode,
+            nhan="Phòng thi thử · Kiểm tra định kì",
+            chips=["⏱️ 15 phút · Giữa kì · Học kì", "🔀 Đề trộn ngẫu nhiên", chip_thanh_tich(mon)],
+        ),
+        unsafe_allow_html=True
+    )
     lop_dict = DATABASE[mon]
     if lop_dict:
         ds_lop_thi = list(lop_dict.keys())
@@ -1563,6 +1936,10 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
         if st.session_state.get(khoa_de):
             de_thi = st.session_state[khoa_de]
             nonce_thi = st.session_state.setdefault(khoa_nonce, "0")
+            st.markdown(
+                tao_dai_de_thi(khoa_mon, dark_mode, loai_de.split(" (")[0], len(de_thi)),
+                unsafe_allow_html=True
+            )
             with st.form(f"form_thi_{mon}_{lop}"):
                 tl_thi = {}
                 for i, ch in enumerate(de_thi, 1):
@@ -1581,7 +1958,7 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                         if tl_thi[i] == ch["da"][ch["d"]]
                     )
                     diem = dung / len(de_thi) * 10
-                    ghi_nhan_lich_su(f"Thi thử ({mon})", diem, dung, len(de_thi))
+                    ghi_nhan_lich_su(f"Thi thử ({mon})", diem, dung, len(de_thi), mon=mon)
                     st.markdown(
                         f"""<div class="diem-thi">🏆 ĐIỂM: {diem:.1f} / 10</div>""",
                         unsafe_allow_html=True
