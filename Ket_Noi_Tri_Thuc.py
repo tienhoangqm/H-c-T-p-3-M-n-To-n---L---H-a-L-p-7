@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Sửa lỗi Cú pháp CSS + Giao diện Cân Đối Tuyệt Đối
+Phiên bản Hoàn Chỉnh: Giao diện Sắc Nét, Không Lỗi Biến, Đầy Đủ Toán, Lý, Hóa, Văn, Anh
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -599,4 +599,4 @@ elif che_do == "📖 Học theo chuyên đề":
         st.markdown(f"<div style='padding:1rem;background:#EFF6FF;border-left:6px solid #2563EB;border-radius:10px;'><b>Lý thuyết:</b><br>{bai_dict[bai].get('ly_thuyet','')}</div>", unsafe_allow_html=True)
 
 else:
-    st.write(f"Di chuyển đến chức năng: {che_do}")
+    st.write(f"Đang hiển thị chế độ: {che_do}")
