@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 PHẦN MỀM HỌC TẬP THCS — BỘ SÁCH KẾT NỐI TRI THỨC (GDPT 2018)
-Phiên bản Chống Gãy Dòng Mobile + Lock Đa Luồng + Đầy Đủ Tính Năng
+Phiên bản vá lỗi:
+  - Sửa trộn đáp án (không còn bị khóa nhầm bởi các từ như "cảm", "cảnh")
+  - Sửa lỗi đáp án cũ dính sang đề mới (key radio có mã làm mới)
+  - Sửa nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức; chỉnh PhET đúng lớp 7
+  - Chuyển từ google-generativeai sang google-genai; cập nhật model Gemini mới
 """
 import streamlit as st
+import streamlit.components.v1 as components
 import io
 import random
 import re
@@ -17,7 +22,10 @@ import hashlib
 import threading
 import hmac
 from collections import OrderedDict
-import google.generativeai as genai
+
+from google import genai
+from google.genai import types
+from google.genai import errors as genai_errors
 
 # ==================== CẤU HÌNH TRANG & ĐIỀU HƯỚNG SỚM ====================
 st.set_page_config(
@@ -35,10 +43,12 @@ if "search_jump" in st.session_state:
     st.session_state["bai_main"] = item["bai"]
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
+# Ghi chú: SDK google-genai tạo client riêng cho từng API key, không còn
+# trạng thái cấu hình toàn cục như genai.configure() cũ, nên không cần khóa
+# toàn bộ lời gọi AI nữa — nhiều học sinh có thể hỏi cùng lúc.
 @st.cache_resource
 def get_global_locks():
     return {
-        "ai_api_lock": threading.Lock(),
         "user_count_lock": threading.Lock(),
         "ai_cache_lock": threading.Lock(),
         "online_users": {},
@@ -80,11 +90,6 @@ def lay_danh_sach_gemini_keys():
     return keys
 
 GEMINI_KEYS = lay_danh_sach_gemini_keys()
-if GEMINI_KEYS:
-    try:
-        genai.configure(api_key=GEMINI_KEYS[0])
-    except Exception:
-        pass
 
 DOLA_ENDPOINT = str(get_secret("DOLA_API_ENDPOINT")).strip()
 DOLA_KEY = str(get_secret("DOLA_API_KEY")).strip()
@@ -193,16 +198,24 @@ def so_sanh_so_hoc(nd, ds_dung):
             return True
     return False
 
+# [VÁ LỖI 1] So khớp theo nguyên từ/cụm từ, không so khớp chuỗi con.
+# Trước đây "cả" khớp nhầm vào "cảm", "cảnh", "cải"... khiến câu hỏi không
+# được trộn và đáp án đúng luôn nằm ở vị trí đầu tiên.
+PHUONG_AN_CO_DINH = re.compile(
+    r'\b(?:tất cả|cả hai|cả ba|cả [a-d]|đáp án|phương án)\b',
+    re.IGNORECASE
+)
+
 def tron_dap_an_thong_minh(ch):
+    """Trộn các phương án thường; các phương án kiểu 'Tất cả...', 'Cả A và B'
+    được giữ nguyên thứ tự và đặt ở cuối danh sách."""
     da_goc = list(ch["da"])
     d_dung = da_goc[ch["d"]]
-    tu_khoa_co_dinh = ["cả", "tất cả", "đáp án", "phương án", "a, b"]
-    for ans in da_goc:
-        txt = str(ans).lower()
-        if any(k in txt for k in tu_khoa_co_dinh):
-            return da_goc, ch["d"]
-    random.shuffle(da_goc)
-    return da_goc, da_goc.index(d_dung)
+    co_dinh = [x for x in da_goc if PHUONG_AN_CO_DINH.search(str(x))]
+    tu_do = [x for x in da_goc if x not in co_dinh]
+    random.shuffle(tu_do)
+    da_moi = tu_do + co_dinh
+    return da_moi, da_moi.index(d_dung)
 
 def lam_sach_id(s):
     return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
@@ -258,7 +271,7 @@ def trich_xuat_word_docx(file_bytes):
     except Exception as e:
         return f"[Lỗi đọc file Word: {e}]"
 
-# ==================== GỌI AI AN TOÀN (CÓ THREAD LOCK) ====================
+# ==================== GỌI AI (SDK google-genai) ====================
 def goi_dola_toi_uu(cau_hoi):
     if not DOLA_ENDPOINT or not DOLA_KEY:
         return None
@@ -283,28 +296,59 @@ def goi_dola_toi_uu(cau_hoi):
     except Exception:
         return None
 
+# Thứ tự ưu tiên model (thử lần lượt nếu model trước lỗi hoặc hết hạn mức).
+# Lưu ý: Gemini 3.1 Pro hiện chỉ có bản preview nên tên gọi trên API là
+# "gemini-3.1-pro-preview".
+MODEL_UU_TIEN = [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-pro-preview",
+]
+
+# Các dòng model chuyên dụng không dùng để trò chuyện văn bản
+TU_KHOA_MODEL_LOAI_TRU = (
+    "tts", "image", "live", "embedding", "transcribe",
+    "omni", "banana", "robotics", "audio"
+)
+
+@st.cache_resource(show_spinner=False)
+def lay_client_gemini(api_key):
+    return genai.Client(api_key=api_key)
+
 @st.cache_resource(ttl=3600, show_spinner=False)
 def lay_ds_model_kha_dung(api_key):
-    uu_tien = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
-    ]
     try:
-        genai.configure(api_key=api_key)
-        ds_hien_co = [
-            m.name.replace("models/", "")
-            for m in genai.list_models()
-            if "generateContent" in getattr(m, "supported_generation_methods", [])
-        ]
+        client = lay_client_gemini(api_key)
+        ds_hien_co = []
+        for m in client.models.list():
+            ten = (getattr(m, "name", "") or "").replace("models/", "")
+            if "gemini" not in ten:
+                continue
+            if any(k in ten for k in TU_KHOA_MODEL_LOAI_TRU):
+                continue
+            hanh_dong = getattr(m, "supported_actions", None) or []
+            if hanh_dong and "generateContent" not in hanh_dong:
+                continue
+            ds_hien_co.append(ten)
         if ds_hien_co:
-            kq = [m for m in uu_tien if m in ds_hien_co]
-            kq += [m for m in ds_hien_co if "gemini" in m and m not in uu_tien]
+            kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
+            kq += [m for m in ds_hien_co if m not in MODEL_UU_TIEN]
             return kq
     except Exception:
         pass
-    return uu_tien
+    return list(MODEL_UU_TIEN)
+
+def chuyen_lich_su_gemini(history):
+    """Chuyển lịch sử dạng {'role', 'parts': [str]} sang types.Content."""
+    ds = []
+    for h in history or []:
+        cac_phan = [
+            types.Part.from_text(text=str(p))
+            for p in h.get("parts", []) if str(p).strip()
+        ]
+        if cac_phan:
+            ds.append(types.Content(role=h["role"], parts=cac_phan))
+    return ds
 
 def goi_gemini_an_toan(payload, system_instruction, history=None):
     if not GEMINI_KEYS:
@@ -312,43 +356,48 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
     if "key_index" not in st.session_state:
         st.session_state["key_index"] = 0
     so_luong_key = len(GEMINI_KEYS)
+    cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
+    lich_su = chuyen_lich_su_gemini(history) if history is not None else None
     last_err = None
 
-    with GLOBALS["ai_api_lock"]:
-        for k_offset in range(so_luong_key):
-            idx = (st.session_state["key_index"] + k_offset) % so_luong_key
-            current_key = GEMINI_KEYS[idx]
-            genai.configure(api_key=current_key)
-            ds_models = lay_ds_model_kha_dung(current_key)
+    for k_offset in range(so_luong_key):
+        idx = (st.session_state["key_index"] + k_offset) % so_luong_key
+        current_key = GEMINI_KEYS[idx]
+        client = lay_client_gemini(current_key)
+        ds_models = lay_ds_model_kha_dung(current_key)
 
-            for ten_m in ds_models:
-                for attempt in range(2):
-                    try:
-                        m = genai.GenerativeModel(
-                            model_name=ten_m,
-                            system_instruction=system_instruction
+        for ten_m in ds_models:
+            for attempt in range(2):
+                try:
+                    if lich_su is not None:
+                        chat_s = client.chats.create(
+                            model=ten_m,
+                            config=cau_hinh,
+                            history=lich_su
                         )
-                        if history is not None:
-                            chat_s = m.start_chat(history=history)
-                            txt = chat_s.send_message(payload).text
-                        else:
-                            txt = m.generate_content(payload).text
-                        st.session_state["key_index"] = idx
-                        return txt
-                    except Exception as e:
-                        last_err = e
-                        err_str = str(e).lower()
-                        if "404" in err_str or "not found" in err_str:
-                            break
-                        elif "429" in err_str or "quota" in err_str:
-                            if attempt == 0:
-                                time.sleep(1.0)
-                                continue
-                            else:
-                                break
-                        else:
-                            break
-    raise last_err
+                        txt = chat_s.send_message(payload).text
+                    else:
+                        txt = client.models.generate_content(
+                            model=ten_m,
+                            contents=payload,
+                            config=cau_hinh
+                        ).text
+                    if not txt:
+                        raise RuntimeError("Model trả về phản hồi rỗng.")
+                    st.session_state["key_index"] = idx
+                    return txt
+                except genai_errors.APIError as e:
+                    last_err = e
+                    # 429: hết hạn mức tạm thời -> chờ 1 giây thử lại một lần
+                    if getattr(e, "code", None) == 429 and attempt == 0:
+                        time.sleep(1.0)
+                        continue
+                    # 404 hoặc lỗi khác -> chuyển sang model kế tiếp
+                    break
+                except Exception as e:
+                    last_err = e
+                    break
+    raise last_err or RuntimeError("Không có model Gemini khả dụng.")
 
 # ==================== NẠP DỮ LIỆU CÁC MÔN ====================
 try:
@@ -364,136 +413,238 @@ try:
 except ImportError:
     HOA = {}
 
+# [VÁ LỖI 5] Nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức (tập 1):
+# Bài 1 "Bầu trời tuổi thơ" và Bài 2 "Khúc nhạc tâm hồn".
+# Các bài còn lại nên được giáo viên bổ sung qua file data_van.py.
 VAN_DEFAULT = {
     "Lớp 7": {
-        "Chương 1: Bầu trời tuổi thơ (Truyện)": {
-            "Văn bản 1: Bồng chanh đỏ (trích, Đỗ Chu)": {
-                "ly_thuyet": "Truyện ngắn kể về hai anh em Hoài và Ý với tình yêu thương loài vật, thiên nhiên và những rung cảm tinh tế của tuổi thơ.",
-                "vi_du": "Chi tiết thả chim bồng chanh đỏ về tự nhiên thể hiện sự thức tỉnh nhân cách và lòng nhân ái.",
+        "Bài 1: Bầu trời tuổi thơ (Truyện)": {
+            "Văn bản 1: Bầy chim chìa vôi (Nguyễn Quang Thiều)": {
+                "ly_thuyet": (
+                    "Truyện kể về hai anh em Mon và Mên. Giữa đêm mưa, nước sông dâng lên, "
+                    "hai anh em thao thức lo cho bầy chim chìa vôi non làm tổ trên bãi cát giữa sông. "
+                    "Các em chèo đò ra bãi và được chứng kiến khoảnh khắc bầy chim non bay lên "
+                    "khỏi mặt nước. Truyện được kể theo ngôi thứ ba, thể hiện tình yêu thương loài vật "
+                    "và tâm hồn trong sáng, nhân hậu của trẻ thơ."
+                ),
+                "vi_du": (
+                    "Chi tiết hai anh em không ngủ được, lo bầy chim non bị nước cuốn trôi, "
+                    "cho thấy sự quan tâm chân thành của trẻ em với những sinh linh nhỏ bé."
+                ),
                 "cau_hoi": [
                     {
-                        "nd": "Truyện 'Bồng chanh đỏ' của tác giả nào?",
-                        "da": ["Đỗ Chu", "Tô Hoài", "Khánh Hoài", "Duy Khán"],
+                        "nd": "Truyện 'Bầy chim chìa vôi' là của tác giả nào?",
+                        "da": ["Đoàn Giỏi", "Nguyễn Quang Thiều", "Võ Quảng", "Tô Hoài"],
+                        "d": 1
+                    },
+                    {
+                        "nd": "Hai nhân vật chính trong truyện là ai?",
+                        "da": ["An và Cò", "Hoài và Ý", "Mon và Mên", "Dế Mèn và Dế Choắt"],
+                        "d": 2
+                    },
+                    {
+                        "nd": "Truyện 'Bầy chim chìa vôi' được kể theo ngôi thứ mấy?",
+                        "da": ["Ngôi thứ ba", "Ngôi thứ nhất", "Ngôi thứ hai", "Kết hợp ngôi thứ nhất và thứ hai"],
                         "d": 0
                     },
                     {
-                        "nd": "Nhân vật chính trong truyện là ai?",
-                        "da": ["Hai anh em Hoài và Ý", "Ông nội", "Côn và Bản", "Thành và Thủy"],
-                        "d": 0
+                        "nd": "Điều gì khiến hai anh em lo lắng giữa đêm?",
+                        "da": [
+                            "Trời sắp sáng mà chưa làm xong việc nhà",
+                            "Con đò bị nước cuốn trôi",
+                            "Nước sông dâng, bầy chim chìa vôi non có thể bị chết đuối",
+                            "Bố mẹ đi vắng chưa về"
+                        ],
+                        "d": 2
                     }
                 ],
                 "bt_co_ban": [
                     {
-                        "de": "Nêu ý nghĩa nhan đề 'Bồng chanh đỏ'?",
-                        "dd": ["Biểu tượng cho vẻ đẹp thiên nhiên"],
-                        "lg": "Hình ảnh trung tâm khơi gợi những cảm xúc trong trẻo."
+                        "de": "Tìm những chi tiết cho thấy hai anh em lo lắng cho bầy chim chìa vôi.",
+                        "dd": ["Thao thức giữa đêm, bàn cách cứu bầy chim, chèo đò ra bãi sông"],
+                        "lg": "Chú ý lời đối thoại giữa đêm của hai anh em và hành động chèo đò ra bãi sông."
                     }
                 ],
                 "bt_nang_cao": [
                     {
-                        "de": "Phân tích sự biến đổi tâm trạng của nhân vật Hoài?",
-                        "dd": ["Thấu hiểu và buông bỏ"],
-                        "lg": "Thể hiện sự nhân hậu, tôn trọng tự nhiên."
+                        "de": "Em có nhận xét gì về tính cách của Mon và Mên qua câu chuyện?",
+                        "dd": ["Hồn nhiên, giàu tình yêu thương, biết quan tâm đến loài vật"],
+                        "lg": "So sánh cách nói, cách hành động của người anh và người em; cả hai đều có tấm lòng nhân hậu."
                     }
                 ]
             },
-            "Văn bản 2: Bố cục và mạch ngầm trong văn bản": {
-                "ly_thuyet": "Tìm hiểu cách xây dựng cốt truyện và các lớp ý nghĩa ẩn giấu trong tác phẩm truyện.",
+            "Văn bản 2: Đi lấy mật (trích 'Đất rừng phương Nam' – Đoàn Giỏi)": {
+                "ly_thuyet": (
+                    "Đoạn trích kể về chuyến đi lấy mật ong trong rừng U Minh của An cùng tía nuôi "
+                    "và thằng Cò. Truyện kể theo ngôi thứ nhất qua lời của An, giúp người đọc cảm nhận "
+                    "vẻ đẹp hoang sơ của rừng phương Nam, nghề lấy mật bằng cách gác kèo ong của người dân "
+                    "và tình cảm gắn bó trong gia đình nuôi của An."
+                ),
+                "vi_du": (
+                    "Qua cái nhìn tò mò, hồn nhiên của An, cảnh rừng và công việc lấy mật hiện lên "
+                    "sinh động, gần gũi."
+                ),
                 "cau_hoi": [
                     {
-                        "nd": "Mạch ngầm văn bản là gì?",
-                        "da": ["Những suy nghĩ, cảm xúc ẩn giấu dưới lời văn", "Cốt truyện chính", "Lời thoại nhân vật"],
+                        "nd": "Đoạn trích 'Đi lấy mật' được trích từ tác phẩm nào?",
+                        "da": ["Dế Mèn phiêu lưu kí", "Đất rừng phương Nam", "Tuổi thơ dữ dội", "Quê nội"],
+                        "d": 1
+                    },
+                    {
+                        "nd": "Người kể chuyện trong đoạn trích 'Đi lấy mật' là ai?",
+                        "da": ["Thằng Cò", "Tía nuôi", "Má nuôi", "An"],
+                        "d": 3
+                    },
+                    {
+                        "nd": "Chuyến đi lấy mật diễn ra ở đâu?",
+                        "da": ["Rừng U Minh", "Rừng Cúc Phương", "Tây Nguyên", "Rừng Sác"],
                         "d": 0
                     }
                 ],
                 "bt_co_ban": [
                     {
-                        "de": "Mạch ngầm thường được bộc lộ qua đâu?",
-                        "dd": ["Chi tiết nghệ thuật"],
-                        "lg": "Thông qua các chi tiết miêu tả và hành động."
+                        "de": "Đoạn trích được kể theo ngôi thứ mấy? Tác dụng của ngôi kể đó là gì?",
+                        "dd": ["Ngôi thứ nhất"],
+                        "lg": "An xưng 'tôi', kể lại trực tiếp những điều mình thấy, nghe, cảm nhận, giúp câu chuyện chân thực, gần gũi."
                     }
                 ],
                 "bt_nang_cao": [
                     {
-                        "de": "Tác dụng của mạch ngầm trong truyện ngắn?",
-                        "dd": ["Tăng chiều sâu"],
-                        "lg": "Giúp người đọc suy ngẫm nhiều hơn."
+                        "de": "Qua đoạn trích, em hiểu gì về thiên nhiên và con người vùng rừng U Minh?",
+                        "dd": ["Thiên nhiên hoang sơ, giàu có; con người am hiểu rừng, gắn bó với thiên nhiên"],
+                        "lg": "Chú ý cảnh rừng qua cái nhìn của An và cách người dân gác kèo để nuôi ong, lấy mật."
+                    }
+                ]
+            },
+            "Văn bản 3: Ngàn sao làm việc (Võ Quảng)": {
+                "ly_thuyet": (
+                    "Bài thơ của Võ Quảng mở rộng chủ đề tuổi thơ. Qua trí tưởng tượng hồn nhiên, "
+                    "những vì sao trên bầu trời đêm hiện lên như đang làm việc, gợi niềm vui "
+                    "và vẻ đẹp của thế giới quanh ta."
+                ),
+                "cau_hoi": [
+                    {
+                        "nd": "Bài thơ 'Ngàn sao làm việc' là của tác giả nào?",
+                        "da": ["Thanh Thảo", "Nguyễn Khoa Điềm", "Võ Quảng", "Nguyễn Quang Thiều"],
+                        "d": 2
+                    }
+                ],
+                "bt_co_ban": [
+                    {
+                        "de": "Biện pháp tu từ nào giúp những vì sao trong bài thơ trở nên sinh động như con người?",
+                        "dd": ["Nhân hóa"],
+                        "lg": "Các vì sao được gán cho hoạt động của con người: làm việc."
+                    }
+                ],
+                "bt_nang_cao": [
+                    {
+                        "de": "Vì sao bài thơ được xếp chung chủ đề 'Bầu trời tuổi thơ'?",
+                        "dd": ["Cái nhìn hồn nhiên, giàu tưởng tượng của tuổi thơ"],
+                        "lg": "Liên hệ với cách hai văn bản truyện thể hiện thế giới qua đôi mắt trẻ thơ."
                     }
                 ]
             }
         },
-        "Chương 2: Khúc tâm tình của đất nước (Thơ)": {
-            "Văn bản 1: Tia nắng đầu tiên (Đức Lợi)": {
-                "ly_thuyet": "Bài thơ ca ngợi vẻ đẹp thiên nhiên buổi sáng và tình cảm gia đình ấm áp.",
+        "Bài 2: Khúc nhạc tâm hồn (Thơ bốn chữ, năm chữ)": {
+            "Văn bản 1: Đồng dao mùa xuân (Nguyễn Khoa Điềm)": {
+                "ly_thuyet": (
+                    "Bài thơ viết theo thể thơ bốn chữ, mang âm hưởng đồng dao, kể về cuộc đời "
+                    "một người lính trẻ đã hi sinh. Hình ảnh người lính hiện lên bình dị, trong sáng "
+                    "và trở nên bất tử, trẻ mãi trong lòng quê hương, nhân dân."
+                ),
+                "vi_du": (
+                    "Nhan đề gắn 'đồng dao' với 'mùa xuân': mùa xuân gợi tuổi trẻ và niềm hi vọng, "
+                    "đồng dao gợi sự hồn nhiên, giản dị."
+                ),
                 "cau_hoi": [
                     {
-                        "nd": "Bài thơ thuộc thể thơ nào?",
-                        "da": ["Thơ tự do / 5 chữ", "Thơ lục bát", "Thơ 7 chữ", "Tất cả phương án trên"],
-                        "d": 0
+                        "nd": "Bài thơ 'Đồng dao mùa xuân' được viết theo thể thơ nào?",
+                        "da": ["Thơ năm chữ", "Thơ bốn chữ", "Thơ lục bát", "Thơ tự do"],
+                        "d": 1
+                    },
+                    {
+                        "nd": "Bài thơ 'Đồng dao mùa xuân' viết về ai?",
+                        "da": ["Người mẹ quê", "Người thầy giáo", "Người lính trẻ", "Em bé chăn trâu"],
+                        "d": 2
                     }
                 ],
                 "bt_co_ban": [
                     {
-                        "de": "Tia nắng đầu tiên tượng trưng cho điều gì?",
-                        "dd": ["Niềm hy vọng"],
-                        "lg": "Mang ý nghĩa biểu tượng sâu sắc."
+                        "de": "Nhan đề 'Đồng dao mùa xuân' có ý nghĩa gì?",
+                        "dd": ["Khúc hát hồn nhiên về tuổi xuân bất tử của người lính"],
+                        "lg": "Mùa xuân gợi tuổi trẻ, hi vọng; đồng dao gợi sự trong trẻo, giản dị."
                     }
                 ],
                 "bt_nang_cao": [
                     {
-                        "de": "Phân tích cảm xúc của nhân vật trữ tình?",
-                        "dd": ["Rung động tinh tế"],
-                        "lg": "Gắn kết thiên nhiên với gia đình."
+                        "de": "Viết đoạn văn 5–7 câu nêu cảm nghĩ của em về người lính trong bài thơ.",
+                        "dd": ["Trân trọng, biết ơn sự hi sinh của người lính"],
+                        "lg": "Nêu ấn tượng về vẻ đẹp giản dị, trẻ trung và sự hi sinh thầm lặng của người lính."
                     }
                 ]
             },
-            "Văn bản 2: Mẹ (Đỗ Bạch Nga)": {
-                "ly_thuyet": "Bài thơ khắc họa hình ảnh người mẹ tần tảo, hy sinh vì con cái.",
+            "Văn bản 2: Gặp lá cơm nếp (Thanh Thảo)": {
+                "ly_thuyet": (
+                    "Bài thơ viết theo thể thơ năm chữ. Người con là người lính xa nhà, tình cờ gặp "
+                    "lá cơm nếp mà nhớ mẹ, nhớ nồi xôi và hương vị quê nhà. Tình yêu mẹ hòa quyện "
+                    "với tình yêu quê hương, đất nước."
+                ),
                 "cau_hoi": [
                     {
-                        "nd": "Biện pháp tu từ nổi bật trong bài thơ 'Mẹ' là gì?",
-                        "da": ["Ẩn dụ / So sánh", "Nói quá", "Liệt kê"],
+                        "nd": "Bài thơ 'Gặp lá cơm nếp' được viết theo thể thơ nào?",
+                        "da": ["Thơ bốn chữ", "Thơ bảy chữ", "Thơ năm chữ", "Thơ song thất lục bát"],
+                        "d": 2
+                    },
+                    {
+                        "nd": "Hình ảnh lá cơm nếp khơi gợi trong người con nỗi nhớ về ai?",
+                        "da": ["Người mẹ", "Người bạn", "Người thầy", "Đồng đội"],
                         "d": 0
                     }
                 ],
                 "bt_co_ban": [
                     {
-                        "de": "Tình cảm của người con đối với mẹ?",
-                        "dd": ["Biết ơn sâu sắc"],
-                        "lg": "Thể hiện đạo lý uống nước nhớ nguồn."
+                        "de": "Em có nhận xét gì về cách dùng từ 'gặp' trong nhan đề bài thơ?",
+                        "dd": ["Gợi sự tình cờ, thân thiết như gặp lại người thân"],
+                        "lg": "Từ 'gặp' khiến chiếc lá như một người quen cũ, gợi cả nỗi nhớ quê nhà."
                     }
                 ],
                 "bt_nang_cao": [
                     {
-                        "de": "Ý nghĩa hình ảnh người mẹ?",
-                        "dd": ["Biểu tượng của sự hy sinh"],
-                        "lg": "Là nguồn cội nuôi dưỡng tâm hồn."
+                        "de": "Phân tích sự hòa quyện giữa tình yêu mẹ và tình yêu đất nước trong bài thơ.",
+                        "dd": ["Nhớ mẹ gắn liền với nhớ quê hương, đất nước"],
+                        "lg": "Từ kỉ niệm riêng về mẹ, người con mở rộng thành tình cảm với quê hương, đất nước."
                     }
                 ]
-            }
-        },
-        "Chương 3: Hành trình tri thức (Nghị luận & Thông tin)": {
-            "Văn bản 1: Tự học - một cuộc du thú trường chinh": {
-                "ly_thuyet": "Văn bản nghị luận bàn về tầm quan trọng và phương pháp tự học.",
+            },
+            "Văn bản 3: Trở gió (Nguyễn Ngọc Tư)": {
+                "ly_thuyet": (
+                    "Tùy bút viết về mùa gió chướng ở miền Tây Nam Bộ. Gió chướng về báo hiệu cuối năm, "
+                    "Tết đến gần, gợi niềm vui, nỗi nhớ và tình cảm gắn bó của tác giả với quê hương."
+                ),
                 "cau_hoi": [
                     {
-                        "nd": "Vấn đề nghị luận chính là gì?",
-                        "da": ["Tầm quan trọng của việc tự học", "Cách đọc sách hiệu quả", "Phương pháp học ngoại ngữ"],
-                        "d": 0
+                        "nd": "'Trở gió' thuộc thể loại nào?",
+                        "da": ["Truyện ngắn", "Thơ năm chữ", "Tùy bút", "Truyện ngụ ngôn"],
+                        "d": 2
+                    },
+                    {
+                        "nd": "Loại gió được nói đến trong văn bản 'Trở gió' là gió gì?",
+                        "da": ["Gió mùa đông bắc", "Gió chướng", "Gió Lào", "Gió heo may"],
+                        "d": 1
                     }
                 ],
                 "bt_co_ban": [
                     {
-                        "de": "Vì sao gọi tự học là 'cuộc du thú trường chinh'?",
-                        "dd": ["Khám phá tri thức dài lâu"],
-                        "lg": "Phép ẩn dụ độc đáo."
+                        "de": "Gió chướng được tác giả miêu tả qua những chi tiết, hình ảnh nào?",
+                        "dd": ["Qua cảnh vật, con người và không khí cuối năm"],
+                        "lg": "Tìm các chi tiết về cây cối, mặt sông, con người khi gió chướng về."
                     }
                 ],
                 "bt_nang_cao": [
                     {
-                        "de": "Rút ra bài học cho bản thân?",
-                        "dd": ["Chủ động, kiên trì"],
-                        "lg": "Tự học quyết định thành công."
+                        "de": "Qua 'Trở gió', em cảm nhận được tình cảm gì của tác giả với quê hương?",
+                        "dd": ["Yêu thương, gắn bó sâu nặng với quê hương"],
+                        "lg": "Chú ý những cảm xúc của tác giả khi gió chướng về và nỗi nhớ gắn với quê nhà."
                     }
                 ]
             }
@@ -520,18 +671,22 @@ DATABASE = {
     "📖 Môn Ngữ Văn": VAN
 }
 
+# [VÁ LỖI 5] Mô phỏng PhET chọn theo nội dung KHTN lớp 7:
+# - Vật lý: âm thanh, ánh sáng (phản xạ), từ (nam châm).
+# - Hóa học: nguyên tử, phân tử. Đã bỏ "Cân bằng phương trình" và
+#   "Nồng độ dung dịch" vì thuộc kiến thức lớp 8.
 DANH_MUC_THI_NGHIEM = {
     "📐 Môn Toán": {
         "⚖️ Cân bằng phương trình & Biểu thức đại số": "https://phet.colorado.edu/sims/html/equality-explorer/latest/equality-explorer_vi.html"
     },
     "🔬 Môn Vật lý (KHTN)": {
-        "💡 Khúc xạ & Phản xạ ánh sáng (Quang học 7)": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html"
+        "🔊 Sóng âm – độ to và độ cao của âm": "https://phet.colorado.edu/sims/html/waves-intro/latest/waves-intro_vi.html",
+        "💡 Phản xạ ánh sáng (mô phỏng có thêm khúc xạ – kiến thức lớp 9)": "https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_vi.html",
+        "🧲 Nam châm & từ trường (dùng màn hình Nam châm thẳng)": "https://phet.colorado.edu/sims/html/faradays-electromagnetic-lab/latest/faradays-electromagnetic-lab_vi.html"
     },
     "🧪 Môn Hóa học (KHTN)": {
         "⚛️ Xây dựng cấu tạo Nguyên tử": "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_vi.html",
-        "🧬 Lắp ghép Phân tử": "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_vi.html",
-        "⚖️ Cân bằng Phương trình": "https://phet.colorado.edu/sims/html/balancing-chemical-equations/latest/balancing-chemical-equations_vi.html",
-        "🧪 Đo nồng độ dung dịch": "https://phet.colorado.edu/sims/html/concentration/latest/concentration_vi.html"
+        "🧬 Lắp ghép Phân tử": "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_vi.html"
     },
     "📖 Môn Ngữ Văn": {
         "🗺️ Bản đồ Cấu trúc & Bối cảnh": "van_hoc_cau_truc",
@@ -542,45 +697,48 @@ DANH_MUC_THI_NGHIEM = {
     }
 }
 
+# [VÁ LỖI 5] Mô-đun Ngữ văn dựng lại theo văn bản "Bầy chim chìa vôi"
 DATA_LAB_NGU_VAN = {
     "🗺️ Bản đồ Cấu trúc & Bối cảnh": {
-        "tieu_de": "Bản đồ Cấu trúc: Bồng chanh đỏ",
-        "hoan_canh": "Truyện ngắn viết về tình yêu loài vật, thiên nhiên.",
+        "tieu_de": "Bản đồ Cấu trúc: Bầy chim chìa vôi",
+        "khai_quat": "Truyện ngắn của Nguyễn Quang Thiều về tuổi thơ ở làng quê ven sông, kể theo ngôi thứ ba.",
         "bo_cuc": [
-            {"phan": "Mở đầu", "noi_dung": "Giới thiệu tổ chim bồng chanh đỏ."},
-            {"phan": "Diễn biến", "noi_dung": "Cuộc mạo hiểm leo lên bờ vực."},
-            {"phan": "Cao trào", "noi_dung": "Quyết định thả chim về tự nhiên."}
+            {"phan": "Phần 1", "noi_dung": "Giữa đêm, hai anh em thức giấc, trò chuyện và lo lắng cho bầy chim chìa vôi non khi nước sông dâng."},
+            {"phan": "Phần 2", "noi_dung": "Hai anh em quyết định chèo đò ra bãi sông."},
+            {"phan": "Phần 3", "noi_dung": "Hai anh em chứng kiến bầy chim non bay lên khỏi mặt nước."}
         ],
-        "y_nghia": "Bồi dưỡng tình yêu thiên nhiên và ý thức bảo vệ môi trường."
+        "y_nghia": "Ngợi ca tâm hồn trong sáng, nhân hậu của trẻ thơ và tình yêu thương đối với loài vật, thiên nhiên."
     },
     "🎭 Biểu đồ Tương tác Nhân vật": {
-        "nhan_vat": "Nhân vật Hoài",
-        "dac_diem": "Giàu tình cảm, ham khám phá, nhân hậu.",
-        "hanh_vi_tieu_bieu": "Trèo cây xem chim; ngăn em bắt chim.",
+        "nhan_vat": "Hai anh em Mon và Mên",
+        "dac_diem": "Hồn nhiên, giàu tình yêu thương, biết quan tâm đến những sinh linh nhỏ bé.",
+        "hanh_vi_tieu_bieu": "Thao thức giữa đêm vì lo cho bầy chim; cùng nhau chèo đò ra bãi sông.",
         "dien_bien_tam_ly": [
-            {"giai_doan": "Đầu truyện", "tam_trang": "Tò mò, háo hức."},
-            {"giai_doan": "Cuối truyện", "tam_trang": "Thức tỉnh, buông bỏ."}
+            {"giai_doan": "Giữa đêm", "tam_trang": "Bồn chồn, lo lắng cho bầy chim non."},
+            {"giai_doan": "Trên đường ra bãi sông", "tam_trang": "Hồi hộp, quyết tâm."},
+            {"giai_doan": "Khi bầy chim bay lên", "tam_trang": "Vỡ òa xúc động, vui mừng."}
         ]
     },
     "🕸️ Sơ đồ Quan hệ Nhân vật": {
-        "tac_pham": "Quan hệ trong 'Bồng chanh đỏ'",
+        "tac_pham": "Quan hệ trong 'Bầy chim chìa vôi'",
         "quan_he": [
-            {"tu_khoa": "Anh Hoài ↔️ Em Ý", "loai": "Đồng hành", "mo_ta": "Cùng chia sẻ bí mật tuổi thơ."},
-            {"tu_khoa": "Con người ↔️ Thiên nhiên", "loai": "Thấu hiểu", "mo_ta": "Sự hòa hợp với tự nhiên."}
+            {"tu_khoa": "Mon ↔️ Mên", "loai": "Anh em", "mo_ta": "Cùng chung nỗi lo, cùng hành động để giúp bầy chim."},
+            {"tu_khoa": "Hai anh em ↔️ Bầy chim chìa vôi", "loai": "Yêu thương, che chở", "mo_ta": "Tình cảm hồn nhiên, nhân hậu của trẻ thơ với loài vật."}
         ]
     },
     "✍️ Thực hành Luyện từ & Ngữ pháp": {
-        "chu_de": "Biện pháp tu từ lớp 7",
+        "chu_de": "Biện pháp tu từ (ví dụ minh họa)",
         "cau_hoi_mau": [
-            {"cau": "Đôi cánh chim đỏ rực như ngọn lửa.", "loai": "So sánh", "phan_tich": "Làm hình ảnh thêm sinh động, rực rỡ."}
+            {"cau": "Bầy chim non bay vút lên như những mũi tên nhỏ.", "loai": "So sánh", "phan_tich": "Làm nổi bật sự nhanh nhẹn, mạnh mẽ của bầy chim non."},
+            {"cau": "Những ngôi sao thức suốt đêm, chăm chỉ làm việc trên bầu trời.", "loai": "Nhân hóa", "phan_tich": "Làm các vì sao trở nên gần gũi, sinh động như con người."}
         ]
     },
     "📝 Trạm Lập dàn ý bài văn": {
-        "the_loai": "Biểu cảm về tác phẩm văn học",
+        "the_loai": "Phân tích đặc điểm nhân vật trong một tác phẩm văn học",
         "dan_y": [
-            {"buoc": "Mở bài", "noi_dung": "Giới thiệu tác phẩm và tác giả."},
-            {"buoc": "Thân bài", "noi_dung": "Trình bày cảm xúc về nội dung và nghệ thuật."},
-            {"buoc": "Kết bài", "noi_dung": "Khẳng định giá trị tác phẩm."}
+            {"buoc": "Mở bài", "noi_dung": "Giới thiệu tác phẩm, tác giả, nhân vật và nêu nhận xét khái quát về nhân vật."},
+            {"buoc": "Thân bài", "noi_dung": "Lần lượt phân tích từng đặc điểm của nhân vật; mỗi đặc điểm có bằng chứng từ văn bản (lời nói, hành động, suy nghĩ)."},
+            {"buoc": "Kết bài", "noi_dung": "Khẳng định ý nghĩa của nhân vật và nêu cảm nghĩ của em."}
         ]
     }
 }
@@ -698,7 +856,7 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         if "Bản đồ Cấu trúc" in chon_modul:
             data = DATA_LAB_NGU_VAN["🗺️ Bản đồ Cấu trúc & Bối cảnh"]
             st.markdown(f"### 🗺️ {data['tieu_de']}")
-            st.info(f"⏳ **Hoàn cảnh sáng tác:** {data['hoan_canh']}")
+            st.info(f"📌 **Khái quát:** {data['khai_quat']}")
             for item in data["bo_cuc"]:
                 with st.expander(f"🔹 {item['phan']}"):
                     st.write(item["noi_dung"])
@@ -742,7 +900,7 @@ def hien_thi_phong_thi_nghiem(mon_hien_tai, key_prefix="lab"):
         )
         url_tn = ds_tn_mon[ten_tn]
         if url_tn:
-            st.components.v1.iframe(url_tn, height=580, scrolling=True)
+            components.iframe(url_tn, height=580, scrolling=True)
 
 def hien_thi_bai(mon, lop, chuong, ten_bai, data):
     st.markdown(f"### 📖 {ten_bai}")
@@ -840,6 +998,10 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     nd_ch = ch.get("nd") or ch.get("de")
                     de_tron.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
                 st.session_state[f"de_{sid}"] = de_tron
+                # [VÁ LỖI 4] Mỗi đề mới có mã riêng -> nút chọn đáp án được tạo mới,
+                # lựa chọn của đề cũ không còn dính sang đề mới.
+                st.session_state[f"nonce_{sid}"] = uuid.uuid4().hex[:8]
+            nonce = st.session_state.setdefault(f"nonce_{sid}", "0")
 
             with st.form(f"f_{sid}"):
                 tl = {}
@@ -848,7 +1010,7 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
                     tl[i] = st.radio(
                         "Chọn:",
                         ch["da"],
-                        key=f"r_{sid}_{i}",
+                        key=f"r_{sid}_{nonce}_{i}",
                         index=None,
                         label_visibility="collapsed"
                     )
@@ -970,7 +1132,10 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
                             if f.name.endswith(".docx"):
                                 payload.append(trich_xuat_word_docx(f.read()))
                             elif f.name.endswith(".pdf"):
-                                payload.append({"mime_type": "application/pdf", "data": f.read()})
+                                payload.append(types.Part.from_bytes(
+                                    data=f.read(),
+                                    mime_type="application/pdf"
+                                ))
                             elif f.name.endswith((".png", ".jpg", ".jpeg")) and HAS_PIL:
                                 payload.append(Image.open(io.BytesIO(f.read())))
                             else:
@@ -1071,10 +1236,13 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
             "Giữa kì (20 câu)": 20,
             "Học kì (40 câu)": 40
         }
-        if st.button("🚀 TẠO ĐỀ THI LẠI / MỚI", type="primary"):
-            st.session_state[f"dethi_{mon}_{lop}"] = None
+        khoa_de = f"dethi_{mon}_{lop}"
+        khoa_nonce = f"nonce_thi_{mon}_{lop}"
 
-        if st.session_state.get(f"dethi_{mon}_{lop}") is None:
+        if st.button("🚀 TẠO ĐỀ THI LẠI / MỚI", type="primary"):
+            st.session_state[khoa_de] = None
+
+        if st.session_state.get(khoa_de) is None:
             all_questions = []
             for c in chuong_chon:
                 for b, data in chuong_dict[c].items():
@@ -1089,10 +1257,13 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                     da_moi, vt_moi = tron_dap_an_thong_minh(ch)
                     nd_ch = ch.get("nd") or ch.get("de")
                     de_tron_thi.append({"nd": nd_ch, "da": da_moi, "d": vt_moi})
-                st.session_state[f"dethi_{mon}_{lop}"] = de_tron_thi
+                st.session_state[khoa_de] = de_tron_thi
+                # [VÁ LỖI 4] Đề mới -> mã mới cho các nút chọn đáp án
+                st.session_state[khoa_nonce] = uuid.uuid4().hex[:8]
 
-        if st.session_state.get(f"dethi_{mon}_{lop}"):
-            de_thi = st.session_state[f"dethi_{mon}_{lop}"]
+        if st.session_state.get(khoa_de):
+            de_thi = st.session_state[khoa_de]
+            nonce_thi = st.session_state.setdefault(khoa_nonce, "0")
             with st.form(f"form_thi_{mon}_{lop}"):
                 tl_thi = {}
                 for i, ch in enumerate(de_thi, 1):
@@ -1100,7 +1271,7 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                     tl_thi[i] = st.radio(
                         f"Đ/á {i}:",
                         ch["da"],
-                        key=f"thi_{mon}_{lop}_{i}",
+                        key=f"thi_{mon}_{lop}_{nonce_thi}_{i}",
                         index=None,
                         label_visibility="collapsed"
                     )
