@@ -6,6 +6,12 @@ Phiên bản vá lỗi:
   - Sửa lỗi đáp án cũ dính sang đề mới (key radio có mã làm mới)
   - Sửa nội dung Ngữ văn 7 theo đúng SGK Kết nối tri thức; chỉnh PhET đúng lớp 7
   - Chuyển từ google-generativeai sang google-genai; cập nhật model Gemini mới
+Đợt vá 2:
+  - Báo lỗi rõ ràng khi thiếu thư viện google-genai (không còn sập trang)
+  - Sửa nút "Mở bài học" ở trang Tra cứu; Phòng thi tự tạo đề khi đổi tùy chọn
+  - Lọc tin nhắn lỗi khỏi ngữ cảnh AI; gia sư mặc định theo môn đang học
+  - Trạm nạp dữ liệu xuất JSON đã kiểm tra cấu trúc (không còn sinh code Python)
+  - Giới hạn tổng số câu hỏi AI/phút; chặn đoán mật khẩu Admin
 """
 import streamlit as st
 import streamlit.components.v1 as components
@@ -21,11 +27,19 @@ import os
 import hashlib
 import threading
 import hmac
-from collections import OrderedDict
+import json
+from collections import OrderedDict, deque
 
-from google import genai
-from google.genai import types
-from google.genai import errors as genai_errors
+# [VÁ 2] Không để cả trang sập nếu server chưa cài google-genai:
+# app vẫn chạy phần học tập, chỉ tắt gia sư AI và hiện hướng dẫn sửa.
+try:
+    from google import genai
+    from google.genai import types
+    from google.genai import errors as genai_errors
+    HAS_GENAI = True
+except Exception:
+    genai = types = genai_errors = None
+    HAS_GENAI = False
 
 # ==================== CẤU HÌNH TRANG & ĐIỀU HƯỚNG SỚM ====================
 st.set_page_config(
@@ -35,12 +49,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# [VÁ 2 – mục 6] Gán thẳng giá trị cho các widget chọn Khối/Chương/Bài.
+# Trước đây dùng tham số index=, bị Streamlit bỏ qua khi widget đã có key.
 if "search_jump" in st.session_state:
     item = st.session_state.pop("search_jump")
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = item["mon"]
-    st.session_state["chuong_main"] = item["chuong"]
-    st.session_state["bai_main"] = item["bai"]
+    st.session_state["s_lop"] = item["lop"]
+    st.session_state["s_chuong"] = item["chuong"]
+    st.session_state["s_bai"] = item["bai"]
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
 # Ghi chú: SDK google-genai tạo client riêng cho từng API key, không còn
@@ -51,8 +68,14 @@ def get_global_locks():
     return {
         "user_count_lock": threading.Lock(),
         "ai_cache_lock": threading.Lock(),
+        "rate_lock": threading.Lock(),
         "online_users": {},
-        "ai_cache": OrderedDict()
+        "ai_cache": OrderedDict(),
+        # [VÁ 2 – mục 14] Mốc thời gian các câu hỏi AI của toàn hệ thống
+        "ai_request_times": deque(),
+        # [VÁ 2 – mục 16] Mốc thời gian các lần nhập sai mật khẩu Admin
+        "admin_fail_lock": threading.Lock(),
+        "admin_fail_times": deque(),
     }
 
 GLOBALS = get_global_locks()
@@ -129,12 +152,32 @@ def cap_nhat_nguoi_online():
         bo_nho.update(ds_online)
         return len(bo_nho)
 
+# Tổng số câu hỏi AI tối đa của cả hệ thống trong 1 phút (đổi trong Secrets
+# bằng AI_MAX_PER_MINUTE). Chặn trường hợp tải lại trang để hỏi liên tục,
+# làm cạn hạn mức API của cả trường.
+def lay_gioi_han_toan_cuc():
+    try:
+        return max(1, int(get_secret("AI_MAX_PER_MINUTE", 30)))
+    except Exception:
+        return 30
+
 def kiem_tra_gioi_han_tan_suat(cooldown_seconds=4):
     now = time.time()
+    # 1) Giới hạn theo phiên (mỗi học sinh)
     last_time = st.session_state.get("last_ai_request_time", 0.0)
     elapsed = now - last_time
     if elapsed < cooldown_seconds:
         return False, int(cooldown_seconds - elapsed) + 1
+    # 2) [VÁ 2 – mục 14] Giới hạn tổng cho toàn hệ thống
+    gioi_han = lay_gioi_han_toan_cuc()
+    with GLOBALS["rate_lock"]:
+        hang_doi = GLOBALS["ai_request_times"]
+        while hang_doi and now - hang_doi[0] > 60:
+            hang_doi.popleft()
+        if len(hang_doi) >= gioi_han:
+            cho = int(60 - (now - hang_doi[0])) + 1
+            return False, cho
+        hang_doi.append(now)
     st.session_state["last_ai_request_time"] = now
     return True, 0
 
@@ -145,9 +188,10 @@ def tao_ma_hash_cau_hoi(mon_hoc, bai_hoc, che_do, cau_hoi):
     return hashlib.md5(chuoi_chuan.encode("utf-8")).hexdigest()
 
 def luu_cache_ai(ma_hash, noi_dung):
-    nd_lower = noi_dung.lower()
-    tu_khoa_loi = ["bận", "quá tải", "lỗi", "chuyển sang", "bảo trì"]
-    if any(k in nd_lower for k in tu_khoa_loi) or "⚠️" in noi_dung:
+    # [VÁ 2 – mục 11] Chỉ bỏ qua thông báo lỗi của hệ thống (bắt đầu bằng ⚠️).
+    # Trước đây lọc theo chữ "lỗi", "bận"... nên bỏ sót cả câu trả lời hợp lệ
+    # như "lỗi sai thường gặp khi...".
+    if not noi_dung or "⚠️" in noi_dung:
         return
     with GLOBALS["ai_cache_lock"]:
         cache = GLOBALS["ai_cache"]
@@ -217,6 +261,12 @@ def tron_dap_an_thong_minh(ch):
     da_moi = tu_do + co_dinh
     return da_moi, da_moi.index(d_dung)
 
+def giu_lua_chon_hop_le(key, ds_lua_chon):
+    """Xóa giá trị cũ của widget nếu nó không còn trong danh sách lựa chọn
+    (ví dụ chuyển môn khác), tránh lỗi hoặc hiển thị sai."""
+    if key in st.session_state and st.session_state[key] not in ds_lua_chon:
+        del st.session_state[key]
+
 def lam_sach_id(s):
     return re.sub(r'[^a-zA-Z0-9_\-]', '_', str(s))
 
@@ -270,6 +320,19 @@ def trich_xuat_word_docx(file_bytes):
         return "\n".join([p for p in doan_van if p])
     except Exception as e:
         return f"[Lỗi đọc file Word: {e}]"
+
+# ==================== GHI LOG LỖI ====================
+# [VÁ 2 – mục 8] Ghi lỗi thật vào log của server (xem ở Manage app → Logs)
+# thay vì nuốt im lặng. Che API key nếu nó lọt vào thông báo lỗi.
+def ghi_log_loi(nguon, loi):
+    try:
+        thong_bao = str(loi)
+        for k in GEMINI_KEYS + [DOLA_KEY]:
+            if k:
+                thong_bao = thong_bao.replace(k, "***")
+        print(f"[LỖI] {nguon}: {type(loi).__name__}: {thong_bao[:500]}", flush=True)
+    except Exception:
+        pass
 
 # ==================== GỌI AI (SDK google-genai) ====================
 def goi_dola_toi_uu(cau_hoi):
@@ -334,8 +397,8 @@ def lay_ds_model_kha_dung(api_key):
             kq = [m for m in MODEL_UU_TIEN if m in ds_hien_co]
             kq += [m for m in ds_hien_co if m not in MODEL_UU_TIEN]
             return kq
-    except Exception:
-        pass
+    except Exception as e:
+        ghi_log_loi("Liệt kê model Gemini", e)
     return list(MODEL_UU_TIEN)
 
 def chuyen_lich_su_gemini(history):
@@ -350,13 +413,21 @@ def chuyen_lich_su_gemini(history):
             ds.append(types.Content(role=h["role"], parts=cac_phan))
     return ds
 
-def goi_gemini_an_toan(payload, system_instruction, history=None):
+def goi_gemini_an_toan(payload, system_instruction, history=None, tra_ve_json=False):
+    if not HAS_GENAI:
+        raise RuntimeError("Server chưa cài thư viện google-genai.")
     if not GEMINI_KEYS:
         raise RuntimeError("Chưa cấu hình GEMINI_API_KEY.")
     if "key_index" not in st.session_state:
         st.session_state["key_index"] = 0
     so_luong_key = len(GEMINI_KEYS)
-    cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
+    if tra_ve_json:
+        cau_hinh = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            response_mime_type="application/json"
+        )
+    else:
+        cau_hinh = types.GenerateContentConfig(system_instruction=system_instruction)
     lich_su = chuyen_lich_su_gemini(history) if history is not None else None
     last_err = None
 
@@ -388,6 +459,7 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                     return txt
                 except genai_errors.APIError as e:
                     last_err = e
+                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
                     # 429: hết hạn mức tạm thời -> chờ 1 giây thử lại một lần
                     if getattr(e, "code", None) == 429 and attempt == 0:
                         time.sleep(1.0)
@@ -396,8 +468,71 @@ def goi_gemini_an_toan(payload, system_instruction, history=None):
                     break
                 except Exception as e:
                     last_err = e
+                    ghi_log_loi(f"Gemini [{ten_m}] key#{idx}", e)
                     break
     raise last_err or RuntimeError("Không có model Gemini khả dụng.")
+
+# ==================== KIỂM TRA DỮ LIỆU BÀI HỌC (TRẠM NẠP) ====================
+# [VÁ 2 – mục 13] AI chỉ trả về JSON. App tự kiểm tra cấu trúc rồi tự sinh file
+# dữ liệu, không còn dùng code Python do AI viết (tránh chạy code lạ trên server).
+def tach_json_tu_van_ban(van_ban):
+    s = str(van_ban).strip()
+    s = re.sub(r'^```(?:json)?\s*|\s*```$', '', s)
+    dau, cuoi = s.find("{"), s.rfind("}")
+    if dau == -1 or cuoi <= dau:
+        raise ValueError("Không tìm thấy dữ liệu JSON trong phản hồi của AI.")
+    return json.loads(s[dau:cuoi + 1])
+
+def chuan_hoa_bai_hoc(du_lieu):
+    """Trả về (bài học đã chuẩn hóa, danh sách cảnh báo)."""
+    if not isinstance(du_lieu, dict):
+        raise ValueError("Dữ liệu phải là một đối tượng (dictionary).")
+    canh_bao = []
+    bai = {
+        "ly_thuyet": str(du_lieu.get("ly_thuyet", "")).strip(),
+        "vi_du": str(du_lieu.get("vi_du", "")).strip(),
+        "cau_hoi": [],
+        "bt_co_ban": [],
+        "bt_nang_cao": [],
+    }
+    if not bai["ly_thuyet"]:
+        canh_bao.append("Thiếu phần lý thuyết.")
+
+    for i, ch in enumerate(du_lieu.get("cau_hoi") or [], 1):
+        if not isinstance(ch, dict):
+            canh_bao.append(f"Câu trắc nghiệm {i}: sai định dạng, đã bỏ qua.")
+            continue
+        nd = str(ch.get("nd", "")).strip()
+        da = [str(x).strip() for x in (ch.get("da") or []) if str(x).strip()]
+        try:
+            d = int(ch.get("d", -1))
+        except (TypeError, ValueError):
+            d = -1
+        if not nd or len(da) < 2 or not (0 <= d < len(da)):
+            canh_bao.append(f"Câu trắc nghiệm {i}: thiếu đề, thiếu phương án hoặc sai chỉ số đáp án, đã bỏ qua.")
+            continue
+        if len(set(da)) != len(da):
+            canh_bao.append(f"Câu trắc nghiệm {i}: có phương án trùng nhau, đã bỏ qua.")
+            continue
+        bai["cau_hoi"].append({"nd": nd, "da": da, "d": d})
+
+    for nhom in ("bt_co_ban", "bt_nang_cao"):
+        for i, bt in enumerate(du_lieu.get(nhom) or [], 1):
+            if not isinstance(bt, dict) or not str(bt.get("de", "")).strip():
+                canh_bao.append(f"{nhom} {i}: thiếu đề bài, đã bỏ qua.")
+                continue
+            dd = bt.get("dd", [])
+            if isinstance(dd, (str, int, float)):
+                dd = [dd]
+            dd = [str(x).strip() for x in dd if str(x).strip()]
+            if not dd:
+                canh_bao.append(f"{nhom} {i}: thiếu đáp án/gợi ý (dd).")
+            bai[nhom].append({
+                "de": str(bt["de"]).strip(),
+                "dd": dd or [""],
+                "lg": str(bt.get("lg", "")).strip(),
+            })
+    return bai, canh_bao
 
 # ==================== NẠP DỮ LIỆU CÁC MÔN ====================
 try:
@@ -749,7 +884,12 @@ with st.sidebar:
     dark_mode = st.toggle("🌙 Chế độ tối", key="dark_mode_toggle")
     st.markdown(f"🟢 **Đang trực tuyến: {cap_nhat_nguoi_online()}**")
 
-    if not GEMINI_KEYS:
+    if not HAS_GENAI:
+        st.error(
+            "⚠️ Gia sư AI đang tắt: server chưa cài thư viện **google-genai**. "
+            "Quản trị viên thêm dòng `google-genai` vào file requirements.txt rồi khởi động lại app."
+        )
+    elif not GEMINI_KEYS:
         st.warning("⚠️ Chưa có API Key, chạy ở chế độ Mẫu.")
 
     st.divider()
@@ -969,7 +1109,8 @@ def hien_thi_bai(mon, lop, chuong, ten_bai, data):
             st.info("Chưa có bài tập nâng cao.")
         else:
             for i, nc in enumerate(bt_nc, 1):
-                with st.expander(f"Bài nâng cao {i}: {nc['de'][:60]}..."):
+                de_ngan = nc['de'] if len(nc['de']) <= 60 else nc['de'][:60] + "..."
+                with st.expander(f"Bài nâng cao {i}: {de_ngan}"):
                     st.markdown(f"**Đề bài:** {nc['de']}")
                     if "Ngữ Văn" in mon:
                         if st.button("💡 Xem gợi ý", key=f"btn_goiy_nc_{sid}_{i}"):
@@ -1080,6 +1221,7 @@ elif che_do == "🔍 Tra cứu / Tìm kiếm":
                         if kw in t_bai.lower() or kw in lt_txt:
                             ket_qua_tim.append({
                                 "mon": t_mon,
+                                "lop": lop,
                                 "chuong": chuong,
                                 "bai": t_bai
                             })
@@ -1099,9 +1241,32 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
     """, unsafe_allow_html=True)
     mk = st.text_input("🔑 Mật khẩu Admin:", type="password")
 
+    # [VÁ 2 – mục 16] Sai quá 5 lần trong 10 phút -> khóa đăng nhập 10 phút.
+    # Bộ đếm dùng chung cho cả hệ thống nên tải lại trang không vượt qua được.
+    SO_LAN_SAI_TOI_DA = 5
+    THOI_GIAN_KHOA = 600
+    now_ad = time.time()
+    with GLOBALS["admin_fail_lock"]:
+        ds_sai = GLOBALS["admin_fail_times"]
+        while ds_sai and now_ad - ds_sai[0] > THOI_GIAN_KHOA:
+            ds_sai.popleft()
+        bi_khoa = len(ds_sai) >= SO_LAN_SAI_TOI_DA
+        con_lai = int(THOI_GIAN_KHOA - (now_ad - ds_sai[0])) + 1 if bi_khoa else 0
+
+    dang_nhap_dung = False
+    if ADMIN_PASS and mk and not bi_khoa:
+        dang_nhap_dung = hmac.compare_digest(mk, ADMIN_PASS)
+        # Chỉ tính một lần sai cho mỗi mật khẩu mới nhập (không đếm lại khi trang tải lại)
+        if not dang_nhap_dung and st.session_state.get("admin_mk_da_kiem") != mk:
+            st.session_state["admin_mk_da_kiem"] = mk
+            with GLOBALS["admin_fail_lock"]:
+                GLOBALS["admin_fail_times"].append(now_ad)
+
     if not ADMIN_PASS:
         st.error("⚠️ Hệ thống chưa thiết lập ADMIN_PASSWORD trong Secrets.")
-    elif mk and hmac.compare_digest(mk, ADMIN_PASS):
+    elif bi_khoa:
+        st.error(f"🔒 Nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau khoảng {con_lai // 60 + 1} phút.")
+    elif dang_nhap_dung:
         st.success("Xác thực thành công. Tính năng nạp file đang mở...")
         tab_upfile, tab_paste = st.tabs(["📁 Tải File Lên", "📝 Dán Văn Bản Thô"])
         danh_sach_files = []
@@ -1117,11 +1282,19 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
             raw_text = st.text_area("Dán nội dung văn bản gốc vào đây:", height=220)
 
         PROMPT_PARSER = (
-            'Chuyển nội dung thành Dictionary Python chuẩn gồm '
-            '"ly_thuyet", "vi_du", "cau_hoi", "bt_co_ban", "bt_nang_cao". '
-            'Chỉ in code Python.'
+            "Bạn chuyển tài liệu bài học thành MỘT đối tượng JSON duy nhất, không kèm lời giải thích, "
+            "với đúng các khóa sau:\n"
+            '- "ly_thuyet": chuỗi, tóm tắt lý thuyết.\n'
+            '- "vi_du": chuỗi, ví dụ minh họa (có thể rỗng).\n'
+            '- "cau_hoi": danh sách câu trắc nghiệm, mỗi câu dạng '
+            '{"nd": "đề", "da": ["phương án 1", "phương án 2", ...], "d": chỉ số đáp án đúng, đếm từ 0}.\n'
+            '- "bt_co_ban" và "bt_nang_cao": danh sách bài tập, mỗi bài dạng '
+            '{"de": "đề bài", "dd": ["đáp án hoặc ý chính"], "lg": "lời giải hoặc gợi ý"}.\n'
+            "Chỉ dùng nội dung có trong tài liệu, không tự bịa thêm. Viết bằng tiếng Việt."
         )
-        if st.button("⚡ Bóc tách dữ liệu", type="primary", use_container_width=True):
+        if not HAS_GENAI:
+            st.error("⚠️ Chức năng cần thư viện google-genai. Hãy thêm `google-genai` vào requirements.txt.")
+        elif st.button("⚡ Bóc tách dữ liệu", type="primary", use_container_width=True):
             if not danh_sach_files and not raw_text.strip():
                 st.warning("⚠️ Vui lòng tải file hoặc dán văn bản!")
             else:
@@ -1142,22 +1315,55 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
                                 payload.append(f.read().decode("utf-8", errors="ignore"))
                         if raw_text.strip():
                             payload.append(raw_text.strip())
-                        ket_qua = goi_gemini_an_toan(payload, system_instruction=PROMPT_PARSER)
-                        kq_clean = ket_qua.replace("```python", "").replace("```json", "").replace("```", "").strip()
-                        st.session_state["parsed_code_result"] = kq_clean
+                        ket_qua = goi_gemini_an_toan(
+                            payload,
+                            system_instruction=PROMPT_PARSER,
+                            tra_ve_json=True
+                        )
+                        bai_moi, canh_bao = chuan_hoa_bai_hoc(tach_json_tu_van_ban(ket_qua))
+                        st.session_state["parsed_lesson"] = bai_moi
+                        st.session_state["parsed_warnings"] = canh_bao
                     except Exception as e:
-                        st.error(f"❌ Lỗi xử lý: {e}")
+                        ghi_log_loi("Trạm nạp dữ liệu", e)
+                        st.error(f"❌ Không bóc tách được dữ liệu: {e}")
 
-        if st.session_state.get("parsed_code_result"):
-            code_out = st.session_state["parsed_code_result"]
-            st.success("✅ Bóc tách dữ liệu thành công!")
-            st.download_button(
-                "💾 Tải Code về máy (.py)",
-                data=code_out.encode("utf-8"),
-                file_name="data_moi.py",
-                mime="text/x-python"
+        if st.session_state.get("parsed_lesson"):
+            bai_moi = st.session_state["parsed_lesson"]
+            canh_bao = st.session_state.get("parsed_warnings", [])
+            st.success(
+                f"✅ Bóc tách xong: {len(bai_moi['cau_hoi'])} câu trắc nghiệm, "
+                f"{len(bai_moi['bt_co_ban'])} bài cơ bản, {len(bai_moi['bt_nang_cao'])} bài nâng cao."
             )
-            st.code(code_out, language="python")
+            if canh_bao:
+                with st.expander(f"⚠️ {len(canh_bao)} cảnh báo cần giáo viên xem lại", expanded=True):
+                    for cb in canh_bao:
+                        st.markdown(f"- {cb}")
+            st.info("📌 Nội dung do AI bóc tách — giáo viên cần kiểm tra lại trước khi đưa vào dữ liệu chính thức.")
+
+            json_out = json.dumps(bai_moi, ensure_ascii=False, indent=2)
+            # File .py do chính app sinh ra từ dữ liệu đã kiểm tra (chỉ gồm chuỗi, số, danh sách),
+            # không phải code do AI viết.
+            py_out = (
+                "# -*- coding: utf-8 -*-\n"
+                "# Dữ liệu bài học do Trạm nạp dữ liệu sinh ra. Dán vào đúng Môn > Lớp > Chương > Bài.\n"
+                f"BAI_MOI = {json_out}\n"
+            )
+            c_tai1, c_tai2 = st.columns(2)
+            c_tai1.download_button(
+                "💾 Tải dữ liệu (.json)",
+                data=json_out.encode("utf-8"),
+                file_name="bai_moi.json",
+                mime="application/json",
+                use_container_width=True
+            )
+            c_tai2.download_button(
+                "💾 Tải dữ liệu (.py)",
+                data=py_out.encode("utf-8"),
+                file_name="data_moi.py",
+                mime="text/x-python",
+                use_container_width=True
+            )
+            st.json(bai_moi)
     elif mk:
         st.error("Sai mật khẩu!")
 
@@ -1189,24 +1395,29 @@ elif che_do == "📖 Học theo chuyên đề":
         st.warning("⚠️ Dữ liệu đang được cập nhật...")
     else:
         c_lop, c_chuong, c_bai = st.columns([1, 2, 2])
-        lop = c_lop.selectbox("Khối:", list(lop_dict.keys()), key="s_lop")
+        ds_lop = list(lop_dict.keys())
+        giu_lua_chon_hop_le("s_lop", ds_lop)
+        lop = c_lop.selectbox("Khối:", ds_lop, key="s_lop")
         chuong_dict = lop_dict[lop]
         ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
-        ch_saved = st.session_state.get("chuong_main")
-        idx_c = ds_chuong.index(ch_saved) if ch_saved in ds_chuong else 0
-        chuong = c_chuong.selectbox("Chương:", ds_chuong, index=idx_c, key="s_chuong")
+        giu_lua_chon_hop_le("s_chuong", ds_chuong)
+        chuong = c_chuong.selectbox("Chương:", ds_chuong, key="s_chuong")
 
         bai_dict = chuong_dict[chuong]
         ds_bai = list(bai_dict.keys())
-        b_saved = st.session_state.get("bai_main")
-        idx_b = ds_bai.index(b_saved) if b_saved in ds_bai else 0
-        bai = c_bai.selectbox("Bài:", ds_bai, index=idx_b, key="s_bai")
+        if not ds_bai:
+            # Trước đây chương rỗng (ví dụ Hóa học "Đang cập nhật") làm app lỗi KeyError
+            st.info("📌 Chương này đang được cập nhật bài học.")
+            bai_dang_hoc = chuong
+        else:
+            giu_lua_chon_hop_le("s_bai", ds_bai)
+            bai = c_bai.selectbox("Bài:", ds_bai, key="s_bai")
 
-        bai_dang_hoc = f"{chuong} - {bai}"
-        du_lieu_bai_hien_tai = bai_dict[bai]
+            bai_dang_hoc = f"{chuong} - {bai}"
+            du_lieu_bai_hien_tai = bai_dict[bai]
 
-        st.markdown("---")
-        hien_thi_bai(mon, lop, chuong, bai, du_lieu_bai_hien_tai)
+            st.markdown("---")
+            hien_thi_bai(mon, lop, chuong, bai, du_lieu_bai_hien_tai)
 
 elif che_do == "📝 Phòng thi / Kiểm tra":
     st.markdown(f"""
@@ -1216,7 +1427,9 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
     """, unsafe_allow_html=True)
     lop_dict = DATABASE[mon]
     if lop_dict:
-        lop = st.selectbox("Khối:", list(lop_dict.keys()), key="s_lop_thi")
+        ds_lop_thi = list(lop_dict.keys())
+        giu_lua_chon_hop_le("s_lop_thi", ds_lop_thi)
+        lop = st.selectbox("Khối:", ds_lop_thi, key="s_lop_thi")
         chuong_dict = lop_dict[lop]
         ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
 
@@ -1238,6 +1451,13 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
         }
         khoa_de = f"dethi_{mon}_{lop}"
         khoa_nonce = f"nonce_thi_{mon}_{lop}"
+        khoa_cau_hinh = f"cauhinh_thi_{mon}_{lop}"
+
+        # [VÁ 2 – mục 7] Đổi cấu trúc đề hoặc danh sách chương -> tạo đề mới ngay
+        cau_hinh_hien_tai = (loai_de, tuple(chuong_chon))
+        if st.session_state.get(khoa_cau_hinh) != cau_hinh_hien_tai:
+            st.session_state[khoa_cau_hinh] = cau_hinh_hien_tai
+            st.session_state[khoa_de] = None
 
         if st.button("🚀 TẠO ĐỀ THI LẠI / MỚI", type="primary"):
             st.session_state[khoa_de] = None
@@ -1291,22 +1511,36 @@ elif che_do == "📝 Phòng thi / Kiểm tra":
                         da_dung = ch["da"][ch["d"]]
                         if tl_thi[i] != da_dung:
                             st.error(f"❌ Câu {i}: Sai (Đúng: **{da_dung}**)")
+    else:
+        st.warning("⚠️ Môn này chưa có dữ liệu câu hỏi, đang được cập nhật...")
 
 # ==================== KHU VỰC GIA SƯ AI ====================
 if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "🎪 Phòng thí nghiệm ảo"]:
     st.divider()
     st.header("💬 Gia sư AI 24/7")
 
+    # [VÁ 2 – mục 10] Gia sư mặc định theo môn đang học/đang thi
+    DS_MON_AI = ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"]
+    MON_SANG_MON_AI = {
+        "📐 Môn Toán": "Toán",
+        "🔬 Môn Vật lý (KHTN)": "Vật Lý",
+        "🧪 Môn Hóa học (KHTN)": "Hóa Học",
+        "📖 Môn Ngữ Văn": "Ngữ Văn",
+    }
+    mon_mac_dinh = MON_SANG_MON_AI.get(mon, "Toán")
+
     col1, col2, col3, col4 = st.columns([2.2, 1, 1.8, 1])
     with col1:
         mon_ai = st.radio(
             "Môn:",
-            ["Toán", "Vật Lý", "Hóa Học", "Ngữ Văn"],
+            DS_MON_AI,
+            index=DS_MON_AI.index(mon_mac_dinh),
             horizontal=True,
             label_visibility="collapsed"
         )
     with col2:
-        tu_dong_doc = st.checkbox("🔊 Đọc to", value=True)
+        # Tắt mặc định để tránh tự phát âm thanh trong lớp học
+        tu_dong_doc = st.checkbox("🔊 Đọc to", value=False)
     with col3:
         nguon_ai = st.selectbox(
             "Nguồn:",
@@ -1353,7 +1587,9 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
     )
 
     if prompt:
-        if not GEMINI_KEYS:
+        if not HAS_GENAI:
+            st.error("⚠️ Gia sư AI đang tắt vì server chưa cài thư viện google-genai.")
+        elif not GEMINI_KEYS:
             st.error("⚠️ Hệ thống chưa được cấu hình API Key trong phần Secrets.")
         else:
             ok, giay = kiem_tra_gioi_han_tan_suat()
@@ -1376,11 +1612,20 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
                         st.session_state.chat_history.append({"role": "assistant", "content": ans_cached})
                         doc_to_an_toan(ans_cached, autoplay=tu_dong_doc)
                     else:
-                        g_hist = [
-                            {"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]}
-                            for m in st.session_state.chat_history[:-1]
-                        ]
+                        # [VÁ 2 – mục 8] Không gửi thông báo lỗi (và câu hỏi bị lỗi
+                        # tương ứng) vào ngữ cảnh của AI.
+                        g_hist = []
+                        for m in st.session_state.chat_history[:-1]:
+                            if m.get("loi"):
+                                if g_hist and g_hist[-1]["role"] == "user":
+                                    g_hist.pop()
+                                continue
+                            g_hist.append({
+                                "role": "user" if m["role"] == "user" else "model",
+                                "parts": [m["content"]]
+                            })
                         luu_kq = ""
+                        la_loi = False
                         try:
                             with st.spinner("🤖 Gia sư AI đang suy nghĩ..."):
                                 payload = [prompt, img_gui] if img_gui else prompt
@@ -1394,12 +1639,18 @@ if che_do in ["📖 Học theo chuyên đề", "📝 Phòng thi / Kiểm tra", "
                                 else:
                                     luu_kq = goi_gemini_an_toan(payload, sys_prompt, g_hist)
                                 st.markdown(luu_kq)
-                        except Exception:
+                        except Exception as e:
+                            ghi_log_loi("Gia sư AI", e)
+                            la_loi = True
                             luu_kq = "⚠️ Đường truyền AI đang bận xử lý, em thử lại câu hỏi sau vài giây nhé."
                             st.error(luu_kq)
 
-                        st.session_state.chat_history.append({"role": "assistant", "content": luu_kq})
-                        if h_key:
+                        st.session_state.chat_history.append({
+                            "role": "assistant",
+                            "content": luu_kq,
+                            "loi": la_loi
+                        })
+                        if h_key and not la_loi:
                             luu_cache_ai(h_key, luu_kq)
-                        if luu_kq and "⚠️" not in luu_kq:
+                        if luu_kq and not la_loi:
                             doc_to_an_toan(luu_kq, autoplay=tu_dong_doc)
