@@ -13,6 +13,57 @@ st.set_page_config(
     page_icon="🔬",
     layout="wide"
 )
+# === HIỆU ỨNG HÌNH NỀN RƠI LIÊN TỤC (CSS ANIMATION) ===
+st.markdown("""
+<style>
+    /* Lớp bao bọc các hạt rơi, khóa cứng trên toàn màn hình */
+    .falling-container {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; /* Rất quan trọng: cho phép click xuyên qua */
+        z-index: 9999; /* Luôn nổi lên trên cùng */
+        overflow: hidden;
+    }
+
+    /* Thiết lập chung cho các hạt */
+    .particle {
+        position: absolute;
+        top: -10%;
+        font-size: 24px;
+        user-select: none;
+        animation: fall linear infinite; /* Chạy liên tục không điểm dừng */
+    }
+
+    /* Hiệu ứng rơi và lắc lư nhẹ */
+    @keyframes fall {
+        0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; }
+    }
+
+    /* Tùy chỉnh vị trí, tốc độ và độ trễ ngẫu nhiên cho từng hạt */
+    .p1 { left: 5%; animation-duration: 12s; animation-delay: 0s; font-size: 30px; }
+    .p2 { left: 15%; animation-duration: 15s; animation-delay: 2s; }
+    .p3 { left: 25%; animation-duration: 10s; animation-delay: 4s; font-size: 20px; }
+    .p4 { left: 40%; animation-duration: 18s; animation-delay: 1s; }
+    .p5 { left: 55%; animation-duration: 14s; animation-delay: 5s; font-size: 35px; }
+    .p6 { left: 70%; animation-duration: 11s; animation-delay: 3s; }
+    .p7 { left: 85%; animation-duration: 16s; animation-delay: 0.5s; font-size: 28px; }
+    .p8 { left: 95%; animation-duration: 13s; animation-delay: 6s; }
+</style>
+
+<div class="falling-container">
+    <div class="particle p1">🫧</div>
+    <div class="particle p2">✨</div>
+    <div class="particle p3">🎈</div>
+    <div class="particle p4">❄️</div>
+    <div class="particle p5">🫧</div>
+    <div class="particle p6">✨</div>
+    <div class="particle p7">🎈</div>
+    <div class="particle p8">❄️</div>
+</div>
+""", unsafe_allow_html=True)
 
 # === HIỆU ỨNG TIÊU ĐỀ VUI NHỘN DÀNH CHO HỌC SINH ===
 st.markdown("""
