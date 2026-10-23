@@ -1,195 +1,301 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sandbox Mini - Khoa Học Vui</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
-  body { background:#0f0f1a; color:#fff; overflow:hidden; }
-  canvas { display:block; background:#000; margin:0 auto; }
-  .toolbar { padding:8px; background:#1a1a2e; text-align:center; flex-wrap:wrap; display:flex; justify-content:center; gap:4px; }
-  button {
-    padding:6px 10px; margin:1px; border:none; border-radius:6px; cursor:pointer;
-    color:#fff; font-weight:bold; font-size:13px; transition:transform 0.1s;
-  }
-  button:hover { transform:scale(1.05); }
-  button.selected { outline:3px solid #ffd700; outline-offset:2px; }
-  .info { padding:6px 12px; background:#16213e; font-size:12px; color:#aaccff; text-align:center; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox Mini - Khoa Học Vui</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: Arial, sans-serif; 
+        }
+        body { 
+            background: #0f0f1a; 
+            color: #fff; 
+            overflow: hidden; 
+        }
+        canvas { 
+            display: block; 
+            background: #000; 
+            margin: 0 auto; 
+        }
+        .toolbar { 
+            padding: 8px; 
+            background: #1a1a2e; 
+            text-align: center; 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 4px; 
+        }
+        button {
+            padding: 6px 10px; 
+            margin: 1px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            color: #fff; 
+            font-weight: bold; 
+            font-size: 13px; 
+            transition: transform 0.1s;
+        }
+        button:hover { 
+            transform: scale(1.05); 
+        }
+        button.selected { 
+            outline: 3px solid #ffd700; 
+            outline-offset: 2px; 
+        }
+        .info { 
+            padding: 6px 12px; 
+            background: #16213e; 
+            font-size: 12px; 
+            color: #aaccff; 
+            text-align: center; 
+        }
+    </style>
 </head>
 <body>
-<div class="info">🎮 Nhấn & Kéo chuột để đặt vật liệu | Khám phá: Nước, Cát, Lửa, Gỗ, Khói...</div>
-<div class="toolbar" id="toolbar"></div>
-<canvas id="gameCanvas" tabindex="0"></canvas>
+    <div class="info">🎮 Nhấn & Kéo chuột để đặt vật liệu | Khám phá: Nước, Cát, Lửa, Gỗ, Khói...</div>
+    <div class="toolbar" id="toolbar"></div>
+    <canvas id="gameCanvas" tabindex="0"></canvas>
 
 <script>
-// === Cấu hình lưới ===
-const W = 160, H = 110, SCALE = 4;
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = W * SCALE; canvas.height = H * SCALE;
+    // === 1. CẤU HÌNH LƯỚI & CANVAS ===
+    const W = 160;
+    const H = 110;
+    const SCALE = 4;
+    
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = W * SCALE; 
+    canvas.height = H * SCALE;
 
-// === Định nghĩa vật liệu ===
-const EMPTY = 0;
-const materials = {
-  [EMPTY]: {name:"Không khí", color:"#000000", density:0},
-  1: {name:"Cát", color:"#e6c26e", density:3},
-  2: {name:"Nước", color:"#4a90d9", density:1.5, liquid:true},
-  3: {name:"Đất", color:"#8b5a2b", density:4},
-  4: {name:"Lửa", color:"#ff4500", density:0.2, life:40, burn:1},
-  5: {name:"Gỗ", color:"#a0522d", density:3, flammable:true},
-  6: {name:"Khói", color:"#888888", density:-0.5, gas:true, life:60},
-  7: {name:"Đá", color:"#708090", density:6},
-  8: {name:"Cây", color:"#228b22", density:2.5, flammable:true},
-  9: {name:"Dầu", color:"#2c2c2c", density:1, liquid:true, flammable:true},
-};
+    // === 2. ĐỊNH NGHĨA VẬT LIỆU ===
+    const EMPTY = 0;
+    const materials = {
+        [EMPTY]: { name: "Không khí", color: "#000000", density: 0 },
+        1: { name: "Cát", color: "#e6c26e", density: 3 },
+        2: { name: "Nước", color: "#4a90d9", density: 1.5, liquid: true },
+        3: { name: "Đất", color: "#8b5a2b", density: 4 },
+        4: { name: "Lửa", color: "#ff4500", density: 0.2, life: 40, burn: 1 },
+        5: { name: "Gỗ", color: "#a0522d", density: 3, flammable: true },
+        6: { name: "Khói", color: "#888888", density: -0.5, gas: true, life: 60 },
+        7: { name: "Đá", color: "#708090", density: 6 },
+        8: { name: "Cây", color: "#228b22", density: 2.5, flammable: true },
+        9: { name: "Dầu", color: "#2c2c2c", density: 1, liquid: true, flammable: true },
+    };
 
-// === Khởi tạo thế giới ===
-let world = new Uint8Array(W * H);
-let tempLife = new Uint16Array(W * H);
-let activeMaterial = 1;
+    // === 3. KHỞI TẠO THẾ GIỚI ===
+    const world = new Uint8Array(W * H);
+    const tempLife = new Uint16Array(W * H);
+    let activeMaterial = 1;
 
-function getIdx(x, y) { return y * W + x; }
-function inBounds(x, y) { return x >= 0 && x < W && y >= 0 && y < H; }
-
-// === Tạo thanh công cụ chọn vật liệu ===
-const toolbar = document.getElementById('toolbar');
-Object.entries(materials).forEach(([id, mat]) => {
-  if (+id === EMPTY) return;
-  const btn = document.createElement('button');
-  btn.style.background = mat.color;
-  btn.textContent = mat.name;
-  btn.onclick = () => {
-    activeMaterial = +id;
-    document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-  };
-  toolbar.appendChild(btn);
-});
-const btnReset = document.createElement('button');
-btnReset.textContent = "🗑️ Xóa hết";
-btnReset.style.background = "#e74c3c";
-btnReset.onclick = () => { world.fill(EMPTY); tempLife.fill(0); };
-toolbar.appendChild(btnReset);
-
-// === Đặt vật liệu khi kéo chuột ===
-function placeMaterial(cx, cy, mat, brush=2) {
-  for (let dy = -brush; dy <= brush; dy++) {
-    for (let dx = -brush; dx <= brush; dx++) {
-      const x = cx + dx, y = cy + dy;
-      if (inBounds(x, y) && Math.random() < 0.7) {
-        world[getIdx(x, y)] = mat;
-      }
+    // === 4. HÀM TIỆN ÍCH (UTILITIES) ===
+    function getIdx(x, y) { 
+        return y * W + x; 
     }
-  }
-}
+    
+    function inBounds(x, y) { 
+        return x >= 0 && x < W && y >= 0 && y < H; 
+    }
 
-// === Xử lý chuột ===
-let isMouseDown = false;
-function getCanvasPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / SCALE);
-  const y = Math.floor((e.clientY - rect.top) / SCALE);
-  return [x, y];
-}
-canvas.onmousedown = () => { isMouseDown = true; canvas.focus(); };
-canvas.onmouseup = () => isMouseDown = false;
-canvas.onmouseleave = () => isMouseDown = false;
-canvas.onmousemove = (e) => {
-  if (!isMouseDown) return;
-  const [x, y] = getCanvasPos(e);
-  placeMaterial(x, y, activeMaterial);
-};
-canvas.onclick = (e) => {
-  const [x, y] = getCanvasPos(e);
-  placeMaterial(x, y, activeMaterial, 1);
-};
+    // === 5. TẠO THANH CÔNG CỤ (UI) ===
+    const toolbar = document.getElementById('toolbar');
+    
+    Object.entries(materials).forEach(([id, mat]) => {
+        if (Number(id) === EMPTY) return;
+        
+        const btn = document.createElement('button');
+        btn.style.background = mat.color;
+        btn.textContent = mat.name;
+        
+        if (Number(id) === activeMaterial) {
+            btn.classList.add('selected');
+        }
 
-// === Logic mô phỏng vật lý & hóa học ===
-function update() {
-  for (let y = H - 2; y >= 0; y--) {
-    const dir = Math.random() < 0.5 ? 1 : -1;
-    for (let x = dir === 1 ? 0 : W - 1; x !== (dir === 1 ? W : -1); x += dir) {
-      const i = getIdx(x, y);
-      const id = world[i];
-      if (id === EMPTY) continue;
-      const mat = materials[id];
+        btn.addEventListener('click', () => {
+            activeMaterial = Number(id);
+            document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        });
+        
+        toolbar.appendChild(btn);
+    });
 
-      // Tuổi thọ vật liệu (lửa, khói...)
-      if (mat.life) {
-        if (!tempLife[i]) tempLife[i] = mat.life;
-        if (--tempLife[i] <= 0) { world[i] = EMPTY; continue; }
-      }
+    const btnReset = document.createElement('button');
+    btnReset.textContent = "🗑️ Xóa hết";
+    btnReset.style.background = "#e74c3c";
+    btnReset.addEventListener('click', () => { 
+        world.fill(EMPTY); 
+        tempLife.fill(0); 
+    });
+    toolbar.appendChild(btnReset);
 
-      // Vật liệu dễ cháy + lửa → bốc cháy
-      if (mat.flammable) {
-        for (let dy2 = -1; dy2 <= 1; dy2++) {
-          for (let dx2 = -1; dx2 <= 1; dx2++) {
-            const nx = x + dx2, ny = y + dy2;
-            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 4 && Math.random() < 0.08) {
-              world[i] = 4; tempLife[i] = 35;
+    // === 6. XỬ LÝ SỰ KIỆN CHUỘT (INTERACTIONS) ===
+    let isMouseDown = false;
+
+    function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / SCALE);
+        const y = Math.floor((e.clientY - rect.top) / SCALE);
+        return [x, y];
+    }
+
+    function placeMaterial(cx, cy, mat, brush = 2) {
+        for (let dy = -brush; dy <= brush; dy++) {
+            for (let dx = -brush; dx <= brush; dx++) {
+                const x = cx + dx;
+                const y = cy + dy;
+                // Đặt ngẫu nhiên 70% để tạo độ tự nhiên cho cọ vẽ
+                if (inBounds(x, y) && Math.random() < 0.7) {
+                    world[getIdx(x, y)] = mat;
+                }
             }
-          }
         }
-      }
+    }
 
-      // Lửa tạo khói lên trên + nước dập lửa
-      if (id === 4) {
-        const up = getIdx(x, y - 1);
-        if (world[up] === EMPTY && Math.random() < 0.15) {
-          world[up] = 6; tempLife[up] = 50;
-        }
-        for (let dy2 = -1; dy2 <= 1; dy2++) {
-          for (let dx2 = -1; dx2 <= 1; dx2++) {
-            const nb = getIdx(x + dx2, y + dy2);
-            if (inBounds(x + dx2, y + dy2) && world[nb] === 2 && Math.random() < 0.2) {
-              world[i] = EMPTY;
+    canvas.addEventListener('mousedown', () => { 
+        isMouseDown = true; 
+        canvas.focus(); 
+    });
+    
+    canvas.addEventListener('mouseup', () => { 
+        isMouseDown = false; 
+    });
+    
+    canvas.addEventListener('mouseleave', () => { 
+        isMouseDown = false; 
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const [x, y] = getCanvasPos(e);
+        placeMaterial(x, y, activeMaterial);
+    });
+    
+    canvas.addEventListener('click', (e) => {
+        const [x, y] = getCanvasPos(e);
+        placeMaterial(x, y, activeMaterial, 1);
+    });
+
+    // === 7. LOGIC MÔ PHỎNG VẬT LÝ & HÓA HỌC ===
+    function update() {
+        // Duyệt ngược từ dưới lên trên để xử lý trọng lực rơi tự nhiên
+        for (let y = H - 2; y >= 0; y--) {
+            // Ngẫu nhiên duyệt từ trái sang phải hoặc phải sang trái
+            const dir = Math.random() < 0.5 ? 1 : -1;
+            const startX = dir === 1 ? 0 : W - 1;
+            const endX = dir === 1 ? W : -1;
+
+            for (let x = startX; x !== endX; x += dir) {
+                const i = getIdx(x, y);
+                const id = world[i];
+                
+                if (id === EMPTY) continue;
+                
+                const mat = materials[id];
+
+                // a. Tuổi thọ vật liệu (Lửa, Khói...)
+                if (mat.life) {
+                    if (!tempLife[i]) tempLife[i] = mat.life;
+                    if (--tempLife[i] <= 0) { 
+                        world[i] = EMPTY; 
+                        continue; 
+                    }
+                }
+
+                // b. Phản ứng cháy (Vật liệu dễ cháy + Lửa xung quanh)
+                if (mat.flammable) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 4 && Math.random() < 0.08) {
+                                world[i] = 4; // Bắt lửa
+                                tempLife[i] = 35; // Hồi lại tuổi thọ lửa
+                            }
+                        }
+                    }
+                }
+
+                // c. Đặc tính của Lửa
+                if (id === 4) {
+                    // Tạo khói bay lên
+                    const up = getIdx(x, y - 1);
+                    if (inBounds(x, y - 1) && world[up] === EMPTY && Math.random() < 0.15) {
+                        world[up] = 6; 
+                        tempLife[up] = 50;
+                    }
+                    // Bị nước dập tắt
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 2 && Math.random() < 0.2) {
+                                world[i] = EMPTY;
+                            }
+                        }
+                    }
+                }
+
+                // d. Trọng lực: Rơi xuống phía dưới
+                const below = getIdx(x, y + 1);
+                if (world[below] === EMPTY) {
+                    world[below] = id; 
+                    world[i] = EMPTY; 
+                    continue;
+                }
+
+                // e. Chảy sang trái/phải (Chất lỏng, Khí)
+                if (mat.liquid || mat.gas) {
+                    const nx = x + dir;
+                    if (inBounds(nx, y)) {
+                        const side = getIdx(nx, y);
+                        if (world[side] === EMPTY) {
+                            world[side] = id; 
+                            world[i] = EMPTY; 
+                            continue;
+                        }
+                    }
+                }
+
+                // f. Đổi chỗ dựa theo khối lượng riêng (VD: Cát chìm trong Nước)
+                const belowId = world[below];
+                if (materials[belowId].density < mat.density) {
+                    world[i] = belowId; 
+                    world[below] = id;
+                    // Hoán vị luôn tuổi thọ (life) đang lưu trữ
+                    [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
+                }
             }
-          }
         }
-      }
+    }
 
-      // Rơi xuống theo trọng lực
-      const below = getIdx(x, y + 1);
-      if (world[below] === EMPTY) {
-        world[below] = id; world[i] = EMPTY; continue;
-      }
-
-      // Chảy sang trái/phải (chất lỏng, khí)
-      if (mat.liquid || mat.gas) {
-        const side = getIdx(x + dir, y);
-        if (inBounds(x + dir, y) && world[side] === EMPTY) {
-          world[side] = id; world[i] = EMPTY; continue;
+    // === 8. VẼ MÀN HÌNH ===
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+                const id = world[getIdx(x, y)];
+                if (id === EMPTY) continue;
+                
+                ctx.fillStyle = materials[id].color;
+                ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+            }
         }
-      }
-
-      // Đổi chỗ theo khối lượng riêng
-      const belowId = world[below];
-      if (materials[belowId].density < mat.density) {
-        world[i] = belowId; world[below] = id;
-        [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
-      }
     }
-  }
-}
 
-// === Vẽ màn hình ===
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const id = world[getIdx(x, y)];
-      if (id === EMPTY) continue;
-      ctx.fillStyle = materials[id].color;
-      ctx.fillRect(x*SCALE, y*SCALE, SCALE, SCALE);
+    // === 9. VÒNG LẶP CHÍNH ===
+    function loop() { 
+        update(); 
+        render(); 
+        requestAnimationFrame(loop); 
     }
-  }
-}
-
-// === Vòng lặp chính ===
-function loop() { update(); render(); requestAnimationFrame(loop); }
-loop();
+    
+    // Khởi động
+    loop();
 </script>
 </body>
 </html>
