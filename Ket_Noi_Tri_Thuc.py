@@ -2073,6 +2073,16 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
         st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
+    # === ĐÃ CHÈN NÚT BẤM MỞ SANDBOX VÀO ĐÂY ===
+    st.markdown("### 🧪 Khu Vực Thực Hành Tương Tác Hóa - Sinh")
+    if st.button("🚀 MỞ PHÒNG THÍ NGHIỆM SANDBOX ĐẶC BIỆT", type="primary", use_container_width=True):
+        try:
+            st.switch_page("pages/sandbox_khoa_hoc.py")
+        except Exception as e:
+            st.error("⚠️ Không tìm thấy file Sandbox. Đảm bảo file 'sandbox_khoa_hoc.py' nằm trong thư mục 'pages'.")
+    st.divider()
+    # ==========================================
+
     cho_banner_lab = st.empty()
     ds_mon_lab = [
         "🔤 Môn Tiếng Anh",
