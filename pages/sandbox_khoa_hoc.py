@@ -33,11 +33,11 @@ except Exception as e:
 
 components.html(html_content, height=850, scrolling=False)
 
+# === 3. SỔ TAY KHOA HỌC (CARD LAYOUT) ===
 st.markdown("---")
 st.header("📚 Sổ Tay Khoa Học")
 st.markdown("📖 *Đọc kỹ lý thuyết và thực hành để hoàn thành nhiệm vụ nhé!*")
 
-# === KHAI BÁO CÁC TABS ===
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🌱 Sinh Học & Hệ Sinh Thái", 
     "🧪 Hóa Học & Phản Ứng", 
@@ -46,14 +46,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🏆 Bảng Xếp Hạng"
 ])
 
-# === NỘI DUNG TỪNG TAB (SỬ DỤNG GIAO DIỆN THẺ - CARDS) ===
 with tab1:
-    st.write("") # Tạo khoảng trắng nhỏ cho thoáng
+    st.write("") 
     with st.container(border=True):
         st.success("🌍 **Vòng Tuần Hoàn Carbon & Sự Sống**")
         st.markdown("""
         Trong hệ sinh thái, vật chất không tự sinh ra hay mất đi mà liên tục chuyển hóa qua các chu trình:
-        
         *   **Quang hợp (Thực vật):** `Khí CO2 ➡️ Cây Xanh ➡️ Khí Oxy` 
             * Cây cỏ hút khí Cacbonic (CO2) để quang hợp và nhả ra khí Oxy (O2).
         *   **Hô hấp (Động vật):** `Khí Oxy ➡️ Động Vật ➡️ Khí CO2`
@@ -69,7 +67,6 @@ with tab2:
         st.warning("🧪 **Các Phản Ứng Hóa Học Căn Bản**")
         st.markdown("""
         Quan sát sự tương tác giữa các hợp chất hóa học đặc biệt:
-        
         *   **Phản ứng ăn mòn:** `Axit + Vật chất ➡️ Khí Độc`
             * Axit sẽ tiêu hủy đất đá, sinh vật hữu cơ và giải phóng khí độc.
         *   **Phản ứng cháy trong Oxy:** `Lửa + Khí Oxy ➡️ Lửa lớn + Khí CO2`
@@ -94,7 +91,6 @@ with tab4:
     st.write("")
     st.info("🎮 **Nhiệm Vụ Của Nhà Khoa Học:** Hãy thử tự tay xây dựng và kiểm chứng các quy luật trong khung Sandbox. Đánh dấu vào ô bên cạnh khi em đã làm thành công nhé!")
 
-    # Tính toán tiến độ
     m1_done = st.session_state.get("m1", False)
     m2_done = st.session_state.get("m2", False)
     m3_done = st.session_state.get("m3", False)
@@ -103,7 +99,6 @@ with tab4:
     completed_missions = sum([m1_done, m2_done, m3_done])
     progress_percent = int((completed_missions / total_missions) * 100)
 
-    # Khung hiển thị Tiến độ
     with st.container(border=True):
         st.markdown(f"### 📈 Tiến độ hoàn thành: {completed_missions}/{total_missions} ({progress_percent}%)")
         st.progress(progress_percent)
@@ -111,17 +106,15 @@ with tab4:
     if "mission_celebrated" not in st.session_state:
         st.session_state.mission_celebrated = False
 
-    # Thử thách 1
     with st.container(border=True):
         col_text, col_check = st.columns([4, 1])
         with col_text:
             st.markdown("#### 🌳 Thử thách 1: Phổi xanh của Trái Đất")
             st.markdown("Trồng rừng, thả chim và phun **Khí CO2** để quan sát lá cây quang hợp tạo ra **Oxy**.")
         with col_check:
-            st.write("") # Đẩy checkbox xuống cho cân giữa
+            st.write("") 
             m1 = st.checkbox("✅ Hoàn thành", key="m1")
 
-    # Thử thách 2
     with st.container(border=True):
         col_text, col_check = st.columns([4, 1])
         with col_text:
@@ -131,7 +124,6 @@ with tab4:
             st.write("")
             m2 = st.checkbox("✅ Hoàn thành", key="m2")
 
-    # Thử thách 3
     with st.container(border=True):
         col_text, col_check = st.columns([4, 1])
         with col_text:
@@ -141,7 +133,6 @@ with tab4:
             st.write("")
             m3 = st.checkbox("✅ Hoàn thành", key="m3")
 
-    # Kiểm tra điều kiện chiến thắng
     if completed_missions == total_missions:
         if not st.session_state.mission_celebrated:
             st.balloons()
@@ -151,7 +142,6 @@ with tab4:
     else:
         st.session_state.mission_celebrated = False
 
-    # Khu vực Form Lưu Kết Quả
     st.write("")
     with st.container(border=True):
         st.markdown("### 💾 Lưu kết quả học tập")
@@ -199,7 +189,6 @@ with tab5:
             try:
                 df = pd.read_csv(csv_file)
                 
-                # Vẽ biểu đồ tròn Plotly
                 st.subheader("📊 Thống kê tỷ lệ hoàn thành")
                 pie_data = df['Hoàn Thành (%)'].value_counts().reset_index()
                 pie_data.columns = ['Mức độ hoàn thành', 'Số lượng học sinh']
@@ -216,7 +205,6 @@ with tab5:
 
                 st.markdown("---")
 
-                # Hiển thị bảng chi tiết
                 st.subheader("📋 Chi tiết bảng xếp hạng")
                 if "Hoàn Thành (%)" in df.columns and "Thời Gian" in df.columns:
                     df["Tỷ lệ (Số)"] = df["Hoàn Thành (%)"].str.replace("%", "").astype(int)
@@ -233,9 +221,3 @@ with tab5:
                 st.error(f"⚠️ Đã có lỗi xảy ra khi tải dữ liệu: {e}")
         else:
             st.info("Trang giấy trắng! Chưa có nhà khoa học nào nộp kết quả. Hãy quay lại Tab **Thử Thách Thực Hành** để trở thành người dẫn đầu nhé!")
-   
-
-        except Exception as e:
-            st.error(f"⚠️ Đã có lỗi xảy ra khi tải dữ liệu: {e}")
-    else:
-        st.info("Trang giấy trắng! Chưa có nhà khoa học nào nộp kết quả. Hãy quay lại Tab **Thử Thách Thực Hành** để trở thành người dẫn đầu nhé!")
