@@ -3,58 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sandbox Pro - Hệ Sinh Thái</title>
+<title>Sandbox Pro - Tuần Hoàn Sinh Thái</title>
 <style>
-    /* Reset & Cố định khung */
+    /* Đảm bảo toàn bộ trang lấp đầy không giới hạn */
     html, body { margin: 0; padding: 0; width: 100%; height: 100vh; background: #0f0f1a; overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; }
+    .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; position: absolute; inset: 0; }
     
-    .app-container { display: flex; flex-direction: column; width: 100%; height: 100%; position: absolute; inset: 0; }
-    
-    /* Vùng chứa Canvas tự co giãn an toàn */
+    /* 1. KHÔNG GIAN VẼ: CHẾM CHÍNH XÁC 75% CHIỀU CAO */
     .canvas-wrapper { 
-        flex: 1 1 0%; /* Ép flexbox cho phép thu nhỏ */
-        min-height: 0; /* Quan trọng: Ngăn canvas đẩy UI ra ngoài */
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
+        height: 75vh; 
+        width: 100%;
         background: #000; 
-        position: relative;
-        overflow: hidden;
+        position: relative; 
+        overflow: hidden; 
     }
     
+    /* Ép Canvas bung hết 100% không gian của wrapper, không để lại viền đen thừa */
     canvas { 
         image-rendering: pixelated; 
-        max-width: 100%; 
-        max-height: 100%; 
-        object-fit: contain; 
-        cursor: crosshair;
+        width: 100%; 
+        height: 100%; 
+        display: block;
+        cursor: crosshair; 
     }
 
-    /* Vùng công cụ bên dưới */
+    /* 2. KHUNG CÔNG CỤ: CHIẾM 25% CÒN LẠI */
     .ui-panel { 
-        flex: 0 0 auto; /* Không tự to ra, không bị ép nhỏ lại */
+        height: 25vh; 
+        width: 100%;
         background: #161616; 
         display: flex; 
         flex-direction: column; 
-        border-top: 1px solid #333;
-        max-height: 50vh; /* Nếu khung quá nhỏ, cho phép UI có thanh cuộn */
-        overflow-y: auto;
+        border-top: 1px solid #333; 
+        overflow-y: auto; 
     }
     
     .bar { display: flex; align-items: center; padding: 4px 8px; gap: 5px; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; }
-    
-    /* Tối ưu không gian các thanh công cụ */
     #statusbar { background: #000; font-size: 11px; color: #888; padding: 2px 8px; gap: 20px; border-bottom: 1px solid #333; }
-    
-    button { 
-        padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; 
-        font-size: 11px; font-weight: 600; color: #ddd; background: #2d2d2d; 
-        border-bottom: 2px solid #111; border-top: 1px solid #444; transition: filter 0.1s;
-    }
+    button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: #ddd; background: #2d2d2d; border-bottom: 2px solid #111; border-top: 1px solid #444; transition: filter 0.1s; }
     button:active { border-bottom: 0; border-top: 2px solid #111; transform: translateY(1px); }
     button:hover { filter: brightness(1.2); }
     
-    /* Màu sắc nút đặc biệt */
     .btn-action { background: #3a3a3a; font-size: 12px; }
     .btn-action.active { background: #fff; color: #000; border-bottom: 2px solid #aaa; }
     .btn-heat { background: #e74c3c; color: white; }
@@ -65,7 +54,6 @@
     .btn-category.active { background: #00b894; color: #fff; }
     
     .btn-mat.active { outline: 2px solid #fff; outline-offset: -2px; }
-
     #iconbar button { font-size: 13px; padding: 2px 6px; background: transparent; border: none; color: #fff; }
     #iconbar button:hover { background: #333; }
 </style>
@@ -73,93 +61,79 @@
 <body>
 
 <div class="app-container">
-    <div class="canvas-wrapper">
-        <canvas id="gameCanvas"></canvas>
-    </div>
+    <div class="canvas-wrapper"><canvas id="gameCanvas"></canvas></div>
     
     <div class="ui-panel">
         <div class="bar" id="statusbar">
-            <span id="st-coord">x:0, y:0</span>
-            <span id="st-pixels">0 pxls</span>
-            <span id="st-fps">0 fps</span>
+            <span id="st-coord">x:0, y:0</span> <span id="st-pixels">0 pxls</span> <span id="st-fps">0 fps</span>
         </div>
-
         <div class="bar" id="iconbar">
             <button id="btn-pause" title="Tạm dừng/Tiếp tục">⏸️</button>
             <div style="width: 1px; height: 14px; background: #444; margin: 0 5px;"></div>
             <span style="font-size: 11px; color: #aaa;">Cọ vẽ:</span>
-            <button id="btn-brush-minus">➖</button>
-            <span id="brush-size" style="font-size: 11px; width: 12px; text-align: center; color: white;">3</span>
-            <button id="btn-brush-plus">➕</button>
+            <button id="btn-brush-minus">➖</button> <span id="brush-size" style="font-size: 11px; width: 12px; text-align: center; color: white;">3</span> <button id="btn-brush-plus">➕</button>
             <div style="width: 1px; height: 14px; background: #444; margin: 0 5px;"></div>
             <button id="btn-clear">🗑️ Xóa sạch</button>
         </div>
-
         <div class="bar" id="actionbar">
             <button class="btn-action btn-erase" data-action="ERASE">XÓA</button>
             <button class="btn-action active" data-action="DRAW">VẼ</button>
             <button class="btn-action btn-heat" data-action="HEAT">🔥 LÀM NÓNG</button>
             <button class="btn-action btn-cool" data-action="COOL">❄️ LÀM LẠNH</button>
         </div>
-
         <div class="bar" id="categorybar"></div>
         <div class="bar" id="materialbar"></div>
     </div>
 </div>
 
 <script>
-    // === ĐỘ PHÂN GIẢI NỘI BỘ MỞ RỘNG ===
-    const W = 300, H = 200; 
+    // TĂNG KHÔNG GIAN NỘI BỘ LÊN 400x250 CHO PHÙ HỢP VỚI MÀN HÌNH WIDESCREEN 75%
+    const W = 400, H = 250; 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    canvas.width = W; 
-    canvas.height = H;
+    canvas.width = W; canvas.height = H;
 
-    // === ĐỊNH NGHĨA VẬT LIỆU MỞ RỘNG ===
     const EMPTY = 0;
     const materials = {
         [EMPTY]: { name: "Không khí", hex: "#000000", density: 0 },
-        // Đất đá
-        1: { name: "Cát", hex: "#e6c26e", density: 3, cat: "Đất Đá", granular: true },
-        3: { name: "Đất", hex: "#8b5a2b", density: 4, cat: "Đất Đá", granular: true },
-        7: { name: "Đá", hex: "#708090", density: 6, cat: "Đất Đá" },
-        10:{ name: "Bùn", hex: "#4a3525", density: 3.5, cat: "Đất Đá", liquid: true, viscous: true },
-        // Chất lỏng
+        1: { name: "Cát", hex: "#e6c26e", density: 3, cat: "Đất Đá", granular: true, meltable: true },
+        3: { name: "Đất", hex: "#8b5a2b", density: 4, cat: "Đất Đá", granular: true, meltable: true },
+        7: { name: "Đá", hex: "#708090", density: 6, cat: "Đất Đá", meltable: true },
+        24:{ name: "Thủy Tinh", hex: "#a4b0be", density: 5, cat: "Đất Đá" }, 
+        
+        20:{ name: "Axit", hex: "#a4fb46", density: 1.2, liquid: true, acid: true, cat: "Hóa Học" },
+        22:{ name: "Khí Độc", hex: "#badc58", density: -0.8, gas: true, life: 100, cat: "Hóa Học", toxic: true },
+        23:{ name: "Khí CO2", hex: "#7f8c8d", density: -0.2, gas: true, cat: "Hóa Học", isCO2: true },
+        25:{ name: "Khí Oxy", hex: "#dff9fb", density: -0.4, gas: true, cat: "Hóa Học", isOxygen: true },
+        
         2: { name: "Nước", hex: "#4a90d9", density: 1.5, liquid: true, cat: "Chất Lỏng" },
         9: { name: "Dầu", hex: "#2c2c2c", density: 1, liquid: true, flammable: true, cat: "Chất Lỏng" },
         11:{ name: "Dung Nham", hex: "#ff5722", density: 5, liquid: true, viscous: true, hot: true, cat: "Chất Lỏng" },
-        // Khí & Nhiệt
-        4: { name: "Lửa", hex: "#ff4500", density: 0.2, life: 35, hot: true, cat: "Khí & Khác" },
-        6: { name: "Khói", hex: "#888888", density: -0.5, gas: true, life: 60, cat: "Khí & Khác" },
-        12:{ name: "Băng", hex: "#a0e6ff", density: 1.4, cat: "Khí & Khác" },
-        // Hệ Sinh Thái (Sự Sống)
-        13:{ name: "Cỏ", hex: "#2ecc71", density: 2.5, flammable: true, cat: "Sự Sống" },
+        
+        4: { name: "Lửa", hex: "#ff4500", density: 0.2, life: 35, hot: true, cat: "Khí & Nhiệt" },
+        6: { name: "Khói", hex: "#888888", density: -0.5, gas: true, life: 60, cat: "Khí & Nhiệt" },
+        12:{ name: "Băng", hex: "#a0e6ff", density: 1.4, cat: "Khí & Nhiệt" },
+        
+        13:{ name: "Cỏ", hex: "#2ecc71", density: 2.5, flammable: true, organic: true, cat: "Sự Sống", plant: true },
         14:{ name: "Hạt Giống", hex: "#f1c40f", density: 3, cat: "Sự Sống", isSeed: true },
-        19:{ name: "Mầm Đang Lớn", hex: "#a0522d", density: 4, isGrowingTree: true },
-        5: { name: "Gỗ", hex: "#a0522d", density: 4, flammable: true, cat: "Sự Sống" },
-        15:{ name: "Lá Cây", hex: "#27ae60", density: 1, flammable: true, cat: "Sự Sống" },
-        16:{ name: "Cá", hex: "#e67e22", density: 1.6, cat: "Sự Sống", isFish: true },
-        17:{ name: "Chim", hex: "#ecf0f1", density: -0.1, cat: "Sự Sống", isBird: true },
-        18:{ name: "Thú Rừng", hex: "#d35400", density: 3, cat: "Sự Sống", isAnimal: true }
+        19:{ name: "Mầm", hex: "#a0522d", density: 4, isGrowingTree: true, organic: true, plant: true },
+        5: { name: "Gỗ", hex: "#a0522d", density: 4, flammable: true, organic: true, cat: "Sự Sống" },
+        15:{ name: "Lá", hex: "#27ae60", density: 1, flammable: true, organic: true, cat: "Sự Sống", plant: true },
+        16:{ name: "Cá", hex: "#e67e22", density: 1.6, cat: "Sự Sống", isFish: true, organic: true },
+        17:{ name: "Chim", hex: "#ecf0f1", density: -0.1, cat: "Sự Sống", isBird: true, organic: true },
+        18:{ name: "Thú Rừng", hex: "#d35400", density: 3, cat: "Sự Sống", isAnimal: true, organic: true },
+        21:{ name: "Khuẩn/Nấm", hex: "#8e44ad", density: 2, cat: "Sự Sống", infectious: true, life: 120 }
     };
 
     Object.values(materials).forEach(m => {
-        if (m.hex) {
-            m.r = parseInt(m.hex.slice(1, 3), 16);
-            m.g = parseInt(m.hex.slice(3, 5), 16);
-            m.b = parseInt(m.hex.slice(5, 7), 16);
-        }
+        if (m.hex) { m.r = parseInt(m.hex.slice(1, 3), 16); m.g = parseInt(m.hex.slice(3, 5), 16); m.b = parseInt(m.hex.slice(5, 7), 16); }
     });
 
     const categories = {};
     Object.entries(materials).forEach(([id, mat]) => {
-        if (mat.cat) {
-            if (!categories[mat.cat]) categories[mat.cat] = [];
-            categories[mat.cat].push({ id: Number(id), ...mat });
-        }
+        if (mat.cat) { if (!categories[mat.cat]) categories[mat.cat] = []; categories[mat.cat].push({ id: Number(id), ...mat }); }
     });
 
-    // === BIẾN TRẠNG THÁI ===
     const world = new Uint8Array(W * H);
     const tempLife = new Uint16Array(W * H);
     let activeCategory = "Đất Đá", activeMaterial = 1, activeAction = "DRAW";
@@ -169,7 +143,6 @@
     const getIdx = (x, y) => y * W + x;
     const inBounds = (x, y) => x >= 0 && x < W && y >= 0 && y < H;
 
-    // === GIAO DIỆN ===
     function renderCategories() {
         const catBar = document.getElementById('categorybar');
         catBar.innerHTML = '';
@@ -177,10 +150,7 @@
             const btn = document.createElement('button');
             btn.className = `btn-category ${cat === activeCategory ? 'active' : ''}`;
             btn.textContent = cat;
-            btn.onclick = () => {
-                activeCategory = cat; activeMaterial = categories[cat][0].id; 
-                activeAction = "DRAW"; updateActionUI(); renderCategories(); renderMaterials();
-            };
+            btn.onclick = () => { activeCategory = cat; activeMaterial = categories[cat][0].id; activeAction = "DRAW"; updateActionUI(); renderCategories(); renderMaterials(); };
             catBar.appendChild(btn);
         });
     }
@@ -192,7 +162,7 @@
             const btn = document.createElement('button');
             btn.className = `btn-mat ${mat.id === activeMaterial && activeAction === "DRAW" ? 'active' : ''}`;
             btn.style.background = mat.hex;
-            btn.style.color = ["Băng", "Cát", "Hạt Giống"].includes(mat.name) ? "#000" : "#fff";
+            btn.style.color = ["Băng", "Cát", "Hạt Giống", "Axit", "Khí Độc", "Khí Oxy", "Khí CO2"].includes(mat.name) ? "#000" : "#fff";
             btn.textContent = mat.name;
             btn.onclick = () => { activeMaterial = mat.id; activeAction = "DRAW"; updateActionUI(); renderMaterials(); };
             matBar.appendChild(btn);
@@ -204,9 +174,7 @@
         if(activeAction !== "DRAW") document.querySelectorAll('.btn-mat').forEach(b => b.classList.remove('active'));
     }
 
-    document.querySelectorAll('.btn-action').forEach(btn => {
-        btn.onclick = () => { activeAction = btn.dataset.action; updateActionUI(); renderMaterials(); };
-    });
+    document.querySelectorAll('.btn-action').forEach(btn => { btn.onclick = () => { activeAction = btn.dataset.action; updateActionUI(); renderMaterials(); }; });
 
     renderCategories(); renderMaterials();
 
@@ -217,10 +185,9 @@
 
     function getMousePos(e) {
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        mouseX = Math.floor((e.clientX - rect.left) * scaleX);
-        mouseY = Math.floor((e.clientY - rect.top) * scaleY);
+        // Tính toán tọa độ chính xác dù CSS có co giãn Canvas tới mức nào
+        mouseX = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+        mouseY = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
         if (inBounds(mouseX, mouseY)) document.getElementById('st-coord').textContent = `x:${mouseX}, y:${mouseY}`;
     }
 
@@ -239,7 +206,8 @@
                 else if (activeAction === "HEAT") {
                     if (currentMat === 2) { world[i] = 6; tempLife[i] = 40; }
                     else if (currentMat === 12) world[i] = 2;
-                    else if (materials[currentMat].flammable) { world[i] = 4; tempLife[i] = 40; }
+                    else if (materials[currentMat]?.flammable) { world[i] = 4; tempLife[i] = 40; }
+                    else if (currentMat === 1) world[i] = 24; 
                 }
                 else if (activeAction === "COOL") {
                     if (currentMat === 2) world[i] = 12;
@@ -255,7 +223,6 @@
     canvas.onmousemove = (e) => { getMousePos(e); if (isMouseDown) applyBrush(); };
     canvas.onmouseleave = () => { mouseX = -1; mouseY = -1; };
 
-    // === LOGIC VẬT LÝ & AI SINH VẬT ===
     function updatePhysics() {
         if (isPaused) return;
 
@@ -269,13 +236,73 @@
                 const mat = materials[id];
                 const below = getIdx(x, y + 1);
 
-                // Hạt giống nảy mầm
-                if (mat.isSeed) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
-                        world[below] = id; world[i] = EMPTY; continue; 
-                    } else if (world[below] === 3 || world[below] === 10) { 
-                        world[i] = 19; 
+                // Quang Hợp
+                if (mat.plant) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 23) {
+                                if (Math.random() < 0.15) world[getIdx(nx, ny)] = 25; 
+                            }
+                        }
                     }
+                }
+
+                // Hô Hấp
+                if (mat.isAnimal || mat.isBird) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 25) { 
+                                if (Math.random() < 0.1) world[getIdx(nx, ny)] = 23; 
+                            }
+                        }
+                    }
+                }
+
+                // Axit
+                if (mat.acid) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (!inBounds(nx, ny)) continue;
+                            const nbId = world[getIdx(nx, ny)];
+                            if (nbId !== EMPTY && (materials[nbId].organic || materials[nbId].meltable)) {
+                                if (Math.random() < 0.1) {
+                                    world[getIdx(nx, ny)] = 22; tempLife[getIdx(nx, ny)] = 100;
+                                    world[i] = EMPTY; break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Vi sinh
+                if (mat.infectious) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && materials[world[getIdx(nx, ny)]]?.organic && Math.random() < 0.05) {
+                                world[getIdx(nx, ny)] = 21; tempLife[getIdx(nx, ny)] = 120;
+                            }
+                        }
+                    }
+                }
+
+                if (mat.toxic) {
+                    for (let dy2 = -1; dy2 <= 1; dy2++) {
+                        for (let dx2 = -1; dx2 <= 1; dx2++) {
+                            const nx = x + dx2, ny = y + dy2;
+                            if (inBounds(nx, ny) && materials[world[getIdx(nx, ny)]]?.organic) {
+                                world[getIdx(nx, ny)] = 21; tempLife[getIdx(nx, ny)] = 120;
+                            }
+                        }
+                    }
+                }
+
+                if (mat.isSeed) {
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; } 
+                    else if (world[below] === 3 || world[below] === 10) { world[i] = 19; }
                 } 
                 else if (mat.isGrowingTree) {
                     if (Math.random() < 0.05) { 
@@ -288,46 +315,32 @@
                         world[i] = 5; 
                     }
                 }
-                // Cá
+
                 else if (mat.isFish) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
-                        world[below] = id; world[i] = EMPTY; continue; 
-                    }
-                    let dx = Math.random() < 0.5 ? -1 : 1;
-                    let dy2 = Math.random() < 0.5 ? -1 : 1;
-                    if (Math.random() < 0.6) dy2 = 0; 
-                    if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === 2) {
-                        world[getIdx(x + dx, y + dy2)] = id; world[i] = 2; continue;
-                    }
-                    if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY && Math.random() < 0.2) {
-                        world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue;
-                    }
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; }
+                    let dx = Math.random() < 0.5 ? -1 : 1; let dy2 = Math.random() < 0.5 ? -1 : 1; if (Math.random() < 0.6) dy2 = 0; 
+                    if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === 2) { world[getIdx(x + dx, y + dy2)] = id; world[i] = 2; continue; }
+                    if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY && Math.random() < 0.2) { world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue; }
                 }
-                // Chim
                 else if (mat.isBird) {
                     if (Math.random() < 0.3) {
-                        let dx = Math.random() < 0.5 ? -1 : 1;
-                        let dy2 = Math.random() < 0.6 ? -1 : 1; 
-                        if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === EMPTY) {
-                            world[getIdx(x + dx, y + dy2)] = id; world[i] = EMPTY; continue;
-                        }
+                        let dx = Math.random() < 0.5 ? -1 : 1; let dy2 = Math.random() < 0.6 ? -1 : 1; 
+                        if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === EMPTY) { world[getIdx(x + dx, y + dy2)] = id; world[i] = EMPTY; continue; }
                     }
                 }
-                // Thú Rừng
                 else if (mat.isAnimal) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
-                        world[below] = id; world[i] = EMPTY; continue; 
-                    } else if (Math.random() < 0.2) {
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; } 
+                    else if (Math.random() < 0.2) {
                         let dx = Math.random() < 0.5 ? -1 : 1;
-                        if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY) {
-                            world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue;
-                        }
+                        if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY) { world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue; }
                     }
                 }
 
                 if (mat.life) {
                     if (!tempLife[i]) tempLife[i] = mat.life;
-                    if (--tempLife[i] <= 0) { world[i] = EMPTY; continue; }
+                    if (--tempLife[i] <= 0) { 
+                        if (id === 21) { world[i] = 3; } else { world[i] = EMPTY; } continue; 
+                    }
                 }
 
                 if (mat.hot || mat.flammable) {
@@ -336,62 +349,45 @@
                             const nx = x + dx2, ny = y + dy2;
                             if (!inBounds(nx, ny)) continue;
                             const nbId = world[getIdx(nx, ny)];
-                            if (mat.hot && materials[nbId].flammable && Math.random() < 0.08) {
-                                world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 35;
+                            
+                            if (mat.hot && nbId === 25) {
+                                world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 50; 
+                                if (Math.random() < 0.2) world[i] = 23; 
                             }
-                            if (mat.hot && nbId === 2 && Math.random() < 0.2) {
-                                world[i] = id === 11 ? 7 : EMPTY; 
-                                world[getIdx(nx, ny)] = 6; tempLife[getIdx(nx, ny)] = 40;
-                            }
+                            
+                            if (mat.hot && materials[nbId]?.flammable && Math.random() < 0.08) { world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 35; }
+                            if (mat.hot && nbId === 2 && Math.random() < 0.2) { world[i] = id === 11 ? 7 : EMPTY; world[getIdx(nx, ny)] = 6; tempLife[getIdx(nx, ny)] = 40; }
                         }
                     }
                 }
 
-                if (id === 4 && inBounds(x, y-1) && world[getIdx(x, y-1)] === EMPTY && Math.random() < 0.15) {
-                    world[getIdx(x, y-1)] = 6; tempLife[getIdx(x, y-1)] = 40;
-                }
+                if (id === 4 && inBounds(x, y-1) && world[getIdx(x, y-1)] === EMPTY && Math.random() < 0.15) { world[getIdx(x, y-1)] = 6; tempLife[getIdx(x, y-1)] = 40; }
 
                 if (mat.gas) {
                     const up = getIdx(x, y - 1);
-                    if (inBounds(x, y - 1) && world[up] === EMPTY) {
-                        world[up] = id; world[i] = EMPTY;
-                        [tempLife[i], tempLife[up]] = [tempLife[up], tempLife[i]];
-                        continue;
-                    }
-                } else if (!mat.isBird && !mat.isGrowingTree && id !== 5 && id !== 15 && id !== 13) {
-                    if (world[below] === EMPTY) {
-                        world[below] = id; world[i] = EMPTY;
-                        [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
-                        continue;
-                    }
-
+                    if (inBounds(x, y - 1) && world[up] === EMPTY) { world[up] = id; world[i] = EMPTY; [tempLife[i], tempLife[up]] = [tempLife[up], tempLife[i]]; continue; }
+                } else if (!mat.isBird && !mat.isGrowingTree && id !== 5 && id !== 15 && id !== 13 && id !== 24) {
+                    if (world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]]; continue; }
                     if (mat.liquid || (mat.density > 0 && Math.random() < 0.3)) {
                         const fallRate = mat.viscous ? 0.3 : 1; 
                         if (Math.random() < fallRate) {
                             const side = getIdx(x + dir, y + 1);
-                            if (inBounds(x + dir, y + 1) && world[side] === EMPTY) {
-                                world[side] = id; world[i] = EMPTY; continue;
-                            }
+                            if (inBounds(x + dir, y + 1) && world[side] === EMPTY) { world[side] = id; world[i] = EMPTY; continue; }
                             if (mat.liquid) {
                                 const lat = getIdx(x + dir, y);
-                                if (inBounds(x + dir, y) && world[lat] === EMPTY) {
-                                    world[lat] = id; world[i] = EMPTY; continue;
-                                }
+                                if (inBounds(x + dir, y) && world[lat] === EMPTY) { world[lat] = id; world[i] = EMPTY; continue; }
                             }
                         }
                     }
-
                     const belowId = world[below];
-                    if (belowId !== EMPTY && materials[belowId].density < mat.density && !materials[belowId].gas && !materials[belowId].isGrowingTree) {
-                        world[i] = belowId; world[below] = id;
-                        [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
+                    if (belowId !== EMPTY && materials[belowId]?.density < mat.density && !materials[belowId]?.gas && !materials[belowId]?.isGrowingTree) {
+                        world[i] = belowId; world[below] = id; [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
                     }
                 }
             }
         }
     }
 
-    // === HIỆU ỨNG & RENDER ===
     function render() {
         const imgData = ctx.createImageData(W, H);
         const data = imgData.data;
@@ -407,15 +403,13 @@
             
             if (id === 4) { 
                 const life = tempLife[i];
-                if (life > 20) { r=255; g=250; b=101; }
-                else if (life > 10) { r=255; g=175; b=64; }
-                else { r=255; g=77; b=77; }
+                if (life > 20) { r=255; g=250; b=101; } else if (life > 10) { r=255; g=175; b=64; } else { r=255; g=77; b=77; }
             } 
             else if (id === 11 && Math.random() < 0.05) { r=255; g=210; b=70; } 
+            else if (id === 20 && Math.random() < 0.05) { r=200; g=255; b=100; } 
             else if (id === 2 && Math.random() < 0.02) { r=126; g=255; b=245; } 
-            else if (mat.granular && i % 3 === 0) {
-                r = Math.max(0, r - 20); g = Math.max(0, g - 20); b = Math.max(0, b - 20);
-            }
+            else if (mat.granular && i % 3 === 0) { r = Math.max(0, r - 20); g = Math.max(0, g - 20); b = Math.max(0, b - 20); }
+            else if (id === 21 && Math.random() < 0.1) { r=155; g=89; b=182; } 
 
             const px = i * 4;
             data[px] = r; data[px+1] = g; data[px+2] = b; data[px+3] = 255;
@@ -431,14 +425,8 @@
     }
 
     function loop(timestamp) { 
-        if (timestamp - lastTime >= 1000) {
-            fps = frames; frames = 0; lastTime = timestamp;
-            document.getElementById('st-fps').textContent = `${fps} fps`;
-        }
-        frames++;
-        updatePhysics(); 
-        render(); 
-        requestAnimationFrame(loop); 
+        if (timestamp - lastTime >= 1000) { fps = frames; frames = 0; lastTime = timestamp; document.getElementById('st-fps').textContent = `${fps} fps`; }
+        frames++; updatePhysics(); render(); requestAnimationFrame(loop); 
     }
     requestAnimationFrame(loop);
 </script>
