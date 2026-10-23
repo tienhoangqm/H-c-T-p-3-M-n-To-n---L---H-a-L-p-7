@@ -14,8 +14,72 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔬 Phòng Thí Nghiệm Ảo — Vòng Tuần Hoàn Sinh Thái & Hóa Học")
-st.markdown("> **Hướng dẫn:** Sử dụng các công cụ bên dưới để vẽ vật liệu, tạo ra các phản ứng hóa sinh và quan sát sự cân bằng của hệ sinh thái.")
+# === HIỆU ỨNG TIÊU ĐỀ VUI NHỘN DÀNH CHO HỌC SINH ===
+st.markdown("""
+<style>
+    .game-banner {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        padding: 20px;
+        border-radius: 20px;
+        border: 4px dashed #ff6b81;
+        text-align: center;
+        box-shadow: 0px 8px 0px #ff4757;
+        margin-bottom: 25px;
+        margin-top: 10px;
+    }
+    
+    .animated-title {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        font-size: 42px;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0;
+        padding-bottom: 5px;
+        /* Hiệu ứng màu chữ chuyển động 7 sắc cầu vồng */
+        background: linear-gradient(270deg, #ff4757, #ffa502, #2ed573, #1e90ff, #9b59b6);
+        background-size: 400% 400%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradient-move 3s ease infinite;
+    }
+
+    .game-subtitle {
+        font-size: 22px;
+        font-weight: bold;
+        color: #2f3542;
+        margin-top: -10px;
+        margin-bottom: 15px;
+    }
+
+    .game-instruction {
+        font-size: 16px;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 10px 20px;
+        border-radius: 50px;
+        display: inline-block;
+        color: #ff4757;
+        font-weight: bold;
+        border: 2px solid #fff;
+    }
+
+    /* Tạo khung hình chuyển động */
+    @keyframes gradient-move {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+
+<div class="game-banner">
+    <h1 class="animated-title">🔬 PHÒNG THÍ NGHIỆM ẢO 🧪</h1>
+    <div class="game-subtitle">Vòng Tuần Hoàn Sinh Thái & Hóa Học</div>
+    <div class="game-instruction">
+        🎮 CHƠI ĐỂ HỌC: Vẽ vật liệu, tạo phản ứng và khám phá phép thuật Khoa Học! ✨
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
 
 # === 2. TẢI VÀ NHÚNG SANDBOX GAME ===
 html_path = Path(__file__).parent / "sandboxels_mini.html"
