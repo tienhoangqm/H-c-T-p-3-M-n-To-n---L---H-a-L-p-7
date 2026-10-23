@@ -38,7 +38,13 @@ st.markdown("---")
 st.header("📚 Sổ Tay Khoa Học")
 
 # === NỘI DUNG BÀI GIẢNG ===
-tab1, tab2, tab3, tab4 = st.tabs(["🌱 Sinh Học & Hệ Sinh Thái", "🧪 Hóa Học & Phản Ứng", "⚛️ Vật Lý & Biến Đổi Chất", "🎮 Thử Thách Thực Hành"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🌱 Sinh Học & Hệ Sinh Thái", 
+    "🧪 Hóa Học & Phản Ứng", 
+    "⚛️ Vật Lý & Biến Đổi Chất", 
+    "🎮 Thử Thách Thực Hành",
+    "🏆 Bảng Xếp Hạng"
+])
 
 with tab1:
     st.success("**Vòng Tuần Hoàn Carbon & Sự Sống**")
