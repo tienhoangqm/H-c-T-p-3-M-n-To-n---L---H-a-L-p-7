@@ -13,40 +13,6 @@ st.set_page_config(
     page_icon="🔬",
     layout="wide"
 )
-# === HIỆU ỨNG HÌNH NỀN & KÍNH MỜ (GLASSMORPHISM) ===
-st.markdown("""
-<style>
-    /* 1. Thiết lập hình nền cho toàn bộ trang web */
-    .stApp {
-        /* Đổi đường link bên dưới thành link ảnh phòng thí nghiệm hoặc bảng đen của anh */
-        background-image: url("https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2070&auto=format&fit=crop"); 
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed; /* Cố định nền khi cuộn trang */
-    }
-    
-    /* Làm trong suốt thanh tiêu đề mặc định của Streamlit phía trên cùng */
-    .stApp > header {
-        background-color: transparent !important;
-    }
-
-    /* 2. Hiệu ứng kính mờ cho các khung bài học (st.container) */
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(15, 15, 26, 0.85) !important; /* Màu nền tối trong suốt 85% */
-        backdrop-filter: blur(8px); /* Làm mờ hình nền phía sau khung */
-        -webkit-backdrop-filter: blur(8px);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Viền trắng nhạt */
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); /* Đổ bóng tạo chiều sâu */
-    }
-    
-    /* Đảm bảo chữ bên trong các tab không bị ảnh hưởng */
-    .stTabs [data-baseweb="tab-panel"] {
-        background: transparent;
-    }
-</style>
-""", unsafe_allow_html=True)
 # === HIỆU ỨNG HÌNH NỀN RƠI LIÊN TỤC (CSS ANIMATION) ===
 st.markdown("""
 <style>
