@@ -75,19 +75,94 @@ with tab3:
 
 with tab4:
     st.error("**Thử thách dành cho bạn (Missions)**")
-    st.markdown("""
-    Hãy thử tự tay xây dựng và kiểm chứng các quy luật trên trong khung Sandbox nhé!
-    1.  **Thử thách 1:** Trồng một khu rừng nhỏ (Đất + Hạt giống) và thả một bầy chim. Hãy phun **Khí CO2** vào rừng và quan sát xem lá cây có chuyển hóa nó thành Oxy cho chim thở không?
-    2.  **Thử thách 2:** Tạo một bình chứa Axit an toàn. Bạn hãy vẽ một hố **Cát**, dùng công cụ **🔥 LÀM NÓNG** nung chảy Cát thành Thủy Tinh, sau đó đổ **Axit** vào xem bình có bị thủng không.
-    3.  **Thử thách 3:** Tạo ra một thảm họa sinh thái nhỏ: Nhỏ 1 giọt **Khuẩn/Nấm** vào khu rừng hoặc tạo một đám cháy rừng. Quan sát chu trình phân hủy để lại Đất Mùn như thế nào.
-    """)
+    st.markdown("Hãy thử tự tay xây dựng và kiểm chứng các quy luật trên trong khung Sandbox. Đánh dấu vào ô bên cạnh khi bạn đã làm thành công nhé!")
 
-st.markdown("---")
-# Căn giữa nút điều hướng
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    if st.button("🏠 Hoàn Thành Bài Tập — Quay Lại Trang Chính", use_container_width=True):
-        try:
-            st.switch_page("Ket_Noi_Tri_Thuc.py")
-        except Exception as e:
-            st.error("⚠️ Không thể chuyển trang. Hãy đảm bảo file `Ket_Noi_Tri_Thuc.py` đang nằm ở thư mục gốc.")
+    # 1. Tính toán tiến độ
+    m1_done = st.session_state.get("m1", False)
+    m2_done = st.session_state.get("m2", False)
+    m3_done = st.session_state.get("m3", False)
+    
+    total_missions = 3
+    completed_missions = sum([m1_done, m2_done, m3_done])
+    progress_percent = int((completed_missions / total_missions) * 100)
+
+    # 2. Hiển thị thanh tiến trình
+    st.markdown(f"**Tiến độ hoàn thành: {completed_missions}/{total_missions} ({progress_percent}%)**")
+    st.progress(progress_percent)
+
+    if "mission_celebrated" not in st.session_state:
+        st.session_state.mission_celebrated = False
+
+    st.markdown("---")
+    
+    # 3. Giao diện Checkbox thử thách
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.markdown("**Thử thách 1: Phổi xanh của Trái Đất**  \nTrồng rừng, thả chim và phun **Khí CO2** để quan sát lá cây quang hợp tạo ra **Oxy**.")
+    with col2:
+        m1 = st.checkbox("Hoàn thành", key="m1")
+
+    st.markdown("---")
+    
+    with col1:
+        st.markdown("**Thử thách 2: Chế tạo bình chứa Axit**  \nVẽ **Cát**, dùng công cụ **🔥 LÀM NÓNG** nung chảy thành **Thủy Tinh**, sau đó đổ **Axit** vào.")
+    with col2:
+        m2 = st.checkbox("Hoàn thành", key="m2")
+
+    st.markdown("---")
+    
+    with col1:
+        st.markdown("**Thử thách 3: Vòng tuần hoàn phân hủy**  \nNhỏ **Khuẩn/Nấm** vào khu rừng hoặc tạo đám cháy. Quan sát sinh vật biến thành **Đất Mùn**.")
+    with col2:
+        m3 = st.checkbox("Hoàn thành", key="m3")
+
+    st.markdown("---")
+
+    # 4. Kiểm tra điều kiện chiến thắng
+    if completed_missions == total_missions:
+        if not st.session_state.mission_celebrated:
+            st.balloons()
+            st.toast("🎉 Bạn đã hoàn thành tất cả thử thách!", icon="🏆")
+            st.session_state.mission_celebrated = True
+        st.success("🏆 **XUẤT SẮC!** Bạn đã nắm vững các quy luật Hóa Sinh cơ bản và trở thành một nhà Khoa học thực thụ!")
+    else:
+        st.session_state.mission_celebrated = False
+
+    # 5. Giao diện Lưu Kết Quả
+    st.markdown("### 💾 Lưu kết quả học tập")
+    col_name, col_btn = st.columns([3, 1])
+    
+    with col_name:
+        student_name = st.text_input("Nhập Họ và Tên của em:", placeholder="Ví dụ: Nguyễn Văn A")
+    
+    with col_btn:
+        st.write("") # Dùng để căn chỉnh nút bấm ngang hàng với ô nhập text
+        st.write("")
+        if st.button("Lưu Tiến Độ", use_container_width=True):
+            if not student_name.strip():
+                st.warning("⚠️ Em cần nhập tên trước khi lưu kết quả nhé!")
+            else:
+                csv_file = "ket_qua_thuc_hanh.csv"
+                file_exists = os.path.isfile(csv_file)
+                
+                # Ghi dữ liệu vào file CSV (utf-8-sig để Excel đọc không lỗi font)
+                try:
+                    with open(csv_file, mode="a", encoding="utf-8-sig", newline="") as f:
+                        writer = csv.writer(f)
+                        # Nếu file chưa tồn tại, tạo dòng tiêu đề (Header)
+                        if not file_exists:
+                            writer.writerow(["Thời Gian", "Tên Học Sinh", "Thử thách 1", "Thử thách 2", "Thử thách 3", "Hoàn Thành (%)"])
+                        
+                        # Ghi dữ liệu của học sinh
+                        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        writer.writerow([
+                            current_time, 
+                            student_name.strip(), 
+                            "Đạt" if m1_done else "Chưa", 
+                            "Đạt" if m2_done else "Chưa", 
+                            "Đạt" if m3_done else "Chưa", 
+                            f"{progress_percent}%"
+                        ])
+                    st.success(f"✅ Đã lưu thành công tiến độ của học sinh **{student_name}**!")
+                except Exception as e:
+                    st.error(f"⚠️ Lỗi khi lưu file: {e}")
