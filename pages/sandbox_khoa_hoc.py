@@ -176,3 +176,44 @@ with tab4:
                     st.success(f"✅ Đã lưu thành công tiến độ của học sinh **{student_name}**!")
                 except Exception as e:
                     st.error(f"⚠️ Lỗi khi lưu file: {e}")
+with tab5:
+    st.header("🏆 Bảng Vàng Thành Tích")
+    st.markdown("Cùng theo dõi tiến độ hoàn thành thử thách phòng thí nghiệm của cả lớp!")
+
+    csv_file = "ket_qua_thuc_hanh.csv"
+    
+    # Kiểm tra xem file CSV đã được tạo chưa (đã có ai nộp bài chưa)
+    if os.path.exists(csv_file):
+        try:
+            # Đọc dữ liệu từ file CSV
+            df = pd.read_csv(csv_file)
+            
+            # Xử lý sắp xếp (Sorting): Ưu tiên % cao lên trước, nếu bằng % thì ai nộp sớm hơn sẽ xếp trên
+            if "Hoàn Thành (%)" in df.columns and "Thời Gian" in df.columns:
+                # Tạo cột phụ dạng số nguyên từ chuỗi "100%" để sắp xếp
+                df["Tỷ lệ (Số)"] = df["Hoàn Thành (%)"].str.replace("%", "").astype(int)
+                # Sắp xếp: Tỷ lệ (Giảm dần) -> Thời gian (Tăng dần)
+                df = df.sort_values(by=["Tỷ lệ (Số)", "Thời Gian"], ascending=[False, True])
+                # Xóa cột phụ sau khi đã sắp xếp xong
+                df = df.drop(columns=["Tỷ lệ (Số)"])
+
+            # Đánh số thứ tự (Hạng) tự động
+            df.insert(0, "Hạng", range(1, len(df) + 1))
+            
+            # Hiển thị bảng dữ liệu
+            # hide_index=True giúp giấu cột index mặc định (0, 1, 2,...) của Pandas cho đẹp mắt
+            st.dataframe(
+                df, 
+                use_container_width=True, 
+                hide_index=True,
+                height=400 # Cố định chiều cao để không bị đẩy giao diện nếu lớp có quá đông học sinh
+            )
+            
+            # Thêm nút làm mới (refresh) để cập nhật dữ liệu nếu có bạn khác vừa nộp bài
+            if st.button("🔄 Làm mới Bảng Xếp Hạng", use_container_width=True):
+                st.rerun()
+                
+        except Exception as e:
+            st.error(f"⚠️ Đã có lỗi xảy ra khi tải bảng xếp hạng: {e}")
+    else:
+        st.info("Trang giấy trắng! Chưa có nhà khoa học nào nộp kết quả. Hãy quay lại Tab **Thử Thách Thực Hành** để trở thành người dẫn đầu nhé!")
