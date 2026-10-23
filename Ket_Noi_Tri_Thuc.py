@@ -45,14 +45,55 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# === ĐOẠN CODE THÊM VÀO ĐỂ ẨN MENU MẶC ĐỊNH CHỨA CHỮ "Ket Noi Tri Thuc" ===
+# === TÙY CHỈNH LÀM ĐẸP MENU ĐIỀU HƯỚNG BÊN TRÁI THÀNH NÚT 3D ===
 st.markdown("""
     <style>
-        [data-testid="stSidebarNav"] {display: none !important;}
+        /* Bo góc và tạo bóng cho toàn bộ khối menu chứa 2 file */
+        [data-testid="stSidebarNav"] {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding-top: 15px;
+            padding-bottom: 15px;
+            margin: 10px 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: 2px solid #e1e8f0;
+        }
+
+        /* Định dạng chung cho các nút (chưa được chọn) */
+        [data-testid="stSidebarNav"] a {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            font-size: 16px !important;
+            font-weight: 600;
+            border-radius: 10px;
+            margin: 8px 15px;
+            transition: all 0.3s ease;
+            background-color: #f1f2f6;
+            color: #2f3542 !important;
+            border: 2px solid transparent;
+        }
+
+        /* Hiệu ứng khi học sinh trỏ chuột vào nút */
+        [data-testid="stSidebarNav"] a:hover {
+            transform: translateX(5px); /* Trượt nhẹ sang phải */
+            background-color: #dfe4ea;
+            border-color: #ced6e0;
+        }
+
+        /* Định dạng ĐẶC BIỆT cho nút đang được chọn (Trang hiện tại) */
+        [data-testid="stSidebarNav"] a[aria-current="page"] {
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 100%);
+            color: #d63031 !important;
+            font-weight: 900;
+            box-shadow: 0 4px 10px rgba(255, 118, 117, 0.4);
+            border-left: 6px solid #ff4757;
+            border-top: 2px solid transparent;
+            border-right: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+        }
         
-        /* Chỉnh lại khoảng cách lề trên của sidebar cho gọn gàng hơn sau khi ẩn menu */
-        [data-testid="stSidebar"] {
-            padding-top: 1rem;
+        /* Chữ bên trong nút */
+        [data-testid="stSidebarNav"] span {
+            font-weight: inherit;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -2073,15 +2114,15 @@ elif che_do == "⚙️ Trạm Nạp Dữ Liệu":
         st.error("Sai mật khẩu!")
 
 elif che_do == "🎪 Phòng thí nghiệm ảo":
-    # === ĐÃ CHÈN NÚT BẤM MỞ SANDBOX VÀO ĐÂY ===
+    # === THÊM NÚT BẤM CHUYỂN SANG TRANG SANDBOX ===
     st.markdown("### 🧪 Khu Vực Thực Hành Tương Tác Hóa - Sinh")
     if st.button("🚀 MỞ PHÒNG THÍ NGHIỆM SANDBOX ĐẶC BIỆT", type="primary", use_container_width=True):
         try:
             st.switch_page("pages/sandbox_khoa_hoc.py")
         except Exception as e:
-            st.error("⚠️ Không tìm thấy file Sandbox. Đảm bảo file 'sandbox_khoa_hoc.py' nằm trong thư mục 'pages'.")
+            st.error("⚠️ Hệ thống đang đồng bộ. Anh hãy kiểm tra xem file sandbox_khoa_hoc.py đã được đưa vào thư mục 'pages' chưa nhé.")
     st.divider()
-    # ==========================================
+    # ===============================================
 
     cho_banner_lab = st.empty()
     ds_mon_lab = [
