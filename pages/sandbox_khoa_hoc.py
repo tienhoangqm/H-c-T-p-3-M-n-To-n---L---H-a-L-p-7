@@ -14,15 +14,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# Thêm nút Quay lại trang chính (tránh việc học sinh bị kẹt khi đã ẩn menu trái)
+# Thêm nút Quay lại trang chính
 if st.button("🔙 Quay lại Trang Chủ", use_container_width=False):
-    # Lưu ý: Sửa "Ket_Noi_Tri_Thuc.py" thành tên đúng của file trang chủ của anh nếu khác
     try:
         st.switch_page("Ket_Noi_Tri_Thuc.py") 
     except:
         st.info("💡 Nút này sẽ hoạt động khi file này được đặt trong thư mục 'pages'.")
 
-# === HIỆU ỨNG HÌNH NỀN RƠI LIÊN TỤC (CSS ANIMATION) ===
+# === HIỆU ỨNG HÌNH NỀN RƠI LIÊN TỤC ===
 st.markdown("""
 <style>
     .falling-container {
@@ -126,12 +125,17 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === 2. TẢI VÀ NHÚNG SANDBOX GAME ===
-html_path = Path(__file__).parent / "sandboxels_mini.html"
+# === 2. TẢI VÀ NHÚNG SANDBOX GAME (Đã nâng cấp tìm file thông minh) ===
+current_dir = Path(__file__).parent
+html_path = current_dir / "sandboxels_mini.html"
+
+# Nếu không tìm thấy trong thư mục hiện tại (ví dụ file py đang ở trong pages/), lùi ra ngoài 1 cấp để tìm
+if not html_path.exists():
+    html_path = current_dir.parent / "sandboxels_mini.html"
 
 if not html_path.exists():
     st.error(f"⚠️ Không tìm thấy file game tại: `{html_path}`")
-    st.info("💡 Đảm bảo file `sandboxels_mini.html` được đặt cùng thư mục với file Python này.")
+    st.info("💡 Đảm bảo file `sandboxels_mini.html` được đặt đúng vị trí.")
     st.stop()
 
 try:
@@ -140,7 +144,6 @@ except Exception as e:
     st.error(f"⚠️ Lỗi khi đọc file HTML: {e}")
     st.stop()
 
-# Đã khóa height=850 để bảo vệ thanh công cụ Vẽ/Xóa bên dưới game không bị cắt mất
 components.html(html_content, height=850, scrolling=False)
 
 # === 3. SỔ TAY KHOA HỌC (CARD LAYOUT) ===
