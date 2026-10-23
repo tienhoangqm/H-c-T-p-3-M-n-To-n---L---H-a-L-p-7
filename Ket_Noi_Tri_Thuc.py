@@ -45,6 +45,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# === ĐOẠN CODE THÊM VÀO ĐỂ ẨN MENU MẶC ĐỊNH CHỨA CHỮ "Ket Noi Tri Thuc" ===
+st.markdown("""
+    <style>
+        [data-testid="stSidebarNav"] {display: none !important;}
+        
+        /* Chỉnh lại khoảng cách lề trên của sidebar cho gọn gàng hơn sau khi ẩn menu */
+        [data-testid="stSidebar"] {
+            padding-top: 1rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 if "home_jump" in st.session_state:
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = st.session_state.pop("home_jump")
