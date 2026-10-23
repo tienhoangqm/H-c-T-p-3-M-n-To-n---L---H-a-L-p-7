@@ -3,54 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sandbox Pro - Hệ Thống Vật Chất</title>
+<title>Sandbox Pro - Hệ Sinh Thái</title>
 <style>
-    /* Reset & Full Screen Layout */
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0f0f1a; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-    
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0f0f1a; overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; }
     .app-container { display: flex; flex-direction: column; width: 100%; height: 100%; }
     
-    /* Vùng chứa Canvas tự co giãn */
-    .canvas-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; min-height: 0; position: relative; }
+    /* Vùng chứa Canvas tự co giãn, căn giữa */
+    .canvas-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; position: relative; }
     
-    /* Khóa tỷ lệ Canvas, làm mượt pixel */
+    /* Đã sửa object-fit thành fill/contain để mở rộng tối đa chiều cao */
     canvas { 
         image-rendering: pixelated; 
-        max-width: 100%; 
-        max-height: 100%; 
+        width: 100%; 
+        height: 100%; 
         object-fit: contain; 
         cursor: crosshair;
         border-bottom: 1px solid #333;
     }
 
-    /* Vùng công cụ bên dưới */
     .ui-panel { flex-shrink: 0; background: #161616; display: flex; flex-direction: column; }
-    
     .bar { display: flex; align-items: center; padding: 6px 10px; gap: 6px; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; }
     #statusbar { background: #000; font-size: 11px; color: #888; padding: 4px 10px; border-bottom: 1px solid #333; gap: 20px; }
     
-    /* Nút bấm UI chuẩn hóa */
     button { 
         padding: 5px 12px; border: none; border-radius: 4px; cursor: pointer; 
         font-size: 12px; font-weight: 600; color: #ddd; background: #2d2d2d; 
-        border-bottom: 2px solid #111; border-top: 1px solid #444;
-        transition: filter 0.1s;
+        border-bottom: 2px solid #111; border-top: 1px solid #444; transition: filter 0.1s;
     }
     button:active { border-bottom: 0; border-top: 2px solid #111; transform: translateY(1px); }
     button:hover { filter: brightness(1.2); }
     
-    /* Màu sắc nút chức năng */
     .btn-action { background: #3a3a3a; }
     .btn-action.active { background: #fff; color: #000; border-bottom: 2px solid #aaa; }
     .btn-heat { background: #e74c3c; color: white; }
     .btn-cool { background: #0984e3; color: white; }
     .btn-erase { background: #ff7675; color: white; }
-    
     .btn-category { background: #2d3436; color: #b2bec3; }
     .btn-category.active { background: #00b894; color: #fff; }
-    
     .btn-mat.active { outline: 2px solid #fff; outline-offset: -2px; }
-
     #iconbar button { font-size: 14px; padding: 4px 8px; background: transparent; border: none; color: #fff; }
     #iconbar button:hover { background: #333; }
 </style>
@@ -58,33 +48,28 @@
 <body>
 
 <div class="app-container">
-    <!-- Tầng 0: Khung Vẽ -->
     <div class="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
     </div>
     
-    <!-- Các thanh công cụ sẽ không bị ẩn do dùng Flexbox -->
     <div class="ui-panel">
-        <!-- Tầng 1: Thanh trạng thái -->
         <div class="bar" id="statusbar">
             <span id="st-coord">x:0, y:0</span>
             <span id="st-pixels">0 pxls</span>
             <span id="st-fps">0 fps</span>
         </div>
 
-        <!-- Tầng 2: Thanh Điều khiển -->
         <div class="bar" id="iconbar">
             <button id="btn-pause" title="Tạm dừng/Tiếp tục">⏸️</button>
             <div style="width: 1px; height: 16px; background: #444; margin: 0 10px;"></div>
             <span style="font-size: 12px; color: #aaa;">Cọ vẽ:</span>
             <button id="btn-brush-minus">➖</button>
-            <span id="brush-size" style="font-size: 12px; width: 12px; text-align: center; color: white;">2</span>
+            <span id="brush-size" style="font-size: 12px; width: 12px; text-align: center; color: white;">3</span>
             <button id="btn-brush-plus">➕</button>
             <div style="width: 1px; height: 16px; background: #444; margin: 0 10px;"></div>
-            <button id="btn-clear" title="Xóa toàn bộ">🗑️ Xóa sạch</button>
+            <button id="btn-clear">🗑️ Xóa sạch</button>
         </div>
 
-        <!-- Tầng 3: Thanh Tác động -->
         <div class="bar" id="actionbar">
             <button class="btn-action btn-erase" data-action="ERASE">XÓA</button>
             <button class="btn-action active" data-action="DRAW">VẼ</button>
@@ -92,46 +77,51 @@
             <button class="btn-action btn-cool" data-action="COOL">❄️ LÀM LẠNH</button>
         </div>
 
-        <!-- Tầng 4: Danh mục -->
         <div class="bar" id="categorybar"></div>
-
-        <!-- Tầng 5: Vật liệu -->
         <div class="bar" id="materialbar"></div>
     </div>
 </div>
 
 <script>
-    // === CẤU HÌNH ĐỘ PHÂN GIẢI NỘI BỘ ===
-    // Dùng độ phân giải cố định, CSS sẽ tự co giãn hiển thị
-    const W = 250, H = 130; 
+    // === MỞ RỘNG ĐỘ PHÂN GIẢI (HẠ THẤP ĐÁY MÀN HÌNH) ===
+    const W = 300, H = 200; // Tăng H từ 130 lên 200 để làm không gian sâu hơn
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     canvas.width = W; 
     canvas.height = H;
 
-    // === ĐỊNH NGHĨA VẬT LIỆU ===
+    // === ĐỊNH NGHĨA VẬT LIỆU MỞ RỘNG ===
     const EMPTY = 0;
     const materials = {
         [EMPTY]: { name: "Không khí", hex: "#000000", density: 0 },
+        
         // Đất đá
         1: { name: "Cát", hex: "#e6c26e", density: 3, cat: "Đất Đá", granular: true },
         3: { name: "Đất", hex: "#8b5a2b", density: 4, cat: "Đất Đá", granular: true },
         7: { name: "Đá", hex: "#708090", density: 6, cat: "Đất Đá" },
         10:{ name: "Bùn", hex: "#4a3525", density: 3.5, cat: "Đất Đá", liquid: true, viscous: true },
+        
         // Chất lỏng
         2: { name: "Nước", hex: "#4a90d9", density: 1.5, liquid: true, cat: "Chất Lỏng" },
         9: { name: "Dầu", hex: "#2c2c2c", density: 1, liquid: true, flammable: true, cat: "Chất Lỏng" },
         11:{ name: "Dung Nham", hex: "#ff5722", density: 5, liquid: true, viscous: true, hot: true, cat: "Chất Lỏng" },
+        
         // Khí & Nhiệt
         4: { name: "Lửa", hex: "#ff4500", density: 0.2, life: 35, hot: true, cat: "Khí & Khác" },
         6: { name: "Khói", hex: "#888888", density: -0.5, gas: true, life: 60, cat: "Khí & Khác" },
         12:{ name: "Băng", hex: "#a0e6ff", density: 1.4, cat: "Khí & Khác" },
-        // Sự sống
-        5: { name: "Gỗ", hex: "#a0522d", density: 3, flammable: true, cat: "Sự Sống" },
-        8: { name: "Cây xanh", hex: "#27ae60", density: 2.5, flammable: true, cat: "Sự Sống" }
+        
+        // Hệ Sinh Thái (Sự Sống)
+        13:{ name: "Cỏ", hex: "#2ecc71", density: 2.5, flammable: true, cat: "Sự Sống" },
+        14:{ name: "Hạt Giống", hex: "#f1c40f", density: 3, cat: "Sự Sống", isSeed: true },
+        19:{ name: "Mầm Đang Lớn", hex: "#a0522d", density: 4, isGrowingTree: true }, // Ẩn khỏi menu, dùng cho logic hạt giống
+        5: { name: "Gỗ", hex: "#a0522d", density: 4, flammable: true, cat: "Sự Sống" },
+        15:{ name: "Lá Cây", hex: "#27ae60", density: 1, flammable: true, cat: "Sự Sống" },
+        16:{ name: "Cá", hex: "#e67e22", density: 1.6, cat: "Sự Sống", isFish: true },
+        17:{ name: "Chim", hex: "#ecf0f1", density: -0.1, cat: "Sự Sống", isBird: true },
+        18:{ name: "Thú Rừng", hex: "#d35400", density: 3, cat: "Sự Sống", isAnimal: true }
     };
 
-    // Tiền xử lý mã màu Hex sang RGB để tối ưu hiệu năng vẽ bằng ImageData
     Object.values(materials).forEach(m => {
         if (m.hex) {
             m.r = parseInt(m.hex.slice(1, 3), 16);
@@ -151,20 +141,14 @@
     // === BIẾN TRẠNG THÁI ===
     const world = new Uint8Array(W * H);
     const tempLife = new Uint16Array(W * H);
-    
-    let activeCategory = "Đất Đá";
-    let activeMaterial = 1;
-    let activeAction = "DRAW";
-    
-    let brushSize = 3;
-    let isPaused = false, isMouseDown = false;
-    let mouseX = -1, mouseY = -1;
-    let lastTime = 0, frames = 0, fps = 0;
+    let activeCategory = "Đất Đá", activeMaterial = 1, activeAction = "DRAW";
+    let brushSize = 3, isPaused = false, isMouseDown = false;
+    let mouseX = -1, mouseY = -1, lastTime = 0, frames = 0, fps = 0;
 
     const getIdx = (x, y) => y * W + x;
     const inBounds = (x, y) => x >= 0 && x < W && y >= 0 && y < H;
 
-    // === XÂY DỰNG GIAO DIỆN (UI) ===
+    // === GIAO DIỆN ===
     function renderCategories() {
         const catBar = document.getElementById('categorybar');
         catBar.innerHTML = '';
@@ -173,12 +157,8 @@
             btn.className = `btn-category ${cat === activeCategory ? 'active' : ''}`;
             btn.textContent = cat;
             btn.onclick = () => {
-                activeCategory = cat;
-                activeMaterial = categories[cat][0].id; 
-                activeAction = "DRAW"; 
-                updateActionUI();
-                renderCategories();
-                renderMaterials();
+                activeCategory = cat; activeMaterial = categories[cat][0].id; 
+                activeAction = "DRAW"; updateActionUI(); renderCategories(); renderMaterials();
             };
             catBar.appendChild(btn);
         });
@@ -191,14 +171,9 @@
             const btn = document.createElement('button');
             btn.className = `btn-mat ${mat.id === activeMaterial && activeAction === "DRAW" ? 'active' : ''}`;
             btn.style.background = mat.hex;
-            btn.style.color = (mat.name === "Băng" || mat.name === "Cát") ? "#000" : "#fff";
+            btn.style.color = ["Băng", "Cát", "Hạt Giống"].includes(mat.name) ? "#000" : "#fff";
             btn.textContent = mat.name;
-            btn.onclick = () => {
-                activeMaterial = mat.id;
-                activeAction = "DRAW";
-                updateActionUI();
-                renderMaterials();
-            };
+            btn.onclick = () => { activeMaterial = mat.id; activeAction = "DRAW"; updateActionUI(); renderMaterials(); };
             matBar.appendChild(btn);
         });
     }
@@ -209,35 +184,29 @@
     }
 
     document.querySelectorAll('.btn-action').forEach(btn => {
-        btn.onclick = () => { activeAction = btn.dataset.action; updateActionUI(); };
+        btn.onclick = () => { activeAction = btn.dataset.action; updateActionUI(); renderMaterials(); };
     });
 
     renderCategories(); renderMaterials();
 
-    // === SỰ KIỆN THANH CÔNG CỤ ===
     document.getElementById('btn-clear').onclick = () => { world.fill(EMPTY); tempLife.fill(0); };
     document.getElementById('btn-pause').onclick = function() { isPaused = !isPaused; this.textContent = isPaused ? "▶️" : "⏸️"; };
     document.getElementById('btn-brush-minus').onclick = () => { if(brushSize > 0) brushSize--; document.getElementById('brush-size').textContent = brushSize; };
     document.getElementById('btn-brush-plus').onclick = () => { if(brushSize < 10) brushSize++; document.getElementById('brush-size').textContent = brushSize; };
 
-    // === TÍNH TỌA ĐỘ CHUỘT CHUẨN XÁC KHI CANVAS CO GIÃN ===
     function getMousePos(e) {
         const rect = canvas.getBoundingClientRect();
-        // Tính tỷ lệ scale thực tế của canvas so với màn hình hiển thị
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         mouseX = Math.floor((e.clientX - rect.left) * scaleX);
         mouseY = Math.floor((e.clientY - rect.top) * scaleY);
-        if (inBounds(mouseX, mouseY)) {
-            document.getElementById('st-coord').textContent = `x:${mouseX}, y:${mouseY}`;
-        }
+        if (inBounds(mouseX, mouseY)) document.getElementById('st-coord').textContent = `x:${mouseX}, y:${mouseY}`;
     }
 
     function applyBrush() {
         for (let dy = -brushSize; dy <= brushSize; dy++) {
             for (let dx = -brushSize; dx <= brushSize; dx++) {
                 if (dx*dx + dy*dy > brushSize*brushSize) continue; 
-                
                 const x = mouseX + dx, y = mouseY + dy;
                 if (!inBounds(x, y)) continue;
                 
@@ -247,14 +216,14 @@
                 if (activeAction === "DRAW" && Math.random() < 0.8) world[i] = activeMaterial;
                 else if (activeAction === "ERASE") world[i] = EMPTY;
                 else if (activeAction === "HEAT") {
-                    if (currentMat === 2) { world[i] = 6; tempLife[i] = 40; } // Nước -> Khói
-                    else if (currentMat === 12) world[i] = 2; // Băng -> Nước
+                    if (currentMat === 2) { world[i] = 6; tempLife[i] = 40; }
+                    else if (currentMat === 12) world[i] = 2;
                     else if (materials[currentMat].flammable) { world[i] = 4; tempLife[i] = 40; }
                 }
                 else if (activeAction === "COOL") {
-                    if (currentMat === 2) world[i] = 12; // Nước -> Băng
-                    else if (currentMat === 11) world[i] = 7; // Dung nham -> Đá
-                    else if (currentMat === 4) world[i] = EMPTY; // Tắt lửa
+                    if (currentMat === 2) world[i] = 12;
+                    else if (currentMat === 11) world[i] = 7;
+                    else if (currentMat === 4) world[i] = EMPTY;
                 }
             }
         }
@@ -265,7 +234,7 @@
     canvas.onmousemove = (e) => { getMousePos(e); if (isMouseDown) applyBrush(); };
     canvas.onmouseleave = () => { mouseX = -1; mouseY = -1; };
 
-    // === LOGIC VẬT LÝ ===
+    // === LOGIC VẬT LÝ & TRÍ TUỆ NHÂN TẠO SINH VẬT ===
     function updatePhysics() {
         if (isPaused) return;
 
@@ -277,7 +246,74 @@
                 if (id === EMPTY) continue;
                 
                 const mat = materials[id];
+                const below = getIdx(x, y + 1);
 
+                // 1. Logic Cây Cối (Hạt giống nảy mầm)
+                if (mat.isSeed) {
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
+                        world[below] = id; world[i] = EMPTY; continue; // Rơi xuống
+                    } else if (world[below] === 3 || world[below] === 10) { // Chạm đất/bùn
+                        world[i] = 19; // Trở thành Mầm cây
+                    }
+                } 
+                else if (mat.isGrowingTree) {
+                    // Mầm mọc lên cao và ra lá
+                    if (Math.random() < 0.05) { // Tốc độ mọc
+                        const up = getIdx(x, y - 1);
+                        if (inBounds(x, y - 1) && world[up] === EMPTY) {
+                            world[up] = 19; // Đỉnh vươn lên
+                            // Ra lá 2 bên
+                            if (inBounds(x-1, y) && world[getIdx(x-1, y)] === EMPTY) world[getIdx(x-1, y)] = 15;
+                            if (inBounds(x+1, y) && world[getIdx(x+1, y)] === EMPTY) world[getIdx(x+1, y)] = 15;
+                        }
+                        world[i] = 5; // Phần thân dưới hóa thân gỗ cứng (dừng mọc)
+                    }
+                }
+
+                // 2. Logic Cá Bơi
+                else if (mat.isFish) {
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
+                        world[below] = id; world[i] = EMPTY; continue; // Rơi ngoài không khí
+                    }
+                    // Bơi ngẫu nhiên trong nước
+                    let dx = Math.random() < 0.5 ? -1 : 1;
+                    let dy2 = Math.random() < 0.5 ? -1 : 1;
+                    if (Math.random() < 0.6) dy2 = 0; // Thích bơi ngang hơn
+                    if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === 2) {
+                        world[getIdx(x + dx, y + dy2)] = id; world[i] = 2; continue;
+                    }
+                    // Nếu rớt trên cạn, nhảy lóp ngóp
+                    if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY && Math.random() < 0.2) {
+                        world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue;
+                    }
+                }
+
+                // 3. Logic Chim Bay
+                else if (mat.isBird) {
+                    // Chim thỉnh thoảng đổi hướng bay, bỏ qua trọng lực
+                    if (Math.random() < 0.3) {
+                        let dx = Math.random() < 0.5 ? -1 : 1;
+                        let dy2 = Math.random() < 0.6 ? -1 : 1; // Thích bay lên cao một chút
+                        if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === EMPTY) {
+                            world[getIdx(x + dx, y + dy2)] = id; world[i] = EMPTY; continue;
+                        }
+                    }
+                }
+
+                // 4. Logic Thú Rừng đi bộ
+                else if (mat.isAnimal) {
+                    if (inBounds(x, y + 1) && world[below] === EMPTY) {
+                        world[below] = id; world[i] = EMPTY; continue; // Rơi
+                    } else if (Math.random() < 0.2) {
+                        // Chạm đất thì đi bộ ngang
+                        let dx = Math.random() < 0.5 ? -1 : 1;
+                        if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY) {
+                            world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue;
+                        }
+                    }
+                }
+
+                // Logic cơ bản (Tuổi thọ, Cháy, Trọng lực)
                 if (mat.life) {
                     if (!tempLife[i]) tempLife[i] = mat.life;
                     if (--tempLife[i] <= 0) { world[i] = EMPTY; continue; }
@@ -289,7 +325,6 @@
                             const nx = x + dx2, ny = y + dy2;
                             if (!inBounds(nx, ny)) continue;
                             const nbId = world[getIdx(nx, ny)];
-                            
                             if (mat.hot && materials[nbId].flammable && Math.random() < 0.08) {
                                 world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 35;
                             }
@@ -305,8 +340,7 @@
                     world[getIdx(x, y-1)] = 6; tempLife[getIdx(x, y-1)] = 40;
                 }
 
-                const below = getIdx(x, y + 1);
-                
+                // Khí bay lên, Hạt rơi xuống
                 if (mat.gas) {
                     const up = getIdx(x, y - 1);
                     if (inBounds(x, y - 1) && world[up] === EMPTY) {
@@ -314,7 +348,8 @@
                         [tempLife[i], tempLife[up]] = [tempLife[up], tempLife[i]];
                         continue;
                     }
-                } else {
+                } else if (!mat.isBird && !mat.isGrowingTree && id !== 5 && id !== 15 && id !== 13) {
+                    // Gỗ(5), Lá(15), Cỏ(13) và Chim là dạng đứng yên hoặc tự xử lý di chuyển ở trên
                     if (world[below] === EMPTY) {
                         world[below] = id; world[i] = EMPTY;
                         [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
@@ -326,23 +361,19 @@
                         if (Math.random() < fallRate) {
                             const side = getIdx(x + dir, y + 1);
                             if (inBounds(x + dir, y + 1) && world[side] === EMPTY) {
-                                world[side] = id; world[i] = EMPTY;
-                                [tempLife[i], tempLife[side]] = [tempLife[side], tempLife[i]];
-                                continue;
+                                world[side] = id; world[i] = EMPTY; continue;
                             }
                             if (mat.liquid) {
                                 const lat = getIdx(x + dir, y);
                                 if (inBounds(x + dir, y) && world[lat] === EMPTY) {
-                                    world[lat] = id; world[i] = EMPTY;
-                                    [tempLife[i], tempLife[lat]] = [tempLife[lat], tempLife[i]];
-                                    continue;
+                                    world[lat] = id; world[i] = EMPTY; continue;
                                 }
                             }
                         }
                     }
 
                     const belowId = world[below];
-                    if (belowId !== EMPTY && materials[belowId].density < mat.density && !materials[belowId].gas) {
+                    if (belowId !== EMPTY && materials[belowId].density < mat.density && !materials[belowId].gas && !materials[belowId].isGrowingTree) {
                         world[i] = belowId; world[below] = id;
                         [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
                     }
@@ -351,9 +382,8 @@
         }
     }
 
-    // === TÍCH HỢP HIỆU ỨNG (EFFECTS) & RENDER ===
+    // === HIỆU ỨNG & RENDER TỐI ƯU ===
     function render() {
-        // Sử dụng ImageData để vẽ điểm ảnh trực tiếp (nhanh hơn gấp nhiều lần và dễ làm hiệu ứng)
         const imgData = ctx.createImageData(W, H);
         const data = imgData.data;
         let pixelsCount = 0;
@@ -366,61 +396,41 @@
             const mat = materials[id];
             let r = mat.r, g = mat.g, b = mat.b;
             
-            // --- CÁC HIỆU ỨNG THỊ GIÁC (VISUAL EFFECTS) ---
             if (id === 4) { 
-                // Lửa: Đổi màu từ Vàng sáng -> Cam -> Đỏ theo vòng đời
                 const life = tempLife[i];
                 if (life > 20) { r=255; g=250; b=101; }
                 else if (life > 10) { r=255; g=175; b=64; }
                 else { r=255; g=77; b=77; }
             } 
-            else if (id === 11) {
-                // Dung nham: Nhấp nháy các điểm màu cam/vàng
-                if (Math.random() < 0.05) { r=255; g=210; b=70; }
-            } 
-            else if (id === 2) {
-                // Nước: Các bọt sáng lấp lánh ngẫu nhiên
-                if (Math.random() < 0.02) { r=126; g=255; b=245; }
-            } 
+            else if (id === 11 && Math.random() < 0.05) { r=255; g=210; b=70; } 
+            else if (id === 2 && Math.random() < 0.02) { r=126; g=255; b=245; } 
             else if (mat.granular && i % 3 === 0) {
-                // Đất/Cát: Tạo kết cấu hạt (texture) bằng cách làm tối đi một số điểm ảnh
-                r = Math.max(0, r - 20); 
-                g = Math.max(0, g - 20); 
-                b = Math.max(0, b - 20);
+                r = Math.max(0, r - 20); g = Math.max(0, g - 20); b = Math.max(0, b - 20);
             }
 
-            // Đổ màu vào ma trận pixel
             const px = i * 4;
-            data[px] = r; 
-            data[px+1] = g; 
-            data[px+2] = b; 
-            data[px+3] = 255; // Alpha
+            data[px] = r; data[px+1] = g; data[px+2] = b; data[px+3] = 255;
         }
         
-        // Vẽ toàn bộ pixel lên Canvas
         ctx.putImageData(imgData, 0, 0);
         document.getElementById('st-pixels').textContent = `${pixelsCount} pxls`;
         
-        // Vẽ khung cọ (Brush outline)
         if (!isPaused && mouseX >= 0 && mouseY >= 0) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.fillRect(mouseX - brushSize, mouseY - brushSize, brushSize * 2 + 1, brushSize * 2 + 1);
         }
     }
 
-    // === VÒNG LẶP CHÍNH ===
     function loop(timestamp) { 
         if (timestamp - lastTime >= 1000) {
             fps = frames; frames = 0; lastTime = timestamp;
             document.getElementById('st-fps').textContent = `${fps} fps`;
         }
         frames++;
-
         updatePhysics(); 
         render(); 
         requestAnimationFrame(loop); 
     }
-    
     requestAnimationFrame(loop);
 </script>
 </body>
