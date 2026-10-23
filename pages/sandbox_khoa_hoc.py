@@ -13,36 +13,38 @@ st.set_page_config(
     page_icon="🔬",
     layout="wide"
 )
+
+# Thêm nút Quay lại trang chính (tránh việc học sinh bị kẹt khi đã ẩn menu trái)
+if st.button("🔙 Quay lại Trang Chủ", use_container_width=False):
+    # Lưu ý: Sửa "Ket_Noi_Tri_Thuc.py" thành tên đúng của file trang chủ của anh nếu khác
+    try:
+        st.switch_page("Ket_Noi_Tri_Thuc.py") 
+    except:
+        st.info("💡 Nút này sẽ hoạt động khi file này được đặt trong thư mục 'pages'.")
+
 # === HIỆU ỨNG HÌNH NỀN RƠI LIÊN TỤC (CSS ANIMATION) ===
 st.markdown("""
 <style>
-    /* Lớp bao bọc các hạt rơi, khóa cứng trên toàn màn hình */
     .falling-container {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        pointer-events: none; /* Rất quan trọng: cho phép click xuyên qua */
-        z-index: 9999; /* Luôn nổi lên trên cùng */
+        pointer-events: none;
+        z-index: 9999;
         overflow: hidden;
     }
-
-    /* Thiết lập chung cho các hạt */
     .particle {
         position: absolute;
         top: -10%;
         font-size: 24px;
         user-select: none;
-        animation: fall linear infinite; /* Chạy liên tục không điểm dừng */
+        animation: fall linear infinite;
     }
-
-    /* Hiệu ứng rơi và lắc lư nhẹ */
     @keyframes fall {
         0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
         10% { opacity: 1; }
         90% { opacity: 1; }
         100% { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; }
     }
-
-    /* Tùy chỉnh vị trí, tốc độ và độ trễ ngẫu nhiên cho từng hạt */
     .p1 { left: 5%; animation-duration: 12s; animation-delay: 0s; font-size: 30px; }
     .p2 { left: 15%; animation-duration: 15s; animation-delay: 2s; }
     .p3 { left: 25%; animation-duration: 10s; animation-delay: 4s; font-size: 20px; }
@@ -65,7 +67,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === HIỆU ỨNG TIÊU ĐỀ VUI NHỘN DÀNH CHO HỌC SINH ===
+# === HIỆU ỨNG TIÊU ĐỀ VUI NHỘN ===
 st.markdown("""
 <style>
     .game-banner {
@@ -78,7 +80,6 @@ st.markdown("""
         margin-bottom: 25px;
         margin-top: 10px;
     }
-    
     .animated-title {
         font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
         font-size: 42px;
@@ -86,14 +87,12 @@ st.markdown("""
         text-transform: uppercase;
         margin: 0;
         padding-bottom: 5px;
-        /* Hiệu ứng màu chữ chuyển động 7 sắc cầu vồng */
         background: linear-gradient(270deg, #ff4757, #ffa502, #2ed573, #1e90ff, #9b59b6);
         background-size: 400% 400%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         animation: gradient-move 3s ease infinite;
     }
-
     .game-subtitle {
         font-size: 22px;
         font-weight: bold;
@@ -101,7 +100,6 @@ st.markdown("""
         margin-top: -10px;
         margin-bottom: 15px;
     }
-
     .game-instruction {
         font-size: 16px;
         background-color: rgba(255, 255, 255, 0.7);
@@ -112,8 +110,6 @@ st.markdown("""
         font-weight: bold;
         border: 2px solid #fff;
     }
-
-    /* Tạo khung hình chuyển động */
     @keyframes gradient-move {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -130,8 +126,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
-
 # === 2. TẢI VÀ NHÚNG SANDBOX GAME ===
 html_path = Path(__file__).parent / "sandboxels_mini.html"
 
@@ -146,6 +140,7 @@ except Exception as e:
     st.error(f"⚠️ Lỗi khi đọc file HTML: {e}")
     st.stop()
 
+# Đã khóa height=850 để bảo vệ thanh công cụ Vẽ/Xóa bên dưới game không bị cắt mất
 components.html(html_content, height=850, scrolling=False)
 
 # === 3. SỔ TAY KHOA HỌC (CARD LAYOUT) ===
