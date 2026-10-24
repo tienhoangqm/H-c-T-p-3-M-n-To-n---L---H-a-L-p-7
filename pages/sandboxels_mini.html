@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sandbox Pro - Tuần Hoàn Sinh Thái</title>
+<title>Sandbox Pro v3 - Tuần Hoàn Sinh Thái & Dẫn Nhiệt</title>
 <style>
   html, body { margin:0; padding:0; width:100%; height:100%; background:#0f0f1a; overflow:hidden; font-family:'Segoe UI', sans-serif; user-select:none; }
   .app { display:flex; flex-direction:column; width:100%; height:100vh; }
@@ -46,13 +46,15 @@
       <button id="btn-pause">⏸️ Tạm dừng</button>
       <button id="btn-speed">⏩ Tốc độ x1</button>
       <button id="btn-day">☀️ Ngày</button>
+      <button id="btn-heatview">🌡️ Xem nhiệt độ: TẮT</button>
       <div class="sep"></div>
       <span class="lbl">Cọ vẽ:</span>
       <button id="btn-minus">➖</button><span id="brush-val" class="val">3</span><button id="btn-plus">➕</button>
       <div class="sep"></div>
-      <span id="st-pop" class="lbl">🐇 Thỏ: 0 · 🦊 Cáo: 0</span>
+      <span id="st-pop" class="lbl"></span>
       <div class="sep"></div>
-      <button id="btn-demo">🌿 Nạp hệ sinh thái mẫu</button>
+      <button id="btn-demo">🌿 Hệ sinh thái mẫu</button>
+      <button id="btn-lab">🔥 Thí nghiệm dẫn nhiệt</button>
       <button id="btn-clear">🗑️ Xóa sạch</button>
     </div>
     <div class="bar" id="actionbar"></div>
@@ -70,31 +72,37 @@ const W = 400, H = 250, N = W * H;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = W; canvas.height = H;
-const imgData = ctx.createImageData(W, H);   // tạo một lần, tái sử dụng
+const imgData = ctx.createImageData(W, H);
 const px = imgData.data;
 
-const world = new Uint8Array(N);   // loại vật chất của mỗi ô
-const life  = new Uint16Array(N);  // tuổi / thời gian sống / năng lượng (thú)
-const moved = new Uint32Array(N);  // khung hình nào đã cập nhật ô này
-let frame = 1;                     // số khung hình mô phỏng
+const world = new Uint8Array(N);   // loại vật chất
+const life  = new Uint16Array(N);  // tuổi / thời gian sống / năng lượng (sinh vật)
+const moved = new Uint32Array(N);  // khung hình đã cập nhật ô này
+const face  = new Int8Array(N);    // hướng quay của sinh vật: -1 trái, 1 phải
+const temp  = new Float32Array(N); // nhiệt độ mỗi ô (°C tương đối)
+const tmp   = new Float32Array(N);
+const spr   = new Int32Array(N);   // danh sách ô có sinh vật cần vẽ hình
+let sprCount = 0;
+let frame = 1;
 
+const AMBIENT = 20;                // nhiệt độ môi trường
 let isDay = true;
 let isPaused = false;
+let showHeat = false;
 let speed = 1;
 let fps = 0;
 let pixelCount = 0;
-const tally = new Uint32Array(64); // đếm số ô của mỗi loại
+const tally = new Uint32Array(64);
 
-const CLOUD_LINE = 70;  // hơi nước ở dưới dòng này mới ngưng tụ thành mây
-const SNOW_LINE  = 35;  // mây ở vùng cao (phía trên dòng này) mưa ra tuyết
+const CLOUD_LINE = 70;
+const SNOW_LINE  = 35;
 
-// Mouse / thao tác
 let mouseDown = false, mx = -1, my = -1, brush = 3;
 let action = 'DRAW';
 let activeCat = 'Đất Đá';
 
 // =====================================================================
-// 2. HẰNG SỐ ID VẬT CHẤT (mỗi vật liệu một số duy nhất, không trùng)
+// 2. HẰNG SỐ ID VẬT CHẤT
 // =====================================================================
 const EMPTY = 0,
       SAND = 1, WATER = 2, SOIL = 3, FIRE = 4, WOOD = 5, SMOKE = 6,
@@ -102,35 +110,52 @@ const EMPTY = 0,
       LEAF = 15, SAPLING = 19, ACID = 20, FUNGUS = 21, TOXIC = 22,
       CO2 = 23, GLASS = 24, OXYGEN = 25, VAPOR = 26, CLOUD = 27,
       RAIN = 28, SNOW = 29, CORPSE = 30, RABBIT = 31, FOX = 32,
-      LIMESTONE = 33;
+      LIMESTONE = 33,
+      IRON = 34, STEEL = 35, LEAD = 36, ALUMINUM = 37, GOLD = 38, COPPER = 39,
+      FISH = 40, BIRD = 41, ALGAE = 42, HEATER = 43;
 
 // =====================================================================
 // 3. ĐỊNH NGHĨA VẬT CHẤT
-//    kind: solid (đứng yên), powder (rơi), liquid (chảy), gas (bay lên),
-//          fire, plant, seed, sapling, animal, fungus, snow
-//    life: thời gian sống (nếu có decay) hoặc năng lượng (nếu là thú)
+//    kind: solid, powder, liquid, gas, fire, plant, seed, sapling,
+//          animal, swimmer, flyer, fungus, snow
+//    cond: độ dẫn nhiệt (nếu không ghi thì lấy theo kind)
+//    life: thời gian sống (vật có decay) hoặc năng lượng (sinh vật)
 // =====================================================================
 const MAT = {
-  [EMPTY]:     { name:'Không khí', hex:'#000000', kind:'none' },
+  [EMPTY]:     { name:'Không khí', hex:'#000000', kind:'none', cond:0.02 },
 
   // Đất Đá
-  [SAND]:      { name:'Cát',       hex:'#e6c26e', cat:'Đất Đá', kind:'powder', dens:3,
+  [SAND]:      { name:'Cát',       hex:'#e6c26e', cat:'Đất Đá', kind:'powder', dens:3, cond:0.04,
                  desc:'Rơi thành đống. Nung chảy bằng LÀM NÓNG thành thủy tinh.' },
-  [SOIL]:      { name:'Đất',       hex:'#8b5a2b', cat:'Đất Đá', kind:'powder', dens:4,
+  [SOIL]:      { name:'Đất',       hex:'#8b5a2b', cat:'Đất Đá', kind:'powder', dens:4, cond:0.05,
                  desc:'Nơi hạt giống nảy mầm và cỏ mọc.' },
-  [STONE]:     { name:'Đá',        hex:'#708090', cat:'Đất Đá', kind:'solid',
-                 desc:'Vật rắn, đứng yên.' },
-  [LIMESTONE]: { name:'Đá Vôi',    hex:'#d5d8dc', cat:'Đất Đá', kind:'solid',
+  [STONE]:     { name:'Đá',        hex:'#708090', cat:'Đất Đá', kind:'solid', cond:0.15,
+                 desc:'Vật rắn, đứng yên. Dẫn nhiệt kém.' },
+  [LIMESTONE]: { name:'Đá Vôi',    hex:'#d5d8dc', cat:'Đất Đá', kind:'solid', cond:0.12,
                  desc:'Axit làm tan đá vôi và sinh khí CO2.' },
-  [GLASS]:     { name:'Thủy Tinh', hex:'#a4b0be', cat:'Đất Đá', kind:'solid',
-                 desc:'Vật trơ, axit không ăn mòn được.' },
+  [GLASS]:     { name:'Thủy Tinh', hex:'#a4b0be', cat:'Đất Đá', kind:'solid', cond:0.1,
+                 desc:'Vật trơ, axit không ăn mòn được. Dẫn nhiệt kém.' },
+
+  // Kim Loại (dẫn nhiệt tốt, phát sáng khi nóng)
+  [COPPER]:    { name:'Đồng',      hex:'#c57a3a', cat:'Kim Loại', kind:'solid', metal:1, cond:1.0,
+                 desc:'Dẫn nhiệt rất tốt, dẫn điện tốt.' },
+  [GOLD]:      { name:'Vàng',      hex:'#f4d03f', cat:'Kim Loại', kind:'solid', metal:1, cond:0.9,
+                 desc:'Dẫn nhiệt tốt. Axit không ăn mòn được vàng.' },
+  [ALUMINUM]:  { name:'Nhôm',      hex:'#d5d8dc', cat:'Kim Loại', kind:'solid', metal:1, cond:0.65,
+                 desc:'Nhẹ, dẫn nhiệt tốt, dùng làm xoong chảo.' },
+  [IRON]:      { name:'Sắt',       hex:'#6e7173', cat:'Kim Loại', kind:'solid', metal:1, cond:0.35,
+                 desc:'Dẫn nhiệt trung bình. Axit ăn mòn được sắt.' },
+  [STEEL]:     { name:'Thép',      hex:'#aeb6bf', cat:'Kim Loại', kind:'solid', metal:1, cond:0.25,
+                 desc:'Hợp kim của sắt, cứng và bền hơn sắt, dẫn nhiệt kém hơn sắt.' },
+  [LEAD]:      { name:'Chì',       hex:'#5d6d7e', cat:'Kim Loại', kind:'solid', metal:1, cond:0.18,
+                 desc:'Nặng, mềm, dẫn nhiệt kém. Axit ăn mòn chậm.' },
 
   // Chất Lỏng
-  [WATER]:     { name:'Nước',      hex:'#4a90d9', cat:'Chất Lỏng', kind:'liquid', dens:1.5,
-                 desc:'Nuôi cây. Bốc hơi khi nóng hoặc có nắng.' },
-  [OIL]:       { name:'Dầu',       hex:'#2c2c2c', cat:'Chất Lỏng', kind:'liquid', dens:1, flam:1,
+  [WATER]:     { name:'Nước',      hex:'#4a90d9', cat:'Chất Lỏng', kind:'liquid', dens:1.5, cond:0.06,
+                 desc:'Nuôi cây, cá. Bốc hơi khi nóng hoặc có nắng. Đóng băng khi lạnh.' },
+  [OIL]:       { name:'Dầu',       hex:'#2c2c2c', cat:'Chất Lỏng', kind:'liquid', dens:1, flam:1, cond:0.03,
                  desc:'Nhẹ hơn nước nên nổi trên mặt nước. Dễ cháy.' },
-  [LAVA]:      { name:'Dung Nham', hex:'#ff5722', cat:'Chất Lỏng', kind:'liquid', dens:5, visc:1,
+  [LAVA]:      { name:'Dung Nham', hex:'#ff5722', cat:'Chất Lỏng', kind:'liquid', dens:5, visc:1, cond:0.2,
                  desc:'Rất nóng: làm cháy vật dễ cháy, gặp nước tạo đá.' },
 
   // Khí & Nhiệt
@@ -138,10 +163,12 @@ const MAT = {
                  desc:'Đốt vật dễ cháy, cần oxy. Sinh ra khói.' },
   [SMOKE]:     { name:'Khói',      hex:'#888888', cat:'Khí & Nhiệt', kind:'gas', life:60, decay:1,
                  desc:'Sản phẩm của sự cháy, bay lên rồi tan dần.' },
+  [HEATER]:    { name:'Nguồn nhiệt', hex:'#c0392b', cat:'Khí & Nhiệt', kind:'solid', cond:0.3,
+                 desc:'Luôn giữ nóng. Nhiệt lan sang vật dẫn nhiệt bên cạnh.' },
 
   // Hóa Học
-  [ACID]:      { name:'Axit',      hex:'#a4fb46', cat:'Hóa Học', kind:'liquid', dens:1.2,
-                 desc:'Ăn mòn vật hữu cơ thành khí độc.' },
+  [ACID]:      { name:'Axit',      hex:'#a4fb46', cat:'Hóa Học', kind:'liquid', dens:1.2, cond:0.06,
+                 desc:'Ăn mòn vật hữu cơ, sắt và chì thành khí độc.' },
   [TOXIC]:     { name:'Khí Độc',   hex:'#badc58', cat:'Hóa Học', kind:'gas', life:100, decay:1,
                  desc:'Nguy hiểm, làm chết động vật.' },
   [CO2]:       { name:'Khí CO2',   hex:'#7f8c8d', cat:'Hóa Học', kind:'gas',
@@ -154,12 +181,12 @@ const MAT = {
                  desc:'Nước bay hơi, bốc lên cao rồi ngưng tụ thành mây.' },
   [CLOUD]:     { name:'Mây',       hex:'#eef1f5', cat:'Thời Tiết', kind:'gas',
                  desc:'Hơi nước ngưng tụ. Đủ dày thì mưa.' },
-  [RAIN]:      { name:'Mưa',       hex:'#5dade2', cat:'Thời Tiết', kind:'liquid', dens:1.5,
+  [RAIN]:      { name:'Mưa',       hex:'#5dade2', cat:'Thời Tiết', kind:'liquid', dens:1.5, cond:0.06,
                  desc:'Nước rơi từ mây xuống.' },
-  [SNOW]:      { name:'Tuyết',     hex:'#ffffff', cat:'Thời Tiết', kind:'snow', dens:0.8,
+  [SNOW]:      { name:'Tuyết',     hex:'#ffffff', cat:'Thời Tiết', kind:'snow', dens:0.8, cond:0.03,
                  desc:'Mưa rơi từ mây ở vùng cao sẽ thành tuyết.' },
-  [ICE]:       { name:'Băng',      hex:'#a0e6ff', cat:'Thời Tiết', kind:'solid',
-                 desc:'Nước đóng băng. Tan khi gặp lửa hoặc dung nham.' },
+  [ICE]:       { name:'Băng',      hex:'#a0e6ff', cat:'Thời Tiết', kind:'solid', cond:0.15,
+                 desc:'Nước đóng băng. Tan khi nóng quá 25°C hoặc gặp lửa.' },
 
   // Sự Sống
   [SEED]:      { name:'Hạt Giống', hex:'#f1c40f', cat:'Sự Sống', kind:'seed', dens:3,
@@ -170,21 +197,32 @@ const MAT = {
                  desc:'Tán lá của cây. Quang hợp và dễ cháy.' },
   [SAPLING]:   { name:'Cây Non',   hex:'#7cb342', cat:'Sự Sống', kind:'sapling', flam:1, org:1,
                  desc:'Cần nước gần để lớn dần thành cây thân gỗ.' },
-  [WOOD]:      { name:'Gỗ',        hex:'#a0522d', cat:'Sự Sống', kind:'solid', flam:1, org:1,
-                 desc:'Thân cây. Cháy được.' },
+  [WOOD]:      { name:'Gỗ',        hex:'#a0522d', cat:'Sự Sống', kind:'solid', flam:1, org:1, cond:0.03,
+                 desc:'Thân cây. Cháy được. Dẫn nhiệt kém.' },
+  [ALGAE]:     { name:'Tảo',       hex:'#1e8449', cat:'Sự Sống', kind:'plant', org:1,
+                 desc:'Sống trong nước, quang hợp tạo oxy. Cá ăn tảo.' },
   [FUNGUS]:    { name:'Nấm',       hex:'#8e44ad', cat:'Sự Sống', kind:'fungus', life:120, decay:1,
                  desc:'Phân hủy xác và gỗ thành đất mùn.' },
-  [CORPSE]:    { name:'Xác',       hex:'#7d6608', cat:'Sự Sống', kind:'solid', org:1, life:150, decay:1,
+  [CORPSE]:    { name:'Xác',       hex:'#7d6608', cat:'Sự Sống', kind:'solid', org:1, life:150, decay:1, cond:0.03,
                  desc:'Sinh vật đã chết. Nấm sẽ phân hủy nó.' },
-  [RABBIT]:    { name:'Thỏ',       hex:'#f5cba7', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, diet:GRASS,
-                 desc:'Ăn cỏ. Bị cáo ăn. Đói quá sẽ chết.' },
-  [FOX]:       { name:'Cáo',       hex:'#ca6f1e', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, diet:RABBIT,
-                 desc:'Ăn thỏ. Đói quá sẽ chết.' },
+  [RABBIT]:    { name:'Thỏ',       hex:'#f5cba7', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, sprite:1, diet:GRASS,
+                 desc:'Ăn cỏ, chạy trên mặt đất. Bị cáo ăn.' },
+  [FOX]:       { name:'Cáo',       hex:'#ca6f1e', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, sprite:1, diet:RABBIT,
+                 desc:'Ăn thỏ, chạy trên mặt đất.' },
+  [FISH]:      { name:'Cá',        hex:'#e8762c', cat:'Sự Sống', kind:'swimmer', org:1, life:120, sparse:1, sprite:1, diet:ALGAE,
+                 desc:'Chỉ sống trong nước. Bơi và ăn tảo. Ra khỏi nước sẽ chết.' },
+  [BIRD]:      { name:'Chim',      hex:'#ecf0f1', cat:'Sự Sống', kind:'flyer', org:1, life:120, sparse:1, sprite:1, diet:SEED,
+                 desc:'Bay lượn trên không, ăn hạt giống. Vỗ cánh để bay cao.' },
 };
 
-// Bảng tra nhanh (tạo một lần)
+// Mặc định độ dẫn nhiệt theo kind
+const DEFAULT_COND = { none:0.02, powder:0.04, liquid:0.06, solid:0.08, gas:0.01,
+  fire:0.02, plant:0.02, seed:0.03, sapling:0.03, animal:0.04, swimmer:0.05, flyer:0.03, fungus:0.02, snow:0.03 };
+
+// Bảng tra nhanh
 const KIND     = new Array(64).fill('none');
 const DENS     = new Float32Array(64);
+const COND     = new Float32Array(64);
 const LIFE0    = new Uint16Array(64);
 const DIET     = new Uint8Array(64);
 const FLAM     = new Uint8Array(64);
@@ -194,12 +232,15 @@ const VISC     = new Uint8Array(64);
 const SPARSE   = new Uint8Array(64);
 const ANIMAL   = new Uint8Array(64);
 const REACTIVE = new Uint8Array(64);
+const METAL    = new Uint8Array(64);
+const SPRITE   = new Uint8Array(64);
 const PAL      = new Uint8Array(64 * 3);
 
 Object.keys(MAT).forEach(k => {
   const id = +k, m = MAT[id];
   KIND[id]   = m.kind;
   DENS[id]   = m.dens || 0;
+  COND[id]   = m.cond !== undefined ? m.cond : (DEFAULT_COND[m.kind] || 0.03);
   LIFE0[id]  = m.life || 0;
   DIET[id]   = m.diet || 0;
   FLAM[id]   = m.flam ? 1 : 0;
@@ -207,7 +248,9 @@ Object.keys(MAT).forEach(k => {
   DECAY[id]  = m.decay ? 1 : 0;
   VISC[id]   = m.visc ? 1 : 0;
   SPARSE[id] = m.sparse ? 1 : 0;
-  ANIMAL[id] = m.kind === 'animal' ? 1 : 0;
+  METAL[id]  = m.metal ? 1 : 0;
+  SPRITE[id] = m.sprite ? 1 : 0;
+  ANIMAL[id] = (m.kind === 'animal' || m.kind === 'swimmer' || m.kind === 'flyer') ? 1 : 0;
   PAL[id*3]   = parseInt(m.hex.slice(1,3), 16);
   PAL[id*3+1] = parseInt(m.hex.slice(3,5), 16);
   PAL[id*3+2] = parseInt(m.hex.slice(5,7), 16);
@@ -215,9 +258,8 @@ Object.keys(MAT).forEach(k => {
 
 // =====================================================================
 // 4. BẢNG PHẢN ỨNG HÓA HỌC
-//    addReaction(a, b, na, nb, p): khi ô a chạm ô b, ô a thành na,
-//    ô b thành nb, với xác suất p mỗi khung hình.
-//    Thêm phản ứng mới chỉ cần thêm một dòng ở đây.
+//    addReaction(a, b, na, nb, p): khi a chạm b, a thành na, b thành nb,
+//    với xác suất p mỗi khung hình. Thêm phản ứng mới chỉ cần một dòng.
 // =====================================================================
 const REACT = new Map();
 function addReaction(a, b, na, nb, p) {
@@ -225,16 +267,18 @@ function addReaction(a, b, na, nb, p) {
   REACT.set(b*64 + a, { ia: nb, ib: na, p });
   REACTIVE[a] = 1; REACTIVE[b] = 1;
 }
-addReaction(FIRE,      WATER,     VAPOR,  WATER,  0.25); // lửa gặp nước: tắt, tạo hơi
+addReaction(FIRE,      WATER,     VAPOR,  WATER,  0.25);
 addReaction(FIRE,      RAIN,      VAPOR,  WATER,  0.30);
-addReaction(FIRE,      ICE,       EMPTY,  WATER,  0.20); // lửa làm tan băng
+addReaction(FIRE,      ICE,       EMPTY,  WATER,  0.20);
 addReaction(FIRE,      SNOW,      EMPTY,  WATER,  0.20);
-addReaction(LAVA,      WATER,     STONE,  VAPOR,  0.25); // dung nham + nước: đá + hơi
+addReaction(LAVA,      WATER,     STONE,  VAPOR,  0.25);
 addReaction(LAVA,      RAIN,      STONE,  VAPOR,  0.30);
 addReaction(LAVA,      ICE,       STONE,  WATER,  0.30);
 addReaction(LAVA,      SNOW,      STONE,  WATER,  0.30);
-addReaction(LAVA,      SAND,      LAVA,   GLASS,  0.08); // dung nham nung cát thành thủy tinh
-addReaction(ACID,      LIMESTONE, EMPTY,  CO2,    0.12); // axit + đá vôi: sinh CO2
+addReaction(LAVA,      SAND,      LAVA,   GLASS,  0.08);
+addReaction(ACID,      LIMESTONE, EMPTY,  CO2,    0.12);
+addReaction(ACID,      IRON,      EMPTY,  EMPTY,  0.03); // axit ăn mòn sắt
+addReaction(ACID,      LEAD,      EMPTY,  EMPTY,  0.01); // axit ăn mòn chì chậm
 
 // =====================================================================
 // 5. HÀM TIỆN ÍCH
@@ -245,22 +289,26 @@ function at(x, y) {
 const NB8 = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
 function nbr(x, y, k) { return at(x + NB8[k][0], y + NB8[k][1]); }
 
-// Đặt vật chất vào ô i (có đặt lại thời gian sống và đánh dấu đã cập nhật)
 function setCell(i, to) {
   world[i] = to;
   life[i] = LIFE0[to];
   moved[i] = frame;
 }
-// Di chuyển vật chất từ ô i sang ô j (j phải trống)
+// Di chuyển vật chất từ i sang j (j phải trống); tự cập nhật hướng quay
 function moveTo(i, j) {
+  const f = face[i];
+  const dx = (j % W) - (i % W);
   world[j] = world[i]; life[j] = life[i]; moved[j] = frame;
-  world[i] = EMPTY;    life[i] = 0;
+  face[j] = dx > 0 ? 1 : dx < 0 ? -1 : f;
+  world[i] = EMPTY; life[i] = 0; face[i] = 1;
 }
-// Hoán đổi hai ô (dùng khi vật nặng chìm qua vật nhẹ hơn)
+// Hoán đổi hai ô (vật nặng chìm qua vật nhẹ hơn, cá bơi trong nước)
 function swapCells(i, j) {
-  const a = world[i], la = life[i];
-  world[i] = world[j]; life[i] = life[j];
-  world[j] = a;        life[j] = la;
+  const a = world[i], la = life[i], fa = face[i];
+  const dx = (j % W) - (i % W);
+  world[i] = world[j]; life[i] = life[j]; face[i] = face[j];
+  world[j] = a; life[j] = la;
+  face[j] = dx > 0 ? 1 : dx < 0 ? -1 : fa;
   moved[i] = frame; moved[j] = frame;
 }
 function hasNear(x, y, r, id) {
@@ -301,18 +349,43 @@ function findNearest(x, y, r, id) {
   }
   return best;
 }
-// Số khúc thân gỗ nằm ngay phía dưới (để giới hạn chiều cao cây)
 function trunkBelow(x, y) {
   let h = 0;
   for (let yy = y + 1; yy < H && world[yy * W + x] === WOOD && h < 10; yy++) h++;
   return h;
 }
+// Giảm năng lượng sinh vật. Trả về true nếu chết (đã thành xác).
+function starve(i) {
+  if (Math.random() < 0.02) {
+    if (life[i] <= 1) { setCell(i, CORPSE); return true; }
+    life[i]--;
+  }
+  return false;
+}
 
 // =====================================================================
-// 6. CẬP NHẬT TỪNG LOẠI VẬT CHẤT
+// 6. NHIỆT: LAN TRUYỀN QUA CÁC Ô
 // =====================================================================
+// Mỗi ô đổi nhiệt theo chênh lệch với 4 ô kề, nhanh hay chậm tùy độ dẫn nhiệt.
+// Nhiệt cũng dần tan vào môi trường (AMBIENT).
+function diffuseHeat() {
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x, ti = temp[i], ki = COND[world[i]];
+      let d = 0, j;
+      if (x > 0)     { j = i - 1; d += (ki + COND[world[j]]) * (temp[j] - ti); }
+      if (x < W - 1) { j = i + 1; d += (ki + COND[world[j]]) * (temp[j] - ti); }
+      if (y > 0)     { j = i - W; d += (ki + COND[world[j]]) * (temp[j] - ti); }
+      if (y < H - 1) { j = i + W; d += (ki + COND[world[j]]) * (temp[j] - ti); }
+      tmp[i] = ti + 0.1 * d + (AMBIENT - ti) * 0.0008;
+    }
+  }
+  temp.set(tmp);
+}
 
-// Chất rơi (cát, đất): rơi thẳng, trượt chéo, chìm qua chất lỏng nhẹ hơn
+// =====================================================================
+// 7. CẬP NHẬT VẬT CHẤT
+// =====================================================================
 function fallPowder(x, y, i, dens) {
   const d = at(x, y + 1);
   if (d < 0) return false;
@@ -327,7 +400,6 @@ function fallPowder(x, y, i, dens) {
   return false;
 }
 
-// Chất lỏng: rơi, chảy ngang; nước nặng hơn dầu nên dầu nổi lên
 function flowLiquid(x, y, i, dens, visc) {
   const d = at(x, y + 1);
   if (d >= 0) {
@@ -335,7 +407,7 @@ function flowLiquid(x, y, i, dens, visc) {
     if (dm === EMPTY) { moveTo(i, d); return true; }
     if (KIND[dm] === 'liquid' && DENS[dm] < dens) { swapCells(i, d); return true; }
   }
-  if (visc && Math.random() < 0.6) return false;  // dung nham chảy chậm
+  if (visc && Math.random() < 0.6) return false;
   const dir = Math.random() < 0.5 ? -1 : 1;
   for (let s = 0; s < 2; s++) {
     const j = at(x + (s === 0 ? dir : -dir), y);
@@ -346,7 +418,6 @@ function flowLiquid(x, y, i, dens, visc) {
 
 function updateLiquid(x, y, i, id) {
   if (id === WATER) {
-    // Bốc hơi: nhanh khi gần lửa/dung nham, chậm khi có nắng
     const up = at(x, y - 1);
     if (up >= 0 && world[up] === EMPTY) {
       const hot = hasNear(x, y, 2, FIRE) || hasNear(x, y, 2, LAVA);
@@ -357,23 +428,19 @@ function updateLiquid(x, y, i, id) {
     }
   }
   if (flowLiquid(x, y, i, DENS[id], VISC[id])) return;
-  // Mưa rơi vào chỗ không chảy được thì hòa vào nước
   if (id === RAIN && Math.random() < 0.15) setCell(i, WATER);
 }
 
-// Khí: bay lên, lan ngang; mây và hơi nước có quy tắc riêng
 function updateGas(x, y, i, id) {
-  // Hơi nước ngưng tụ thành mây khi lên đủ cao
   if (id === VAPOR && y < CLOUD_LINE && Math.random() < 0.03) {
     setCell(i, CLOUD);
     return;
   }
-  // Mây đủ dày thì mưa (ở vùng cao thì thành tuyết)
   if (id === CLOUD && Math.random() < 0.02 && countNear(x, y, 2, CLOUD) >= 10) {
     const d = at(x, y + 1);
     if (d >= 0 && world[d] === EMPTY) {
       setCell(d, y < SNOW_LINE ? SNOW : RAIN);
-      if (Math.random() < 0.5) setCell(i, EMPTY);   // mây tan bớt sau khi mưa
+      if (Math.random() < 0.5) setCell(i, EMPTY);
       return;
     }
   }
@@ -383,7 +450,6 @@ function updateGas(x, y, i, id) {
   if (s >= 0 && world[s] === EMPTY && Math.random() < 0.5) moveTo(i, s);
 }
 
-// Tuyết: rơi chậm, chạm nước thì đóng băng
 function updateSnow(x, y, i) {
   if (Math.random() < 0.5) return;
   const d = at(x, y + 1);
@@ -393,7 +459,6 @@ function updateSnow(x, y, i) {
   else if (dm === WATER) setCell(i, ICE);
 }
 
-// Lửa: lan sang vật dễ cháy, cần oxy để cháy mạnh, sinh khói
 function updateFire(x, y, i) {
   const oxy = hasNear(x, y, 1, OXYGEN);
   for (let k = 0; k < 8; k++) {
@@ -403,7 +468,7 @@ function updateFire(x, y, i) {
     if (FLAM[nb]) {
       if (Math.random() < (oxy ? 0.25 : 0.06)) setCell(j, FIRE);
     } else if (nb === OXYGEN && Math.random() < 0.1) {
-      setCell(j, CO2);   // oxy tham gia cháy, tạo CO2
+      setCell(j, CO2);
     }
   }
   const u = at(x, y - 1);
@@ -413,7 +478,6 @@ function updateFire(x, y, i) {
   }
 }
 
-// Dung nham đốt cháy vật dễ cháy ở cạnh
 function igniteAround(x, y, p) {
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -421,7 +485,6 @@ function igniteAround(x, y, p) {
   }
 }
 
-// Axit ăn mòn vật hữu cơ thành khí độc
 function dissolve(x, y, i) {
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -434,7 +497,6 @@ function dissolve(x, y, i) {
   return false;
 }
 
-// Khí độc làm chết động vật ở cạnh
 function poison(x, y) {
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -442,8 +504,7 @@ function poison(x, y) {
   }
 }
 
-// Quang hợp: cây lấy CO2 và thải O2, chỉ khi có nắng.
-// Cỏ có thể lan sang đất ẩm gần nước.
+// Quang hợp (cây và tảo) khi có nắng. Cỏ lan trên đất ẩm, tảo lan trong nước.
 function updatePlant(x, y, i, id) {
   if (isDay && Math.random() < 0.08) {
     for (let k = 0; k < 8; k++) {
@@ -458,9 +519,12 @@ function updatePlant(x, y, i, id) {
       setCell(up, GRASS);
     }
   }
+  if (id === ALGAE && isDay && Math.random() < 0.003) {
+    const j = nbr(x, y, Math.floor(Math.random() * 8));
+    if (j >= 0 && world[j] === WATER) setCell(j, ALGAE);
+  }
 }
 
-// Hạt giống: rơi như cát, nảy mầm khi có đất và nước gần
 function updateSeed(x, y, i) {
   if (fallPowder(x, y, i, DENS[SEED])) return;
   const d = at(x, y + 1);
@@ -469,20 +533,17 @@ function updateSeed(x, y, i) {
   }
 }
 
-// Cây non: cần nước. Đủ thời gian thì biến thành thân gỗ và mọc ngọn mới kèm tán lá.
 function updateSapling(x, y, i) {
   if (!hasNear(x, y, 3, WATER)) {
-    if (Math.random() < 0.002) setCell(i, CORPSE);   // thiếu nước, cây chết
+    if (Math.random() < 0.002) setCell(i, CORPSE);
     return;
   }
   if (life[i] < 180) { life[i]++; return; }
-
   const up = at(x, y - 1);
   if (up < 0) return;
   const cu = world[up];
-  if (cu !== EMPTY && cu !== WATER) return;          // ngọn mới chỉ mọc vào chỗ trống hoặc nước
-  if (trunkBelow(x, y) >= 8) return;                 // đã đủ cao
-
+  if (cu !== EMPTY && cu !== WATER) return;
+  if (trunkBelow(x, y) >= 8) return;
   setCell(i, WOOD);
   setCell(up, SAPLING);
   for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[-1,-1],[1,-1]]) {
@@ -493,7 +554,6 @@ function updateSapling(x, y, i) {
   }
 }
 
-// Nấm: phân hủy xác và gỗ thành nấm (rồi thành đất mùn)
 function updateFungus(x, y) {
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -504,18 +564,12 @@ function updateFungus(x, y) {
   }
 }
 
-// Thú: rơi, ăn mồi, đi tìm mồi khi đói, sinh con khi no, chết khi hết năng lượng
+// Thú trên cạn: thỏ, cáo
 function updateAnimal(x, y, i, id) {
-  // Đói dần
-  if (Math.random() < 0.02) {
-    if (life[i] <= 1) { setCell(i, CORPSE); return; }
-    life[i]--;
-  }
-  // Rơi như vật nặng
+  if (starve(i)) return;
   const d = at(x, y + 1);
   if (d >= 0 && world[d] === EMPTY) { moveTo(i, d); return; }
 
-  // Ăn mồi ở cạnh
   const prey = DIET[id];
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -528,7 +582,6 @@ function updateAnimal(x, y, i, id) {
     }
   }
 
-  // Hô hấp: lấy O2 và thải CO2
   if (Math.random() < 0.03) {
     for (let k = 0; k < 8; k++) {
       const j = nbr(x, y, k);
@@ -536,7 +589,6 @@ function updateAnimal(x, y, i, id) {
     }
   }
 
-  // Sinh con khi no
   if (life[i] > 160 && Math.random() < 0.01) {
     const j = nbr(x, y, Math.floor(Math.random() * 8));
     if (j >= 0 && world[j] === EMPTY) {
@@ -546,7 +598,6 @@ function updateAnimal(x, y, i, id) {
     }
   }
 
-  // Đói thì đi về phía mồi gần nhất
   if (life[i] < 110) {
     const t = findNearest(x, y, 8, prey);
     if (t >= 0) {
@@ -559,14 +610,113 @@ function updateAnimal(x, y, i, id) {
     }
   }
 
-  // Đi lang thang
   if (Math.random() < 0.25) {
     const j = at(x + (Math.random() < 0.5 ? -1 : 1), y);
     if (j >= 0 && world[j] === EMPTY) moveTo(i, j);
   }
 }
 
-// Phản ứng hóa học theo bảng REACT
+// Cá: chỉ sống trong nước, bơi bằng cách hoán đổi chỗ với nước
+function updateSwimmer(x, y, i, id) {
+  if (!hasNear(x, y, 1, WATER)) {
+    // Ra khỏi nước: rơi xuống và dần chết
+    const d = at(x, y + 1);
+    if (d >= 0 && world[d] === EMPTY) { moveTo(i, d); return; }
+    if (Math.random() < 0.05) setCell(i, CORPSE);
+    return;
+  }
+  if (starve(i)) return;
+
+  const prey = DIET[id];
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && world[j] === prey && Math.random() < 0.5) {
+      const e = Math.min(220, life[i] + 50);
+      setCell(i, WATER);
+      setCell(j, id);
+      life[j] = e;
+      return;
+    }
+  }
+
+  if (life[i] > 160 && Math.random() < 0.01) {
+    const j = nbr(x, y, Math.floor(Math.random() * 8));
+    if (j >= 0 && world[j] === WATER) {
+      setCell(j, id);
+      life[j] = 80;
+      life[i] -= 60;
+      return;
+    }
+  }
+
+  if (life[i] < 110) {
+    const t = findNearest(x, y, 8, prey);
+    if (t >= 0) {
+      const tx = t % W, ty = (t - tx) / W;
+      const sx = Math.sign(tx - x), sy = Math.sign(ty - y);
+      const cands = [at(x + sx, y + sy), at(x + sx, y), at(x, y + sy)];
+      for (const c of cands) {
+        if (c >= 0 && world[c] === WATER) { swapCells(i, c); return; }
+      }
+    }
+  }
+
+  // Bơi lung tung trong nước
+  const j = nbr(x, y, Math.floor(Math.random() * 8));
+  if (j >= 0 && world[j] === WATER) swapCells(i, j);
+}
+
+// Chim: bay lượn trong không khí, đôi khi vỗ cánh bay lên, ăn hạt
+function updateFlyer(x, y, i, id) {
+  if (starve(i)) return;
+
+  const prey = DIET[id];
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && world[j] === prey && Math.random() < 0.4) {
+      const e = Math.min(220, life[i] + 40);
+      setCell(i, EMPTY);
+      setCell(j, id);
+      life[j] = e;
+      return;
+    }
+  }
+
+  if (life[i] < 110) {
+    const t = findNearest(x, y, 12, prey);
+    if (t >= 0) {
+      const tx = t % W, ty = (t - tx) / W;
+      const sx = Math.sign(tx - x), sy = Math.sign(ty - y);
+      const cands = [at(x + sx, y + sy), at(x + sx, y), at(x, y + sy)];
+      for (const c of cands) {
+        if (c >= 0 && world[c] === EMPTY) { moveTo(i, c); return; }
+      }
+    }
+  }
+
+  if (life[i] > 160 && Math.random() < 0.01) {
+    const j = nbr(x, y, Math.floor(Math.random() * 8));
+    if (j >= 0 && world[j] === EMPTY) {
+      setCell(j, id);
+      life[j] = 80;
+      life[i] -= 60;
+      return;
+    }
+  }
+
+  // Bay lượn: 40% vỗ cánh lên, 10% rơi nhẹ, còn lại lượn ngang
+  const r = Math.random();
+  if (r < 0.5) {
+    const dx = Math.random() < 0.5 ? -1 : 1;
+    const dy = Math.random() < 0.45 ? -1 : (Math.random() < 0.6 ? 0 : 1);
+    const j = at(x + dx, y + dy);
+    if (j >= 0 && world[j] === EMPTY) { moveTo(i, j); return; }
+  } else if (r < 0.6) {
+    const d = at(x, y + 1);
+    if (d >= 0 && world[d] === EMPTY) moveTo(i, d);
+  }
+}
+
 function tryReact(x, y, i, id) {
   for (let k = 0; k < 8; k++) {
     const j = nbr(x, y, k);
@@ -581,16 +731,14 @@ function tryReact(x, y, i, id) {
   return false;
 }
 
-// Vật hết thời gian sống thì biến đổi
 function decay(i, id) {
   let to = EMPTY;
-  if (id === FIRE)         to = Math.random() < 0.6 ? SMOKE : EMPTY;
-  else if (id === FUNGUS)  to = SOIL;     // nấm → đất mùn
-  else if (id === CORPSE)  to = FUNGUS;   // xác → nấm
+  if (id === FIRE)        to = Math.random() < 0.6 ? SMOKE : EMPTY;
+  else if (id === FUNGUS) to = SOIL;
+  else if (id === CORPSE) to = FUNGUS;
   setCell(i, to);
 }
 
-// Cập nhật một ô
 function update(x, y, i) {
   const id = world[i];
 
@@ -601,29 +749,45 @@ function update(x, y, i) {
     life[i]--;
   }
 
+  // Nguồn nhiệt
+  if (id === FIRE)        { if (temp[i] < 600) temp[i] = 600; }
+  else if (id === LAVA)   { temp[i] = 1000; }
+  else if (id === HEATER) { temp[i] = 700; }
+
+  // Hiệu ứng của nhiệt độ
+  const t = temp[i];
+  if (FLAM[id] && t > 260 && Math.random() < 0.02) { setCell(i, FIRE); return; }
+  if (id === ICE && t > 25 && Math.random() < 0.02) { setCell(i, WATER); return; }
+  if (id === WATER) {
+    if (t > 100 && Math.random() < 0.05) { setCell(i, VAPOR); return; }
+    if (t < 0 && Math.random() < 0.05)   { setCell(i, ICE); return; }
+  }
+
   if (id === ACID && dissolve(x, y, i)) return;
   if (id === TOXIC) poison(x, y);
   if (id === LAVA) igniteAround(x, y, 0.08);
 
   switch (KIND[id]) {
-    case 'powder': fallPowder(x, y, i, DENS[id]); break;
-    case 'snow':   updateSnow(x, y, i); break;
-    case 'liquid': updateLiquid(x, y, i, id); break;
-    case 'gas':    updateGas(x, y, i, id); break;
-    case 'fire':   updateFire(x, y, i); break;
-    case 'plant':  updatePlant(x, y, i, id); break;
-    case 'seed':   updateSeed(x, y, i); break;
-    case 'sapling':updateSapling(x, y, i); break;
-    case 'animal': updateAnimal(x, y, i, id); break;
-    case 'fungus': updateFungus(x, y); break;
+    case 'powder':  fallPowder(x, y, i, DENS[id]); break;
+    case 'snow':    updateSnow(x, y, i); break;
+    case 'liquid':  updateLiquid(x, y, i, id); break;
+    case 'gas':     updateGas(x, y, i, id); break;
+    case 'fire':    updateFire(x, y, i); break;
+    case 'plant':   updatePlant(x, y, i, id); break;
+    case 'seed':    updateSeed(x, y, i); break;
+    case 'sapling': updateSapling(x, y, i); break;
+    case 'animal':  updateAnimal(x, y, i, id); break;
+    case 'swimmer': updateSwimmer(x, y, i, id); break;
+    case 'flyer':   updateFlyer(x, y, i, id); break;
+    case 'fungus':  updateFungus(x, y); break;
   }
 }
 
-// Một bước mô phỏng cho toàn bộ lưới
+// Một bước mô phỏng: cập nhật vật chất, rồi lan nhiệt
 function simulate() {
   frame++;
   for (let y = H - 1; y >= 0; y--) {
-    const rtl = ((frame + y) & 1) === 1;   // đổi chiều quét để tránh thiên lệch
+    const rtl = ((frame + y) & 1) === 1;
     for (let k = 0; k < W; k++) {
       const x = rtl ? W - 1 - k : k;
       const i = y * W + x;
@@ -631,40 +795,136 @@ function simulate() {
       update(x, y, i);
     }
   }
+  diffuseHeat();
 }
 
 // =====================================================================
-// 7. VẼ
+// 8. VẼ
 // =====================================================================
+// Màu theo nhiệt độ: xanh (lạnh) → xanh lá → vàng → đỏ → trắng nóng
+let hr = 0, hg = 0, hb = 0;
+function setHeat(t) {
+  const v = Math.min(1, Math.max(0, t / 800));
+  if (v < 0.33)      { const f = v / 0.33; hr = 0;   hg = 60 + 195*f; hb = 255 - 255*f; }
+  else if (v < 0.66) { const f = (v - 0.33) / 0.33; hr = 255*f; hg = 255; hb = 0; }
+  else               { const f = (v - 0.66) / 0.34; hr = 255; hg = 255 - 180*f; hb = 200*f; }
+}
+
+// Vẽ hình dáng từng con vật (một ô = một điểm ảnh, hình vẽ thêm để trông thật hơn)
+function drawSprite(i, id) {
+  const x = (i % W) + 0.5, y = ((i / W) | 0) + 0.5;
+  const f = face[i] < 0 ? -1 : 1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(f, 1);
+
+  if (id === FISH) {
+    const wag = ((frame >> 2) & 1) ? 0.6 : -0.6;
+    ctx.fillStyle = '#d35400';
+    ctx.beginPath();
+    ctx.moveTo(-1.5, 0); ctx.lineTo(-3.1, -1.1 + wag); ctx.lineTo(-3.1, 1.1 + wag);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e8762c';
+    ctx.beginPath(); ctx.ellipse(0, 0, 1.9, 1.15, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(-0.4, -0.9, 0.5, 1.8);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0.9, -0.5, 0.45, 0.45);
+  } else if (id === BIRD) {
+    ctx.fillStyle = '#ecf0f1';
+    ctx.beginPath(); ctx.ellipse(0, 0, 1.4, 0.9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(1.2, -0.55, 0.65, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(1.7, -0.7, 0.7, 0.3);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(1.2, -0.8, 0.3, 0.3);
+    const up = ((frame >> 3) & 1) === 0;
+    ctx.fillStyle = '#bdc3c7';
+    ctx.beginPath();
+    ctx.moveTo(-0.3, 0);
+    ctx.lineTo(-1.4, up ? -2.4 : 1.7);
+    ctx.lineTo(0.5, 0);
+    ctx.closePath(); ctx.fill();
+  } else if (id === RABBIT) {
+    ctx.fillStyle = '#f5cba7';
+    ctx.beginPath(); ctx.ellipse(0, 0.3, 1.6, 1.15, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0.9, -1.3, 0.5, 1.1, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-1.6, 0.1, 0.45, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.fillRect(1.1, 0, 0.4, 0.4);
+  } else if (id === FOX) {
+    ctx.fillStyle = '#ca6f1e';
+    ctx.beginPath(); ctx.ellipse(0, 0.2, 2.0, 1.15, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(1.0, -0.6); ctx.lineTo(1.2, -2.1); ctx.lineTo(1.9, -0.5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(-2.5, 0.4, 0.8, 0.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.fillRect(1.3, -0.1, 0.4, 0.4);
+  }
+  ctx.restore();
+}
+
 function render() {
   tally.fill(0);
   pixelCount = 0;
+  sprCount = 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = y * W + x, id = world[i], p = i * 4;
       tally[id]++;
-      if (id === EMPTY) { px[p] = 0; px[p+1] = 0; px[p+2] = 0; px[p+3] = 255; continue; }
-      pixelCount++;
+      let r, g, b;
 
-      let r = PAL[id*3], g = PAL[id*3+1], b = PAL[id*3+2];
-      if (id === FIRE) {
-        const l = life[i];
-        if (l > 22)      { r = 255; g = 240; b = 90; }
-        else if (l > 10) { r = 255; g = 140; b = 30; }
-        else             { r = 200; g = 40;  b = 20; }
-      } else if (id === LAVA) {
-        if (((x + y + frame) & 7) === 0) { r = 255; g = 190; b = 60; }
-      } else if (id === SAND || id === SOIL || id === LIMESTONE) {
-        if ((x + y) % 3 === 0) { r = (r * 0.85) | 0; g = (g * 0.85) | 0; b = (b * 0.85) | 0; }
-      } else if (id === WATER) {
-        if (((x * 3 + frame) & 31) === 0) { r = 150; g = 210; b = 255; }
+      if (showHeat) {
+        setHeat(temp[i]);
+        r = hr; g = hg; b = hb;
+        if (id !== EMPTY) pixelCount++;
+      } else if (id === EMPTY) {
+        r = 0; g = 0; b = 0;
+      } else {
+        pixelCount++;
+        r = PAL[id*3]; g = PAL[id*3+1]; b = PAL[id*3+2];
+
+        if (id === FIRE) {
+          const l = life[i];
+          if (l > 22)      { r = 255; g = 240; b = 90; }
+          else if (l > 10) { r = 255; g = 140; b = 30; }
+          else             { r = 200; g = 40;  b = 20; }
+        } else if (id === LAVA) {
+          if (((x + y + frame) & 7) === 0) { r = 255; g = 190; b = 60; }
+        } else if (id === SAND || id === SOIL || id === LIMESTONE) {
+          if ((x + y) % 3 === 0) { r *= 0.85; g *= 0.85; b *= 0.85; }
+        } else if (id === WATER) {
+          if (((x * 3 + frame) & 31) === 0) { r = 150; g = 210; b = 255; }
+        } else if (METAL[id]) {
+          // ánh kim: vài điểm sáng hơn trên bề mặt
+          if (((x + y) & 7) === 0) { r = Math.min(255, r + 60); g = Math.min(255, g + 60); b = Math.min(255, b + 60); }
+        }
+
+        // Vật nóng phát sáng: càng nóng càng đỏ, rồi vàng cam
+        const t = temp[i];
+        if (t > 500 && id !== FIRE && id !== LAVA) {
+          const f = Math.min(1, (t - 500) / 500);
+          r += (255 - r) * f;
+          g += (130 - g) * f * 0.8;
+          b += (40 - b) * f * 0.9;
+        }
       }
+
+      if (SPRITE[id] && !showHeat) spr[sprCount++] = i;
       px[p] = r; px[p+1] = g; px[p+2] = b; px[p+3] = 255;
     }
   }
   ctx.putImageData(imgData, 0, 0);
 
-  // Viền con trỏ cọ vẽ
+  // Vẽ hình sinh vật lên trên
+  if (!showHeat) {
+    for (let s = 0; s < sprCount; s++) {
+      const i = spr[s];
+      drawSprite(i, world[i]);
+    }
+  }
+
   if (mx >= 0) {
     ctx.strokeStyle = 'rgba(255,255,255,0.8)';
     ctx.lineWidth = 1;
@@ -675,7 +935,7 @@ function render() {
 }
 
 // =====================================================================
-// 8. THAO TÁC CHUỘT / CẢM ỨNG
+// 9. THAO TÁC CHUỘT / CẢM ỨNG
 // =====================================================================
 function applyBrush() {
   const r2 = brush * brush;
@@ -687,16 +947,19 @@ function applyBrush() {
       const i = y * W + x, cur = world[i];
 
       if (action === 'DRAW') {
-        const chance = SPARSE[activeMat] ? 0.15 : 0.8;   // thú và cây ít khi vẽ dày
+        const chance = SPARSE[activeMat] ? 0.15 : 0.8;
         if (Math.random() < chance) setCell(i, activeMat);
       } else if (action === 'ERASE') {
         setCell(i, EMPTY);
+        temp[i] = AMBIENT;
       } else if (action === 'HEAT') {
+        temp[i] += 150;
         if (cur === SAND) setCell(i, GLASS);
         else if (cur === WATER) setCell(i, VAPOR);
         else if (cur === ICE || cur === SNOW) setCell(i, WATER);
         else if (FLAM[cur] && Math.random() < 0.5) setCell(i, FIRE);
       } else if (action === 'COOL') {
+        temp[i] -= 150;
         if (cur === WATER) setCell(i, ICE);
         else if (cur === LAVA) setCell(i, STONE);
         else if (cur === FIRE) setCell(i, EMPTY);
@@ -708,7 +971,7 @@ function applyBrush() {
 
 function toCanvas(e) {
   const r = canvas.getBoundingClientRect();
-  const s = Math.min(r.width / W, r.height / H);       // giữ đúng tỉ lệ
+  const s = Math.min(r.width / W, r.height / H);
   const ox = (r.width - W * s) / 2, oy = (r.height - H * s) / 2;
   const x = Math.floor((e.clientX - r.left - ox) / s);
   const y = Math.floor((e.clientY - r.top - oy) / s);
@@ -721,6 +984,7 @@ function updatePointer(e) {
   if (p) {
     mx = p.x; my = p.y;
     document.getElementById('st-coord').textContent = `x:${mx}, y:${my}`;
+    if (showHeat) document.getElementById('st-coord').textContent += `, ${Math.round(temp[my * W + mx])}°C`;
   } else {
     mx = -1; my = -1;
   }
@@ -738,16 +1002,16 @@ window.addEventListener('pointerup', () => { mouseDown = false; });
 window.addEventListener('pointercancel', () => { mouseDown = false; });
 
 // =====================================================================
-// 9. GIAO DIỆN
+// 10. GIAO DIỆN
 // =====================================================================
 const ACTIONS = [
-  { id:'DRAW',  label:'✏️ VẼ',         cls:'' },
-  { id:'ERASE', label:'🧽 XÓA',        cls:'btn-erase' },
-  { id:'HEAT',  label:'🔥 LÀM NÓNG',   cls:'btn-heat' },
-  { id:'COOL',  label:'❄️ LÀM LẠNH',   cls:'btn-cool' },
+  { id:'DRAW',  label:'✏️ VẼ',       cls:'' },
+  { id:'ERASE', label:'🧽 XÓA',      cls:'btn-erase' },
+  { id:'HEAT',  label:'🔥 LÀM NÓNG', cls:'btn-heat' },
+  { id:'COOL',  label:'❄️ LÀM LẠNH', cls:'btn-cool' },
 ];
 
-const CAT_ORDER = ['Đất Đá', 'Chất Lỏng', 'Khí & Nhiệt', 'Hóa Học', 'Thời Tiết', 'Sự Sống'];
+const CAT_ORDER = ['Đất Đá', 'Kim Loại', 'Chất Lỏng', 'Khí & Nhiệt', 'Hóa Học', 'Thời Tiết', 'Sự Sống'];
 const CATS = {};
 CAT_ORDER.forEach(c => CATS[c] = []);
 Object.keys(MAT).forEach(k => {
@@ -756,14 +1020,16 @@ Object.keys(MAT).forEach(k => {
 });
 let activeMat = SAND;
 
-const btnPause = document.getElementById('btn-pause');
-const btnSpeed = document.getElementById('btn-speed');
-const btnDay   = document.getElementById('btn-day');
-const btnMinus = document.getElementById('btn-minus');
-const btnPlus  = document.getElementById('btn-plus');
-const brushVal = document.getElementById('brush-val');
-const btnDemo  = document.getElementById('btn-demo');
-const btnClear = document.getElementById('btn-clear');
+const btnPause   = document.getElementById('btn-pause');
+const btnSpeed   = document.getElementById('btn-speed');
+const btnDay     = document.getElementById('btn-day');
+const btnHeat    = document.getElementById('btn-heatview');
+const btnMinus   = document.getElementById('btn-minus');
+const btnPlus    = document.getElementById('btn-plus');
+const brushVal   = document.getElementById('brush-val');
+const btnDemo    = document.getElementById('btn-demo');
+const btnLab     = document.getElementById('btn-lab');
+const btnClear   = document.getElementById('btn-clear');
 
 function textColorFor(hex) {
   const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
@@ -833,11 +1099,10 @@ function updateStats() {
   document.getElementById('st-fps').textContent = `${fps} fps`;
   document.getElementById('st-pixels').textContent = `${pixelCount} pxls`;
   document.getElementById('st-pop').textContent =
-    `🐇 Thỏ: ${tally[RABBIT]} · 🦊 Cáo: ${tally[FOX]} · 🪵 Gỗ: ${tally[WOOD]} · 🌿 Cỏ & lá: ${tally[GRASS] + tally[LEAF]}`;
+    `🐇 ${tally[RABBIT]} · 🦊 ${tally[FOX]} · 🐟 ${tally[FISH]} · 🐦 ${tally[BIRD]} · 🌳 gỗ ${tally[WOOD]}`;
   document.getElementById('st-time').textContent = isDay ? '☀️ Ban ngày' : '🌙 Ban đêm';
 }
 
-// Nút điều khiển
 btnPause.onclick = () => {
   isPaused = !isPaused;
   btnPause.textContent = isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
@@ -854,62 +1119,96 @@ btnDay.onclick = () => {
   btnDay.textContent = isDay ? '☀️ Ngày' : '🌙 Đêm';
   updateStats();
 };
+btnHeat.onclick = () => {
+  showHeat = !showHeat;
+  btnHeat.textContent = `🌡️ Xem nhiệt độ: ${showHeat ? 'BẬT' : 'TẮT'}`;
+};
 btnMinus.onclick = () => { brush = Math.max(1, brush - 1); brushVal.textContent = brush; };
 btnPlus.onclick  = () => { brush = Math.min(10, brush + 1); brushVal.textContent = brush; };
-btnClear.onclick = () => { world.fill(EMPTY); life.fill(0); setInfo('Đã xóa sạch khung vẽ.'); };
+btnClear.onclick = () => { clearAll(); setInfo('Đã xóa sạch khung vẽ.'); };
 btnDemo.onclick  = () => loadDemo();
+btnLab.onclick   = () => loadHeatLab();
 
 // =====================================================================
-// 10. HỆ SINH THÁI MẪU
+// 11. CÁC MÀN CHƠI MẪU
 // =====================================================================
+function clearAll() {
+  world.fill(EMPTY);
+  life.fill(0);
+  face.fill(1);
+  temp.fill(AMBIENT);
+}
+
 function put(x, y, id) {
   const i = y * W + x;
   world[i] = id;
   life[i] = LIFE0[id];
 }
 
+// Hệ sinh thái: đất, hồ nước có cá và tảo, cỏ, hạt, thỏ, cáo, chim
 function loadDemo() {
-  world.fill(EMPTY);
-  life.fill(0);
+  clearAll();
   isDay = true;
   btnDay.textContent = '☀️ Ngày';
 
   const soilTop = H - 16;
-
-  // Đất ở dưới, đá làm nền
   for (let y = soilTop; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      world[y * W + x] = y >= H - 3 ? STONE : SOIL;
-    }
+    for (let x = 0; x < W; x++) world[y * W + x] = y >= H - 3 ? STONE : SOIL;
   }
-
-  // Hai bức tường đá tạo thành hồ nước
   for (let y = H - 30; y < soilTop; y++) {
     for (const x of [150, 151, 152, 250, 251, 252]) world[y * W + x] = STONE;
   }
-  // Nước trong hồ
   for (let y = H - 19; y < soilTop; y++) {
     for (let x = 153; x < 250; x++) world[y * W + x] = WATER;
   }
-
-  // Cỏ mọc trên mặt đất, ngoài vùng hồ
+  for (let y = H - 19; y < soilTop; y++) {
+    for (let x = 153; x < 250; x++) if (Math.random() < 0.12) world[y * W + x] = ALGAE;
+  }
   for (let x = 0; x < W; x++) {
     if (x >= 150 && x <= 252) continue;
     if (Math.random() < 0.35) world[(soilTop - 1) * W + x] = GRASS;
   }
-
-  // Hạt giống: một số gần nước (sẽ nảy mầm), một số xa nước (không nảy mầm)
   for (const x of [60, 160, 200, 240, 330]) put(x, H - 24, SEED);
 
-  // Thỏ và cáo
   for (const x of [40, 80, 110, 300, 330]) put(x, H - 22, RABBIT);
   put(370, H - 22, FOX);
 
-  setInfo('Đã nạp hệ sinh thái mẫu: đất, hồ nước, cỏ, hạt giống, thỏ và cáo. Nhấn ▶️ để bắt đầu.');
+  for (const [x, y] of [[170, H - 18], [190, H - 17], [210, H - 18], [230, H - 17]]) put(x, y, FISH);
+  put(90, H - 70, BIRD);
+  put(200, H - 90, BIRD);
+  put(320, H - 80, BIRD);
+
+  setInfo('Hệ sinh thái mẫu: cá bơi và ăn tảo, thỏ ăn cỏ, cáo ăn thỏ, chim bay ăn hạt. Nhấn ▶️ để bắt đầu.');
+}
+
+// Thí nghiệm dẫn nhiệt: sáu thanh kim loại cùng dài, cùng gắn nguồn nhiệt ở một đầu,
+// đầu kia kề một khúc gỗ. Thanh nào dẫn nhiệt tốt sẽ làm gỗ bốc cháy trước.
+function loadHeatLab() {
+  clearAll();
+  isDay = true;
+  btnDay.textContent = '☀️ Ngày';
+
+  for (let y = H - 20; y < H; y++) {
+    for (let x = 0; x < W; x++) world[y * W + x] = STONE;
+  }
+
+  const rods = [COPPER, GOLD, ALUMINUM, IRON, STEEL, LEAD];
+  rods.forEach((id, k) => {
+    const y = 30 + k * 25;
+    for (let x = 14; x <= 45; x++) world[y * W + x] = id;                      // thanh kim loại
+    for (let yy = y - 2; yy <= y + 2; yy++)
+      for (let x = 8; x <= 13; x++) world[yy * W + x] = HEATER;                // nguồn nhiệt
+    for (let yy = y - 2; yy <= y + 2; yy++)
+      for (let x = 46; x <= 49; x++) world[yy * W + x] = WOOD;                 // gỗ ở đầu xa
+  });
+
+  showHeat = true;
+  btnHeat.textContent = '🌡️ Xem nhiệt độ: BẬT';
+  setInfo('Thí nghiệm dẫn nhiệt, từ trên xuống: Đồng, Vàng, Nhôm, Sắt, Thép, Chì. Thanh nào làm gỗ cháy trước thì dẫn nhiệt tốt hơn.');
 }
 
 // =====================================================================
-// 11. VÒNG LẶP CHÍNH
+// 12. VÒNG LẶP CHÍNH
 // =====================================================================
 let lastT = 0, fpsCount = 0;
 function loop(t) {
@@ -927,6 +1226,8 @@ function loop(t) {
 }
 
 // Khởi động
+face.fill(1);
+temp.fill(AMBIENT);
 renderAll();
 loadDemo();
 requestAnimationFrame(loop);
