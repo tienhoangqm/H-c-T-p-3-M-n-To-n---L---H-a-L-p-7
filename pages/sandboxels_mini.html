@@ -5,429 +5,931 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sandbox Pro - Tuần Hoàn Sinh Thái</title>
 <style>
-    /* Đảm bảo toàn bộ trang lấp đầy không giới hạn */
-    html, body { margin: 0; padding: 0; width: 100%; height: 100vh; background: #0f0f1a; overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; }
-    .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; position: absolute; inset: 0; }
-    
-    /* 1. KHÔNG GIAN VẼ: CHẾM CHÍNH XÁC 75% CHIỀU CAO */
-    .canvas-wrapper { 
-        height: 75vh; 
-        width: 100%;
-        background: #000; 
-        position: relative; 
-        overflow: hidden; 
-    }
-    
-    /* Ép Canvas bung hết 100% không gian của wrapper, không để lại viền đen thừa */
-    canvas { 
-        image-rendering: pixelated; 
-        width: 100%; 
-        height: 100%; 
-        display: block;
-        cursor: crosshair; 
-    }
-
-    /* 2. KHUNG CÔNG CỤ: CHIẾM 25% CÒN LẠI */
-    .ui-panel { 
-        height: 25vh; 
-        width: 100%;
-        background: #161616; 
-        display: flex; 
-        flex-direction: column; 
-        border-top: 1px solid #333; 
-        overflow-y: auto; 
-    }
-    
-    .bar { display: flex; align-items: center; padding: 4px 8px; gap: 5px; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; }
-    #statusbar { background: #000; font-size: 11px; color: #888; padding: 2px 8px; gap: 20px; border-bottom: 1px solid #333; }
-    button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: #ddd; background: #2d2d2d; border-bottom: 2px solid #111; border-top: 1px solid #444; transition: filter 0.1s; }
-    button:active { border-bottom: 0; border-top: 2px solid #111; transform: translateY(1px); }
-    button:hover { filter: brightness(1.2); }
-    
-    .btn-action { background: #3a3a3a; font-size: 12px; }
-    .btn-action.active { background: #fff; color: #000; border-bottom: 2px solid #aaa; }
-    .btn-heat { background: #e74c3c; color: white; }
-    .btn-cool { background: #0984e3; color: white; }
-    .btn-erase { background: #ff7675; color: white; }
-    
-    .btn-category { background: #2d3436; color: #b2bec3; }
-    .btn-category.active { background: #00b894; color: #fff; }
-    
-    .btn-mat.active { outline: 2px solid #fff; outline-offset: -2px; }
-    #iconbar button { font-size: 13px; padding: 2px 6px; background: transparent; border: none; color: #fff; }
-    #iconbar button:hover { background: #333; }
+  html, body { margin:0; padding:0; width:100%; height:100%; background:#0f0f1a; overflow:hidden; font-family:'Segoe UI', sans-serif; user-select:none; }
+  .app { display:flex; flex-direction:column; width:100%; height:100vh; }
+  .canvas-wrapper { height:75vh; width:100%; background:#000; position:relative; overflow:hidden; }
+  canvas { display:block; width:100%; height:100%; object-fit:contain; image-rendering:pixelated; cursor:crosshair; touch-action:none; }
+  .ui-panel { height:25vh; width:100%; background:#161616; display:flex; flex-direction:column; border-top:1px solid #333; overflow-y:auto; }
+  .bar { display:flex; align-items:center; flex-wrap:wrap; gap:5px; padding:4px 8px; border-bottom:1px solid #2a2a2a; }
+  #statusbar { background:#000; font-size:11px; color:#999; gap:14px; flex-wrap:nowrap; }
+  #info { color:#7fd3ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+  button { padding:4px 10px; border:none; border-radius:4px; cursor:pointer; font-size:11px; font-weight:600; color:#ddd; background:#2d2d2d; border-bottom:2px solid #111; border-top:1px solid #444; white-space:nowrap; }
+  button:hover { filter:brightness(1.2); }
+  button:active { transform:translateY(1px); }
+  .btn-action { background:#3a3a3a; font-size:12px; }
+  .btn-action.active { background:#fff; color:#000; }
+  .btn-erase { background:#ff7675; color:#fff; }
+  .btn-heat { background:#e74c3c; color:#fff; }
+  .btn-cool { background:#0984e3; color:#fff; }
+  .btn-category { background:#2d3436; color:#b2bec3; }
+  .btn-category.active { background:#00b894; color:#fff; }
+  .btn-mat.active { outline:2px solid #fff; outline-offset:-2px; }
+  .sep { width:1px; height:14px; background:#444; margin:0 4px; }
+  .lbl { font-size:11px; color:#aaa; }
+  .val { font-size:11px; color:#fff; min-width:14px; text-align:center; }
 </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="canvas-wrapper"><canvas id="gameCanvas"></canvas></div>
-    
-    <div class="ui-panel">
-        <div class="bar" id="statusbar">
-            <span id="st-coord">x:0, y:0</span> <span id="st-pixels">0 pxls</span> <span id="st-fps">0 fps</span>
-        </div>
-        <div class="bar" id="iconbar">
-            <button id="btn-pause" title="Tạm dừng/Tiếp tục">⏸️</button>
-            <div style="width: 1px; height: 14px; background: #444; margin: 0 5px;"></div>
-            <span style="font-size: 11px; color: #aaa;">Cọ vẽ:</span>
-            <button id="btn-brush-minus">➖</button> <span id="brush-size" style="font-size: 11px; width: 12px; text-align: center; color: white;">3</span> <button id="btn-brush-plus">➕</button>
-            <div style="width: 1px; height: 14px; background: #444; margin: 0 5px;"></div>
-            <button id="btn-clear">🗑️ Xóa sạch</button>
-        </div>
-        <div class="bar" id="actionbar">
-            <button class="btn-action btn-erase" data-action="ERASE">XÓA</button>
-            <button class="btn-action active" data-action="DRAW">VẼ</button>
-            <button class="btn-action btn-heat" data-action="HEAT">🔥 LÀM NÓNG</button>
-            <button class="btn-action btn-cool" data-action="COOL">❄️ LÀM LẠNH</button>
-        </div>
-        <div class="bar" id="categorybar"></div>
-        <div class="bar" id="materialbar"></div>
+<div class="app">
+  <div class="canvas-wrapper"><canvas id="game"></canvas></div>
+
+  <div class="ui-panel">
+    <div class="bar" id="statusbar">
+      <span id="st-coord">x:0, y:0</span>
+      <span id="st-pixels">0 pxls</span>
+      <span id="st-fps">0 fps</span>
+      <span id="st-time">☀️ Ban ngày</span>
+      <span id="info"></span>
     </div>
+    <div class="bar">
+      <button id="btn-pause">⏸️ Tạm dừng</button>
+      <button id="btn-speed">⏩ Tốc độ x1</button>
+      <button id="btn-day">☀️ Ngày</button>
+      <div class="sep"></div>
+      <span class="lbl">Cọ vẽ:</span>
+      <button id="btn-minus">➖</button><span id="brush-val" class="val">3</span><button id="btn-plus">➕</button>
+      <div class="sep"></div>
+      <span id="st-pop" class="lbl">🐇 Thỏ: 0 · 🦊 Cáo: 0</span>
+      <div class="sep"></div>
+      <button id="btn-demo">🌿 Nạp hệ sinh thái mẫu</button>
+      <button id="btn-clear">🗑️ Xóa sạch</button>
+    </div>
+    <div class="bar" id="actionbar"></div>
+    <div class="bar" id="categorybar"></div>
+    <div class="bar" id="materialbar"></div>
+  </div>
 </div>
 
 <script>
-    // TĂNG KHÔNG GIAN NỘI BỘ LÊN 400x250 CHO PHÙ HỢP VỚI MÀN HÌNH WIDESCREEN 75%
-    const W = 400, H = 250; 
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    canvas.width = W; canvas.height = H;
+// =====================================================================
+// 1. KÍCH THƯỚC VÀ BỘ NHỚ
+// =====================================================================
+const W = 400, H = 250, N = W * H;
 
-    const EMPTY = 0;
-    const materials = {
-        [EMPTY]: { name: "Không khí", hex: "#000000", density: 0 },
-        1: { name: "Cát", hex: "#e6c26e", density: 3, cat: "Đất Đá", granular: true, meltable: true },
-        3: { name: "Đất", hex: "#8b5a2b", density: 4, cat: "Đất Đá", granular: true, meltable: true },
-        7: { name: "Đá", hex: "#708090", density: 6, cat: "Đất Đá", meltable: true },
-        24:{ name: "Thủy Tinh", hex: "#a4b0be", density: 5, cat: "Đất Đá" }, 
-        
-        20:{ name: "Axit", hex: "#a4fb46", density: 1.2, liquid: true, acid: true, cat: "Hóa Học" },
-        22:{ name: "Khí Độc", hex: "#badc58", density: -0.8, gas: true, life: 100, cat: "Hóa Học", toxic: true },
-        23:{ name: "Khí CO2", hex: "#7f8c8d", density: -0.2, gas: true, cat: "Hóa Học", isCO2: true },
-        25:{ name: "Khí Oxy", hex: "#dff9fb", density: -0.4, gas: true, cat: "Hóa Học", isOxygen: true },
-        
-        2: { name: "Nước", hex: "#4a90d9", density: 1.5, liquid: true, cat: "Chất Lỏng" },
-        9: { name: "Dầu", hex: "#2c2c2c", density: 1, liquid: true, flammable: true, cat: "Chất Lỏng" },
-        11:{ name: "Dung Nham", hex: "#ff5722", density: 5, liquid: true, viscous: true, hot: true, cat: "Chất Lỏng" },
-        
-        4: { name: "Lửa", hex: "#ff4500", density: 0.2, life: 35, hot: true, cat: "Khí & Nhiệt" },
-        6: { name: "Khói", hex: "#888888", density: -0.5, gas: true, life: 60, cat: "Khí & Nhiệt" },
-        12:{ name: "Băng", hex: "#a0e6ff", density: 1.4, cat: "Khí & Nhiệt" },
-        
-        13:{ name: "Cỏ", hex: "#2ecc71", density: 2.5, flammable: true, organic: true, cat: "Sự Sống", plant: true },
-        14:{ name: "Hạt Giống", hex: "#f1c40f", density: 3, cat: "Sự Sống", isSeed: true },
-        19:{ name: "Mầm", hex: "#a0522d", density: 4, isGrowingTree: true, organic: true, plant: true },
-        5: { name: "Gỗ", hex: "#a0522d", density: 4, flammable: true, organic: true, cat: "Sự Sống" },
-        15:{ name: "Lá", hex: "#27ae60", density: 1, flammable: true, organic: true, cat: "Sự Sống", plant: true },
-        16:{ name: "Cá", hex: "#e67e22", density: 1.6, cat: "Sự Sống", isFish: true, organic: true },
-        17:{ name: "Chim", hex: "#ecf0f1", density: -0.1, cat: "Sự Sống", isBird: true, organic: true },
-        18:{ name: "Thú Rừng", hex: "#d35400", density: 3, cat: "Sự Sống", isAnimal: true, organic: true },
-        21:{ name: "Khuẩn/Nấm", hex: "#8e44ad", density: 2, cat: "Sự Sống", infectious: true, life: 120 }
-    };
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+canvas.width = W; canvas.height = H;
+const imgData = ctx.createImageData(W, H);   // tạo một lần, tái sử dụng
+const px = imgData.data;
 
-    Object.values(materials).forEach(m => {
-        if (m.hex) { m.r = parseInt(m.hex.slice(1, 3), 16); m.g = parseInt(m.hex.slice(3, 5), 16); m.b = parseInt(m.hex.slice(5, 7), 16); }
-    });
+const world = new Uint8Array(N);   // loại vật chất của mỗi ô
+const life  = new Uint16Array(N);  // tuổi / thời gian sống / năng lượng (thú)
+const moved = new Uint32Array(N);  // khung hình nào đã cập nhật ô này
+let frame = 1;                     // số khung hình mô phỏng
 
-    const categories = {};
-    Object.entries(materials).forEach(([id, mat]) => {
-        if (mat.cat) { if (!categories[mat.cat]) categories[mat.cat] = []; categories[mat.cat].push({ id: Number(id), ...mat }); }
-    });
+let isDay = true;
+let isPaused = false;
+let speed = 1;
+let fps = 0;
+let pixelCount = 0;
+const tally = new Uint32Array(64); // đếm số ô của mỗi loại
 
-    const world = new Uint8Array(W * H);
-    const tempLife = new Uint16Array(W * H);
-    let activeCategory = "Đất Đá", activeMaterial = 1, activeAction = "DRAW";
-    let brushSize = 3, isPaused = false, isMouseDown = false;
-    let mouseX = -1, mouseY = -1, lastTime = 0, frames = 0, fps = 0;
+const CLOUD_LINE = 70;  // hơi nước ở dưới dòng này mới ngưng tụ thành mây
+const SNOW_LINE  = 35;  // mây ở vùng cao (phía trên dòng này) mưa ra tuyết
 
-    const getIdx = (x, y) => y * W + x;
-    const inBounds = (x, y) => x >= 0 && x < W && y >= 0 && y < H;
+// Mouse / thao tác
+let mouseDown = false, mx = -1, my = -1, brush = 3;
+let action = 'DRAW';
+let activeCat = 'Đất Đá';
 
-    function renderCategories() {
-        const catBar = document.getElementById('categorybar');
-        catBar.innerHTML = '';
-        Object.keys(categories).forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = `btn-category ${cat === activeCategory ? 'active' : ''}`;
-            btn.textContent = cat;
-            btn.onclick = () => { activeCategory = cat; activeMaterial = categories[cat][0].id; activeAction = "DRAW"; updateActionUI(); renderCategories(); renderMaterials(); };
-            catBar.appendChild(btn);
-        });
+// =====================================================================
+// 2. HẰNG SỐ ID VẬT CHẤT (mỗi vật liệu một số duy nhất, không trùng)
+// =====================================================================
+const EMPTY = 0,
+      SAND = 1, WATER = 2, SOIL = 3, FIRE = 4, WOOD = 5, SMOKE = 6,
+      STONE = 7, OIL = 9, LAVA = 11, ICE = 12, GRASS = 13, SEED = 14,
+      LEAF = 15, SAPLING = 19, ACID = 20, FUNGUS = 21, TOXIC = 22,
+      CO2 = 23, GLASS = 24, OXYGEN = 25, VAPOR = 26, CLOUD = 27,
+      RAIN = 28, SNOW = 29, CORPSE = 30, RABBIT = 31, FOX = 32,
+      LIMESTONE = 33;
+
+// =====================================================================
+// 3. ĐỊNH NGHĨA VẬT CHẤT
+//    kind: solid (đứng yên), powder (rơi), liquid (chảy), gas (bay lên),
+//          fire, plant, seed, sapling, animal, fungus, snow
+//    life: thời gian sống (nếu có decay) hoặc năng lượng (nếu là thú)
+// =====================================================================
+const MAT = {
+  [EMPTY]:     { name:'Không khí', hex:'#000000', kind:'none' },
+
+  // Đất Đá
+  [SAND]:      { name:'Cát',       hex:'#e6c26e', cat:'Đất Đá', kind:'powder', dens:3,
+                 desc:'Rơi thành đống. Nung chảy bằng LÀM NÓNG thành thủy tinh.' },
+  [SOIL]:      { name:'Đất',       hex:'#8b5a2b', cat:'Đất Đá', kind:'powder', dens:4,
+                 desc:'Nơi hạt giống nảy mầm và cỏ mọc.' },
+  [STONE]:     { name:'Đá',        hex:'#708090', cat:'Đất Đá', kind:'solid',
+                 desc:'Vật rắn, đứng yên.' },
+  [LIMESTONE]: { name:'Đá Vôi',    hex:'#d5d8dc', cat:'Đất Đá', kind:'solid',
+                 desc:'Axit làm tan đá vôi và sinh khí CO2.' },
+  [GLASS]:     { name:'Thủy Tinh', hex:'#a4b0be', cat:'Đất Đá', kind:'solid',
+                 desc:'Vật trơ, axit không ăn mòn được.' },
+
+  // Chất Lỏng
+  [WATER]:     { name:'Nước',      hex:'#4a90d9', cat:'Chất Lỏng', kind:'liquid', dens:1.5,
+                 desc:'Nuôi cây. Bốc hơi khi nóng hoặc có nắng.' },
+  [OIL]:       { name:'Dầu',       hex:'#2c2c2c', cat:'Chất Lỏng', kind:'liquid', dens:1, flam:1,
+                 desc:'Nhẹ hơn nước nên nổi trên mặt nước. Dễ cháy.' },
+  [LAVA]:      { name:'Dung Nham', hex:'#ff5722', cat:'Chất Lỏng', kind:'liquid', dens:5, visc:1,
+                 desc:'Rất nóng: làm cháy vật dễ cháy, gặp nước tạo đá.' },
+
+  // Khí & Nhiệt
+  [FIRE]:      { name:'Lửa',       hex:'#ff4500', cat:'Khí & Nhiệt', kind:'fire', life:35, decay:1,
+                 desc:'Đốt vật dễ cháy, cần oxy. Sinh ra khói.' },
+  [SMOKE]:     { name:'Khói',      hex:'#888888', cat:'Khí & Nhiệt', kind:'gas', life:60, decay:1,
+                 desc:'Sản phẩm của sự cháy, bay lên rồi tan dần.' },
+
+  // Hóa Học
+  [ACID]:      { name:'Axit',      hex:'#a4fb46', cat:'Hóa Học', kind:'liquid', dens:1.2,
+                 desc:'Ăn mòn vật hữu cơ thành khí độc.' },
+  [TOXIC]:     { name:'Khí Độc',   hex:'#badc58', cat:'Hóa Học', kind:'gas', life:100, decay:1,
+                 desc:'Nguy hiểm, làm chết động vật.' },
+  [CO2]:       { name:'Khí CO2',   hex:'#7f8c8d', cat:'Hóa Học', kind:'gas',
+                 desc:'Cây dùng để quang hợp. Động vật thở ra.' },
+  [OXYGEN]:    { name:'Khí Oxy',   hex:'#dff9fb', cat:'Hóa Học', kind:'gas',
+                 desc:'Cây thải ra khi quang hợp. Động vật cần để thở.' },
+
+  // Thời Tiết
+  [VAPOR]:     { name:'Hơi nước',  hex:'#d6eaf8', cat:'Thời Tiết', kind:'gas',
+                 desc:'Nước bay hơi, bốc lên cao rồi ngưng tụ thành mây.' },
+  [CLOUD]:     { name:'Mây',       hex:'#eef1f5', cat:'Thời Tiết', kind:'gas',
+                 desc:'Hơi nước ngưng tụ. Đủ dày thì mưa.' },
+  [RAIN]:      { name:'Mưa',       hex:'#5dade2', cat:'Thời Tiết', kind:'liquid', dens:1.5,
+                 desc:'Nước rơi từ mây xuống.' },
+  [SNOW]:      { name:'Tuyết',     hex:'#ffffff', cat:'Thời Tiết', kind:'snow', dens:0.8,
+                 desc:'Mưa rơi từ mây ở vùng cao sẽ thành tuyết.' },
+  [ICE]:       { name:'Băng',      hex:'#a0e6ff', cat:'Thời Tiết', kind:'solid',
+                 desc:'Nước đóng băng. Tan khi gặp lửa hoặc dung nham.' },
+
+  // Sự Sống
+  [SEED]:      { name:'Hạt Giống', hex:'#f1c40f', cat:'Sự Sống', kind:'seed', dens:3,
+                 desc:'Rơi xuống đất. Có đất và nước gần thì nảy mầm.' },
+  [GRASS]:     { name:'Cỏ',        hex:'#2ecc71', cat:'Sự Sống', kind:'plant', flam:1, org:1,
+                 desc:'Quang hợp khi có nắng. Thỏ ăn cỏ.' },
+  [LEAF]:      { name:'Lá',        hex:'#27ae60', cat:'Sự Sống', kind:'plant', flam:1, org:1,
+                 desc:'Tán lá của cây. Quang hợp và dễ cháy.' },
+  [SAPLING]:   { name:'Cây Non',   hex:'#7cb342', cat:'Sự Sống', kind:'sapling', flam:1, org:1,
+                 desc:'Cần nước gần để lớn dần thành cây thân gỗ.' },
+  [WOOD]:      { name:'Gỗ',        hex:'#a0522d', cat:'Sự Sống', kind:'solid', flam:1, org:1,
+                 desc:'Thân cây. Cháy được.' },
+  [FUNGUS]:    { name:'Nấm',       hex:'#8e44ad', cat:'Sự Sống', kind:'fungus', life:120, decay:1,
+                 desc:'Phân hủy xác và gỗ thành đất mùn.' },
+  [CORPSE]:    { name:'Xác',       hex:'#7d6608', cat:'Sự Sống', kind:'solid', org:1, life:150, decay:1,
+                 desc:'Sinh vật đã chết. Nấm sẽ phân hủy nó.' },
+  [RABBIT]:    { name:'Thỏ',       hex:'#f5cba7', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, diet:GRASS,
+                 desc:'Ăn cỏ. Bị cáo ăn. Đói quá sẽ chết.' },
+  [FOX]:       { name:'Cáo',       hex:'#ca6f1e', cat:'Sự Sống', kind:'animal', org:1, life:120, sparse:1, diet:RABBIT,
+                 desc:'Ăn thỏ. Đói quá sẽ chết.' },
+};
+
+// Bảng tra nhanh (tạo một lần)
+const KIND     = new Array(64).fill('none');
+const DENS     = new Float32Array(64);
+const LIFE0    = new Uint16Array(64);
+const DIET     = new Uint8Array(64);
+const FLAM     = new Uint8Array(64);
+const ORG      = new Uint8Array(64);
+const DECAY    = new Uint8Array(64);
+const VISC     = new Uint8Array(64);
+const SPARSE   = new Uint8Array(64);
+const ANIMAL   = new Uint8Array(64);
+const REACTIVE = new Uint8Array(64);
+const PAL      = new Uint8Array(64 * 3);
+
+Object.keys(MAT).forEach(k => {
+  const id = +k, m = MAT[id];
+  KIND[id]   = m.kind;
+  DENS[id]   = m.dens || 0;
+  LIFE0[id]  = m.life || 0;
+  DIET[id]   = m.diet || 0;
+  FLAM[id]   = m.flam ? 1 : 0;
+  ORG[id]    = m.org ? 1 : 0;
+  DECAY[id]  = m.decay ? 1 : 0;
+  VISC[id]   = m.visc ? 1 : 0;
+  SPARSE[id] = m.sparse ? 1 : 0;
+  ANIMAL[id] = m.kind === 'animal' ? 1 : 0;
+  PAL[id*3]   = parseInt(m.hex.slice(1,3), 16);
+  PAL[id*3+1] = parseInt(m.hex.slice(3,5), 16);
+  PAL[id*3+2] = parseInt(m.hex.slice(5,7), 16);
+});
+
+// =====================================================================
+// 4. BẢNG PHẢN ỨNG HÓA HỌC
+//    addReaction(a, b, na, nb, p): khi ô a chạm ô b, ô a thành na,
+//    ô b thành nb, với xác suất p mỗi khung hình.
+//    Thêm phản ứng mới chỉ cần thêm một dòng ở đây.
+// =====================================================================
+const REACT = new Map();
+function addReaction(a, b, na, nb, p) {
+  REACT.set(a*64 + b, { ia: na, ib: nb, p });
+  REACT.set(b*64 + a, { ia: nb, ib: na, p });
+  REACTIVE[a] = 1; REACTIVE[b] = 1;
+}
+addReaction(FIRE,      WATER,     VAPOR,  WATER,  0.25); // lửa gặp nước: tắt, tạo hơi
+addReaction(FIRE,      RAIN,      VAPOR,  WATER,  0.30);
+addReaction(FIRE,      ICE,       EMPTY,  WATER,  0.20); // lửa làm tan băng
+addReaction(FIRE,      SNOW,      EMPTY,  WATER,  0.20);
+addReaction(LAVA,      WATER,     STONE,  VAPOR,  0.25); // dung nham + nước: đá + hơi
+addReaction(LAVA,      RAIN,      STONE,  VAPOR,  0.30);
+addReaction(LAVA,      ICE,       STONE,  WATER,  0.30);
+addReaction(LAVA,      SNOW,      STONE,  WATER,  0.30);
+addReaction(LAVA,      SAND,      LAVA,   GLASS,  0.08); // dung nham nung cát thành thủy tinh
+addReaction(ACID,      LIMESTONE, EMPTY,  CO2,    0.12); // axit + đá vôi: sinh CO2
+
+// =====================================================================
+// 5. HÀM TIỆN ÍCH
+// =====================================================================
+function at(x, y) {
+  return (x < 0 || x >= W || y < 0 || y >= H) ? -1 : y * W + x;
+}
+const NB8 = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+function nbr(x, y, k) { return at(x + NB8[k][0], y + NB8[k][1]); }
+
+// Đặt vật chất vào ô i (có đặt lại thời gian sống và đánh dấu đã cập nhật)
+function setCell(i, to) {
+  world[i] = to;
+  life[i] = LIFE0[to];
+  moved[i] = frame;
+}
+// Di chuyển vật chất từ ô i sang ô j (j phải trống)
+function moveTo(i, j) {
+  world[j] = world[i]; life[j] = life[i]; moved[j] = frame;
+  world[i] = EMPTY;    life[i] = 0;
+}
+// Hoán đổi hai ô (dùng khi vật nặng chìm qua vật nhẹ hơn)
+function swapCells(i, j) {
+  const a = world[i], la = life[i];
+  world[i] = world[j]; life[i] = life[j];
+  world[j] = a;        life[j] = la;
+  moved[i] = frame; moved[j] = frame;
+}
+function hasNear(x, y, r, id) {
+  for (let dy = -r; dy <= r; dy++) {
+    const ny = y + dy;
+    if (ny < 0 || ny >= H) continue;
+    for (let dx = -r; dx <= r; dx++) {
+      const nx = x + dx;
+      if (nx >= 0 && nx < W && world[ny * W + nx] === id) return true;
     }
-
-    function renderMaterials() {
-        const matBar = document.getElementById('materialbar');
-        matBar.innerHTML = '';
-        categories[activeCategory].forEach(mat => {
-            const btn = document.createElement('button');
-            btn.className = `btn-mat ${mat.id === activeMaterial && activeAction === "DRAW" ? 'active' : ''}`;
-            btn.style.background = mat.hex;
-            btn.style.color = ["Băng", "Cát", "Hạt Giống", "Axit", "Khí Độc", "Khí Oxy", "Khí CO2"].includes(mat.name) ? "#000" : "#fff";
-            btn.textContent = mat.name;
-            btn.onclick = () => { activeMaterial = mat.id; activeAction = "DRAW"; updateActionUI(); renderMaterials(); };
-            matBar.appendChild(btn);
-        });
+  }
+  return false;
+}
+function countNear(x, y, r, id) {
+  let c = 0;
+  for (let dy = -r; dy <= r; dy++) {
+    const ny = y + dy;
+    if (ny < 0 || ny >= H) continue;
+    for (let dx = -r; dx <= r; dx++) {
+      const nx = x + dx;
+      if (nx >= 0 && nx < W && world[ny * W + nx] === id) c++;
     }
-
-    function updateActionUI() {
-        document.querySelectorAll('.btn-action').forEach(btn => btn.classList.toggle('active', btn.dataset.action === activeAction));
-        if(activeAction !== "DRAW") document.querySelectorAll('.btn-mat').forEach(b => b.classList.remove('active'));
+  }
+  return c;
+}
+function findNearest(x, y, r, id) {
+  let best = -1, bd = 1e9;
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+      const j = ny * W + nx;
+      if (world[j] === id) {
+        const d = dx*dx + dy*dy;
+        if (d < bd) { bd = d; best = j; }
+      }
     }
+  }
+  return best;
+}
+// Số khúc thân gỗ nằm ngay phía dưới (để giới hạn chiều cao cây)
+function trunkBelow(x, y) {
+  let h = 0;
+  for (let yy = y + 1; yy < H && world[yy * W + x] === WOOD && h < 10; yy++) h++;
+  return h;
+}
 
-    document.querySelectorAll('.btn-action').forEach(btn => { btn.onclick = () => { activeAction = btn.dataset.action; updateActionUI(); renderMaterials(); }; });
+// =====================================================================
+// 6. CẬP NHẬT TỪNG LOẠI VẬT CHẤT
+// =====================================================================
 
-    renderCategories(); renderMaterials();
+// Chất rơi (cát, đất): rơi thẳng, trượt chéo, chìm qua chất lỏng nhẹ hơn
+function fallPowder(x, y, i, dens) {
+  const d = at(x, y + 1);
+  if (d < 0) return false;
+  const dm = world[d];
+  if (dm === EMPTY) { moveTo(i, d); return true; }
+  if (KIND[dm] === 'liquid' && DENS[dm] < dens) { swapCells(i, d); return true; }
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  for (let s = 0; s < 2; s++) {
+    const j = at(x + (s === 0 ? dir : -dir), y + 1);
+    if (j >= 0 && world[j] === EMPTY) { moveTo(i, j); return true; }
+  }
+  return false;
+}
 
-    document.getElementById('btn-clear').onclick = () => { world.fill(EMPTY); tempLife.fill(0); };
-    document.getElementById('btn-pause').onclick = function() { isPaused = !isPaused; this.textContent = isPaused ? "▶️" : "⏸️"; };
-    document.getElementById('btn-brush-minus').onclick = () => { if(brushSize > 0) brushSize--; document.getElementById('brush-size').textContent = brushSize; };
-    document.getElementById('btn-brush-plus').onclick = () => { if(brushSize < 10) brushSize++; document.getElementById('brush-size').textContent = brushSize; };
+// Chất lỏng: rơi, chảy ngang; nước nặng hơn dầu nên dầu nổi lên
+function flowLiquid(x, y, i, dens, visc) {
+  const d = at(x, y + 1);
+  if (d >= 0) {
+    const dm = world[d];
+    if (dm === EMPTY) { moveTo(i, d); return true; }
+    if (KIND[dm] === 'liquid' && DENS[dm] < dens) { swapCells(i, d); return true; }
+  }
+  if (visc && Math.random() < 0.6) return false;  // dung nham chảy chậm
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  for (let s = 0; s < 2; s++) {
+    const j = at(x + (s === 0 ? dir : -dir), y);
+    if (j >= 0 && world[j] === EMPTY) { moveTo(i, j); return true; }
+  }
+  return false;
+}
 
-    function getMousePos(e) {
-        const rect = canvas.getBoundingClientRect();
-        mouseX = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
-        mouseY = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
-        if (inBounds(mouseX, mouseY)) document.getElementById('st-coord').textContent = `x:${mouseX}, y:${mouseY}`;
+function updateLiquid(x, y, i, id) {
+  if (id === WATER) {
+    // Bốc hơi: nhanh khi gần lửa/dung nham, chậm khi có nắng
+    const up = at(x, y - 1);
+    if (up >= 0 && world[up] === EMPTY) {
+      const hot = hasNear(x, y, 2, FIRE) || hasNear(x, y, 2, LAVA);
+      if (hot ? Math.random() < 0.03 : (isDay && Math.random() < 0.0004)) {
+        setCell(up, VAPOR);
+        return;
+      }
     }
+  }
+  if (flowLiquid(x, y, i, DENS[id], VISC[id])) return;
+  // Mưa rơi vào chỗ không chảy được thì hòa vào nước
+  if (id === RAIN && Math.random() < 0.15) setCell(i, WATER);
+}
 
-    function applyBrush() {
-        for (let dy = -brushSize; dy <= brushSize; dy++) {
-            for (let dx = -brushSize; dx <= brushSize; dx++) {
-                if (dx*dx + dy*dy > brushSize*brushSize) continue; 
-                const x = mouseX + dx, y = mouseY + dy;
-                if (!inBounds(x, y)) continue;
-                
-                const i = getIdx(x, y);
-                const currentMat = world[i];
-
-                if (activeAction === "DRAW" && Math.random() < 0.8) world[i] = activeMaterial;
-                else if (activeAction === "ERASE") world[i] = EMPTY;
-                else if (activeAction === "HEAT") {
-                    if (currentMat === 2) { world[i] = 6; tempLife[i] = 40; }
-                    else if (currentMat === 12) world[i] = 2;
-                    else if (materials[currentMat]?.flammable) { world[i] = 4; tempLife[i] = 40; }
-                    else if (currentMat === 1) world[i] = 24; 
-                }
-                else if (activeAction === "COOL") {
-                    if (currentMat === 2) world[i] = 12;
-                    else if (currentMat === 11) world[i] = 7;
-                    else if (currentMat === 4) world[i] = EMPTY;
-                }
-            }
-        }
+// Khí: bay lên, lan ngang; mây và hơi nước có quy tắc riêng
+function updateGas(x, y, i, id) {
+  // Hơi nước ngưng tụ thành mây khi lên đủ cao
+  if (id === VAPOR && y < CLOUD_LINE && Math.random() < 0.03) {
+    setCell(i, CLOUD);
+    return;
+  }
+  // Mây đủ dày thì mưa (ở vùng cao thì thành tuyết)
+  if (id === CLOUD && Math.random() < 0.02 && countNear(x, y, 2, CLOUD) >= 10) {
+    const d = at(x, y + 1);
+    if (d >= 0 && world[d] === EMPTY) {
+      setCell(d, y < SNOW_LINE ? SNOW : RAIN);
+      if (Math.random() < 0.5) setCell(i, EMPTY);   // mây tan bớt sau khi mưa
+      return;
     }
+  }
+  const u = at(x, y - 1);
+  if (u >= 0 && world[u] === EMPTY && Math.random() < 0.85) { moveTo(i, u); return; }
+  const s = at(x + (Math.random() < 0.5 ? -1 : 1), y);
+  if (s >= 0 && world[s] === EMPTY && Math.random() < 0.5) moveTo(i, s);
+}
 
-    canvas.onmousedown = (e) => { isMouseDown = true; getMousePos(e); applyBrush(); };
-    window.onmouseup = () => isMouseDown = false;
-    canvas.onmousemove = (e) => { getMousePos(e); if (isMouseDown) applyBrush(); };
-    canvas.onmouseleave = () => { mouseX = -1; mouseY = -1; };
+// Tuyết: rơi chậm, chạm nước thì đóng băng
+function updateSnow(x, y, i) {
+  if (Math.random() < 0.5) return;
+  const d = at(x, y + 1);
+  if (d < 0) return;
+  const dm = world[d];
+  if (dm === EMPTY) moveTo(i, d);
+  else if (dm === WATER) setCell(i, ICE);
+}
 
-    function updatePhysics() {
-        if (isPaused) return;
-
-        for (let y = H - 2; y >= 0; y--) {
-            const dir = Math.random() < 0.5 ? 1 : -1;
-            for (let x = dir === 1 ? 0 : W - 1; x !== (dir === 1 ? W : -1); x += dir) {
-                const i = getIdx(x, y);
-                const id = world[i];
-                if (id === EMPTY) continue;
-                
-                const mat = materials[id];
-                const below = getIdx(x, y + 1);
-
-                // Quang Hợp
-                if (mat.plant) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 23) {
-                                if (Math.random() < 0.15) world[getIdx(nx, ny)] = 25; 
-                            }
-                        }
-                    }
-                }
-
-                // Hô Hấp
-                if (mat.isAnimal || mat.isBird) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (inBounds(nx, ny) && world[getIdx(nx, ny)] === 25) { 
-                                if (Math.random() < 0.1) world[getIdx(nx, ny)] = 23; 
-                            }
-                        }
-                    }
-                }
-
-                // Axit
-                if (mat.acid) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (!inBounds(nx, ny)) continue;
-                            const nbId = world[getIdx(nx, ny)];
-                            if (nbId !== EMPTY && (materials[nbId].organic || materials[nbId].meltable)) {
-                                if (Math.random() < 0.1) {
-                                    world[getIdx(nx, ny)] = 22; tempLife[getIdx(nx, ny)] = 100;
-                                    world[i] = EMPTY; break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Vi sinh
-                if (mat.infectious) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (inBounds(nx, ny) && materials[world[getIdx(nx, ny)]]?.organic && Math.random() < 0.05) {
-                                world[getIdx(nx, ny)] = 21; tempLife[getIdx(nx, ny)] = 120;
-                            }
-                        }
-                    }
-                }
-
-                if (mat.toxic) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (inBounds(nx, ny) && materials[world[getIdx(nx, ny)]]?.organic) {
-                                world[getIdx(nx, ny)] = 21; tempLife[getIdx(nx, ny)] = 120;
-                            }
-                        }
-                    }
-                }
-
-                if (mat.isSeed) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; } 
-                    else if (world[below] === 3 || world[below] === 10) { world[i] = 19; }
-                } 
-                else if (mat.isGrowingTree) {
-                    if (Math.random() < 0.05) { 
-                        const up = getIdx(x, y - 1);
-                        if (inBounds(x, y - 1) && world[up] === EMPTY) {
-                            world[up] = 19; 
-                            if (inBounds(x-1, y) && world[getIdx(x-1, y)] === EMPTY) world[getIdx(x-1, y)] = 15;
-                            if (inBounds(x+1, y) && world[getIdx(x+1, y)] === EMPTY) world[getIdx(x+1, y)] = 15;
-                        }
-                        world[i] = 5; 
-                    }
-                }
-
-                else if (mat.isFish) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; }
-                    let dx = Math.random() < 0.5 ? -1 : 1; let dy2 = Math.random() < 0.5 ? -1 : 1; if (Math.random() < 0.6) dy2 = 0; 
-                    if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === 2) { world[getIdx(x + dx, y + dy2)] = id; world[i] = 2; continue; }
-                    if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY && Math.random() < 0.2) { world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue; }
-                }
-                else if (mat.isBird) {
-                    if (Math.random() < 0.3) {
-                        let dx = Math.random() < 0.5 ? -1 : 1; let dy2 = Math.random() < 0.6 ? -1 : 1; 
-                        if (inBounds(x + dx, y + dy2) && world[getIdx(x + dx, y + dy2)] === EMPTY) { world[getIdx(x + dx, y + dy2)] = id; world[i] = EMPTY; continue; }
-                    }
-                }
-                else if (mat.isAnimal) {
-                    if (inBounds(x, y + 1) && world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; continue; } 
-                    else if (Math.random() < 0.2) {
-                        let dx = Math.random() < 0.5 ? -1 : 1;
-                        if (inBounds(x + dx, y) && world[getIdx(x + dx, y)] === EMPTY) { world[getIdx(x + dx, y)] = id; world[i] = EMPTY; continue; }
-                    }
-                }
-
-                if (mat.life) {
-                    if (!tempLife[i]) tempLife[i] = mat.life;
-                    if (--tempLife[i] <= 0) { 
-                        if (id === 21) { world[i] = 3; } else { world[i] = EMPTY; } continue; 
-                    }
-                }
-
-                if (mat.hot || mat.flammable) {
-                    for (let dy2 = -1; dy2 <= 1; dy2++) {
-                        for (let dx2 = -1; dx2 <= 1; dx2++) {
-                            const nx = x + dx2, ny = y + dy2;
-                            if (!inBounds(nx, ny)) continue;
-                            const nbId = world[getIdx(nx, ny)];
-                            
-                            if (mat.hot && nbId === 25) {
-                                world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 50; 
-                                if (Math.random() < 0.2) world[i] = 23; 
-                            }
-                            
-                            if (mat.hot && materials[nbId]?.flammable && Math.random() < 0.08) { world[getIdx(nx, ny)] = 4; tempLife[getIdx(nx, ny)] = 35; }
-                            if (mat.hot && nbId === 2 && Math.random() < 0.2) { world[i] = id === 11 ? 7 : EMPTY; world[getIdx(nx, ny)] = 6; tempLife[getIdx(nx, ny)] = 40; }
-                        }
-                    }
-                }
-
-                if (id === 4 && inBounds(x, y-1) && world[getIdx(x, y-1)] === EMPTY && Math.random() < 0.15) { world[getIdx(x, y-1)] = 6; tempLife[getIdx(x, y-1)] = 40; }
-
-                if (mat.gas) {
-                    const up = getIdx(x, y - 1);
-                    if (inBounds(x, y - 1) && world[up] === EMPTY) { world[up] = id; world[i] = EMPTY; [tempLife[i], tempLife[up]] = [tempLife[up], tempLife[i]]; continue; }
-                } else if (!mat.isBird && !mat.isGrowingTree && id !== 5 && id !== 15 && id !== 13 && id !== 24) {
-                    if (world[below] === EMPTY) { world[below] = id; world[i] = EMPTY; [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]]; continue; }
-                    if (mat.liquid || (mat.density > 0 && Math.random() < 0.3)) {
-                        const fallRate = mat.viscous ? 0.3 : 1; 
-                        if (Math.random() < fallRate) {
-                            const side = getIdx(x + dir, y + 1);
-                            if (inBounds(x + dir, y + 1) && world[side] === EMPTY) { world[side] = id; world[i] = EMPTY; continue; }
-                            if (mat.liquid) {
-                                const lat = getIdx(x + dir, y);
-                                if (inBounds(x + dir, y) && world[lat] === EMPTY) { world[lat] = id; world[i] = EMPTY; continue; }
-                            }
-                        }
-                    }
-                    const belowId = world[below];
-                    if (belowId !== EMPTY && materials[belowId]?.density < mat.density && !materials[belowId]?.gas && !materials[belowId]?.isGrowingTree) {
-                        world[i] = belowId; world[below] = id; [tempLife[i], tempLife[below]] = [tempLife[below], tempLife[i]];
-                    }
-                }
-            }
-        }
+// Lửa: lan sang vật dễ cháy, cần oxy để cháy mạnh, sinh khói
+function updateFire(x, y, i) {
+  const oxy = hasNear(x, y, 1, OXYGEN);
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j < 0) continue;
+    const nb = world[j];
+    if (FLAM[nb]) {
+      if (Math.random() < (oxy ? 0.25 : 0.06)) setCell(j, FIRE);
+    } else if (nb === OXYGEN && Math.random() < 0.1) {
+      setCell(j, CO2);   // oxy tham gia cháy, tạo CO2
     }
+  }
+  const u = at(x, y - 1);
+  if (u >= 0 && world[u] === EMPTY) {
+    if (Math.random() < 0.12) setCell(u, SMOKE);
+    else if (Math.random() < 0.5) moveTo(i, u);
+  }
+}
 
-    function render() {
-        const imgData = ctx.createImageData(W, H);
-        const data = imgData.data;
-        let pixelsCount = 0;
-        
-        for (let i = 0; i < W * H; i++) {
-            const id = world[i];
-            if (id === EMPTY) continue;
-            pixelsCount++;
-            
-            const mat = materials[id];
-            let r = mat.r, g = mat.g, b = mat.b;
-            
-            if (id === 4) { 
-                const life = tempLife[i];
-                if (life > 20) { r=255; g=250; b=101; } else if (life > 10) { r=255; g=175; b=64; } else { r=255; g=77; b=77; }
-            } 
-            else if (id === 11 && Math.random() < 0.05) { r=255; g=210; b=70; } 
-            else if (id === 20 && Math.random() < 0.05) { r=200; g=255; b=100; } 
-            else if (id === 2 && Math.random() < 0.02) { r=126; g=255; b=245; } 
-            else if (mat.granular && i % 3 === 0) { r = Math.max(0, r - 20); g = Math.max(0, g - 20); b = Math.max(0, b - 20); }
-            else if (id === 21 && Math.random() < 0.1) { r=155; g=89; b=182; } 
+// Dung nham đốt cháy vật dễ cháy ở cạnh
+function igniteAround(x, y, p) {
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && FLAM[world[j]] && Math.random() < p) setCell(j, FIRE);
+  }
+}
 
-            const px = i * 4;
-            data[px] = r; data[px+1] = g; data[px+2] = b; data[px+3] = 255;
-        }
-        
-        ctx.putImageData(imgData, 0, 0);
-        document.getElementById('st-pixels').textContent = `${pixelsCount} pxls`;
-        
-        if (!isPaused && mouseX >= 0 && mouseY >= 0) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.fillRect(mouseX - brushSize, mouseY - brushSize, brushSize * 2 + 1, brushSize * 2 + 1);
-        }
+// Axit ăn mòn vật hữu cơ thành khí độc
+function dissolve(x, y, i) {
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && ORG[world[j]] && Math.random() < 0.06) {
+      setCell(j, TOXIC);
+      setCell(i, EMPTY);
+      return true;
     }
+  }
+  return false;
+}
 
-    function loop(timestamp) { 
-        if (timestamp - lastTime >= 1000) { fps = frames; frames = 0; lastTime = timestamp; document.getElementById('st-fps').textContent = `${fps} fps`; }
-        frames++; updatePhysics(); render(); requestAnimationFrame(loop); 
+// Khí độc làm chết động vật ở cạnh
+function poison(x, y) {
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && ANIMAL[world[j]] && Math.random() < 0.1) setCell(j, CORPSE);
+  }
+}
+
+// Quang hợp: cây lấy CO2 và thải O2, chỉ khi có nắng.
+// Cỏ có thể lan sang đất ẩm gần nước.
+function updatePlant(x, y, i, id) {
+  if (isDay && Math.random() < 0.08) {
+    for (let k = 0; k < 8; k++) {
+      const j = nbr(x, y, k);
+      if (j >= 0 && world[j] === CO2) { setCell(j, OXYGEN); break; }
     }
-    requestAnimationFrame(loop);
+  }
+  if (id === GRASS && Math.random() < 0.003) {
+    const dx = Math.random() < 0.5 ? -1 : 1;
+    const s = at(x + dx, y), up = at(x + dx, y - 1);
+    if (s >= 0 && up >= 0 && world[s] === SOIL && world[up] === EMPTY && hasNear(x + dx, y, 3, WATER)) {
+      setCell(up, GRASS);
+    }
+  }
+}
+
+// Hạt giống: rơi như cát, nảy mầm khi có đất và nước gần
+function updateSeed(x, y, i) {
+  if (fallPowder(x, y, i, DENS[SEED])) return;
+  const d = at(x, y + 1);
+  if (d >= 0 && world[d] === SOIL && hasNear(x, y, 3, WATER) && Math.random() < 0.03) {
+    setCell(i, SAPLING);
+  }
+}
+
+// Cây non: cần nước. Đủ thời gian thì biến thành thân gỗ và mọc ngọn mới kèm tán lá.
+function updateSapling(x, y, i) {
+  if (!hasNear(x, y, 3, WATER)) {
+    if (Math.random() < 0.002) setCell(i, CORPSE);   // thiếu nước, cây chết
+    return;
+  }
+  if (life[i] < 180) { life[i]++; return; }
+
+  const up = at(x, y - 1);
+  if (up < 0) return;
+  const cu = world[up];
+  if (cu !== EMPTY && cu !== WATER) return;          // ngọn mới chỉ mọc vào chỗ trống hoặc nước
+  if (trunkBelow(x, y) >= 8) return;                 // đã đủ cao
+
+  setCell(i, WOOD);
+  setCell(up, SAPLING);
+  for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[-1,-1],[1,-1]]) {
+    if (Math.random() < 0.6) {
+      const l = at(x + dx, (y - 1) + dy);
+      if (l >= 0 && world[l] === EMPTY) setCell(l, LEAF);
+    }
+  }
+}
+
+// Nấm: phân hủy xác và gỗ thành nấm (rồi thành đất mùn)
+function updateFungus(x, y) {
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j < 0) continue;
+    const nb = world[j];
+    if (nb === CORPSE && Math.random() < 0.03) setCell(j, FUNGUS);
+    else if ((nb === WOOD || nb === LEAF) && Math.random() < 0.002) setCell(j, FUNGUS);
+  }
+}
+
+// Thú: rơi, ăn mồi, đi tìm mồi khi đói, sinh con khi no, chết khi hết năng lượng
+function updateAnimal(x, y, i, id) {
+  // Đói dần
+  if (Math.random() < 0.02) {
+    if (life[i] <= 1) { setCell(i, CORPSE); return; }
+    life[i]--;
+  }
+  // Rơi như vật nặng
+  const d = at(x, y + 1);
+  if (d >= 0 && world[d] === EMPTY) { moveTo(i, d); return; }
+
+  // Ăn mồi ở cạnh
+  const prey = DIET[id];
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j >= 0 && world[j] === prey && Math.random() < 0.5) {
+      const e = Math.min(220, life[i] + 50);
+      setCell(i, EMPTY);
+      setCell(j, id);
+      life[j] = e;
+      return;
+    }
+  }
+
+  // Hô hấp: lấy O2 và thải CO2
+  if (Math.random() < 0.03) {
+    for (let k = 0; k < 8; k++) {
+      const j = nbr(x, y, k);
+      if (j >= 0 && world[j] === OXYGEN) { setCell(j, CO2); break; }
+    }
+  }
+
+  // Sinh con khi no
+  if (life[i] > 160 && Math.random() < 0.01) {
+    const j = nbr(x, y, Math.floor(Math.random() * 8));
+    if (j >= 0 && world[j] === EMPTY) {
+      setCell(j, id);
+      life[j] = 80;
+      life[i] -= 60;
+    }
+  }
+
+  // Đói thì đi về phía mồi gần nhất
+  if (life[i] < 110) {
+    const t = findNearest(x, y, 8, prey);
+    if (t >= 0) {
+      const tx = t % W, ty = (t - tx) / W;
+      const sx = Math.sign(tx - x), sy = Math.sign(ty - y);
+      const cands = [at(x + sx, y + sy), at(x + sx, y)];
+      for (const c of cands) {
+        if (c >= 0 && world[c] === EMPTY) { moveTo(i, c); return; }
+      }
+    }
+  }
+
+  // Đi lang thang
+  if (Math.random() < 0.25) {
+    const j = at(x + (Math.random() < 0.5 ? -1 : 1), y);
+    if (j >= 0 && world[j] === EMPTY) moveTo(i, j);
+  }
+}
+
+// Phản ứng hóa học theo bảng REACT
+function tryReact(x, y, i, id) {
+  for (let k = 0; k < 8; k++) {
+    const j = nbr(x, y, k);
+    if (j < 0) continue;
+    const r = REACT.get(id * 64 + world[j]);
+    if (r && Math.random() < r.p) {
+      setCell(i, r.ia);
+      setCell(j, r.ib);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Vật hết thời gian sống thì biến đổi
+function decay(i, id) {
+  let to = EMPTY;
+  if (id === FIRE)         to = Math.random() < 0.6 ? SMOKE : EMPTY;
+  else if (id === FUNGUS)  to = SOIL;     // nấm → đất mùn
+  else if (id === CORPSE)  to = FUNGUS;   // xác → nấm
+  setCell(i, to);
+}
+
+// Cập nhật một ô
+function update(x, y, i) {
+  const id = world[i];
+
+  if (REACTIVE[id] && tryReact(x, y, i, id)) return;
+
+  if (DECAY[id]) {
+    if (life[i] <= 1) { decay(i, id); return; }
+    life[i]--;
+  }
+
+  if (id === ACID && dissolve(x, y, i)) return;
+  if (id === TOXIC) poison(x, y);
+  if (id === LAVA) igniteAround(x, y, 0.08);
+
+  switch (KIND[id]) {
+    case 'powder': fallPowder(x, y, i, DENS[id]); break;
+    case 'snow':   updateSnow(x, y, i); break;
+    case 'liquid': updateLiquid(x, y, i, id); break;
+    case 'gas':    updateGas(x, y, i, id); break;
+    case 'fire':   updateFire(x, y, i); break;
+    case 'plant':  updatePlant(x, y, i, id); break;
+    case 'seed':   updateSeed(x, y, i); break;
+    case 'sapling':updateSapling(x, y, i); break;
+    case 'animal': updateAnimal(x, y, i, id); break;
+    case 'fungus': updateFungus(x, y); break;
+  }
+}
+
+// Một bước mô phỏng cho toàn bộ lưới
+function simulate() {
+  frame++;
+  for (let y = H - 1; y >= 0; y--) {
+    const rtl = ((frame + y) & 1) === 1;   // đổi chiều quét để tránh thiên lệch
+    for (let k = 0; k < W; k++) {
+      const x = rtl ? W - 1 - k : k;
+      const i = y * W + x;
+      if (world[i] === EMPTY || moved[i] === frame) continue;
+      update(x, y, i);
+    }
+  }
+}
+
+// =====================================================================
+// 7. VẼ
+// =====================================================================
+function render() {
+  tally.fill(0);
+  pixelCount = 0;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x, id = world[i], p = i * 4;
+      tally[id]++;
+      if (id === EMPTY) { px[p] = 0; px[p+1] = 0; px[p+2] = 0; px[p+3] = 255; continue; }
+      pixelCount++;
+
+      let r = PAL[id*3], g = PAL[id*3+1], b = PAL[id*3+2];
+      if (id === FIRE) {
+        const l = life[i];
+        if (l > 22)      { r = 255; g = 240; b = 90; }
+        else if (l > 10) { r = 255; g = 140; b = 30; }
+        else             { r = 200; g = 40;  b = 20; }
+      } else if (id === LAVA) {
+        if (((x + y + frame) & 7) === 0) { r = 255; g = 190; b = 60; }
+      } else if (id === SAND || id === SOIL || id === LIMESTONE) {
+        if ((x + y) % 3 === 0) { r = (r * 0.85) | 0; g = (g * 0.85) | 0; b = (b * 0.85) | 0; }
+      } else if (id === WATER) {
+        if (((x * 3 + frame) & 31) === 0) { r = 150; g = 210; b = 255; }
+      }
+      px[p] = r; px[p+1] = g; px[p+2] = b; px[p+3] = 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+
+  // Viền con trỏ cọ vẽ
+  if (mx >= 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(mx + 0.5, my + 0.5, brush + 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+// =====================================================================
+// 8. THAO TÁC CHUỘT / CẢM ỨNG
+// =====================================================================
+function applyBrush() {
+  const r2 = brush * brush;
+  for (let dy = -brush; dy <= brush; dy++) {
+    for (let dx = -brush; dx <= brush; dx++) {
+      if (dx*dx + dy*dy > r2) continue;
+      const x = mx + dx, y = my + dy;
+      if (x < 0 || x >= W || y < 0 || y >= H) continue;
+      const i = y * W + x, cur = world[i];
+
+      if (action === 'DRAW') {
+        const chance = SPARSE[activeMat] ? 0.15 : 0.8;   // thú và cây ít khi vẽ dày
+        if (Math.random() < chance) setCell(i, activeMat);
+      } else if (action === 'ERASE') {
+        setCell(i, EMPTY);
+      } else if (action === 'HEAT') {
+        if (cur === SAND) setCell(i, GLASS);
+        else if (cur === WATER) setCell(i, VAPOR);
+        else if (cur === ICE || cur === SNOW) setCell(i, WATER);
+        else if (FLAM[cur] && Math.random() < 0.5) setCell(i, FIRE);
+      } else if (action === 'COOL') {
+        if (cur === WATER) setCell(i, ICE);
+        else if (cur === LAVA) setCell(i, STONE);
+        else if (cur === FIRE) setCell(i, EMPTY);
+        else if (cur === VAPOR) setCell(i, CLOUD);
+      }
+    }
+  }
+}
+
+function toCanvas(e) {
+  const r = canvas.getBoundingClientRect();
+  const s = Math.min(r.width / W, r.height / H);       // giữ đúng tỉ lệ
+  const ox = (r.width - W * s) / 2, oy = (r.height - H * s) / 2;
+  const x = Math.floor((e.clientX - r.left - ox) / s);
+  const y = Math.floor((e.clientY - r.top - oy) / s);
+  if (x < 0 || x >= W || y < 0 || y >= H) return null;
+  return { x, y };
+}
+
+function updatePointer(e) {
+  const p = toCanvas(e);
+  if (p) {
+    mx = p.x; my = p.y;
+    document.getElementById('st-coord').textContent = `x:${mx}, y:${my}`;
+  } else {
+    mx = -1; my = -1;
+  }
+}
+
+canvas.addEventListener('pointerdown', e => {
+  mouseDown = true;
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+  updatePointer(e);
+});
+canvas.addEventListener('pointermove', updatePointer);
+canvas.addEventListener('pointerleave', () => { if (!mouseDown) { mx = -1; my = -1; } });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('pointerup', () => { mouseDown = false; });
+window.addEventListener('pointercancel', () => { mouseDown = false; });
+
+// =====================================================================
+// 9. GIAO DIỆN
+// =====================================================================
+const ACTIONS = [
+  { id:'DRAW',  label:'✏️ VẼ',         cls:'' },
+  { id:'ERASE', label:'🧽 XÓA',        cls:'btn-erase' },
+  { id:'HEAT',  label:'🔥 LÀM NÓNG',   cls:'btn-heat' },
+  { id:'COOL',  label:'❄️ LÀM LẠNH',   cls:'btn-cool' },
+];
+
+const CAT_ORDER = ['Đất Đá', 'Chất Lỏng', 'Khí & Nhiệt', 'Hóa Học', 'Thời Tiết', 'Sự Sống'];
+const CATS = {};
+CAT_ORDER.forEach(c => CATS[c] = []);
+Object.keys(MAT).forEach(k => {
+  const id = +k, m = MAT[id];
+  if (m.cat) CATS[m.cat].push(id);
+});
+let activeMat = SAND;
+
+const btnPause = document.getElementById('btn-pause');
+const btnSpeed = document.getElementById('btn-speed');
+const btnDay   = document.getElementById('btn-day');
+const btnMinus = document.getElementById('btn-minus');
+const btnPlus  = document.getElementById('btn-plus');
+const brushVal = document.getElementById('brush-val');
+const btnDemo  = document.getElementById('btn-demo');
+const btnClear = document.getElementById('btn-clear');
+
+function textColorFor(hex) {
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  return (0.299*r + 0.587*g + 0.114*b) > 140 ? '#000' : '#fff';
+}
+
+function setInfo(msg) {
+  const info = document.getElementById('info');
+  if (msg) { info.textContent = msg; return; }
+  if (action === 'DRAW') {
+    const m = MAT[activeMat];
+    info.textContent = `Đang vẽ: ${m.name} — ${m.desc}`;
+  } else {
+    const a = ACTIONS.find(x => x.id === action);
+    info.textContent = `Chế độ: ${a.label}`;
+  }
+}
+
+function renderActions() {
+  const bar = document.getElementById('actionbar');
+  bar.innerHTML = '';
+  ACTIONS.forEach(a => {
+    const b = document.createElement('button');
+    b.className = `btn-action ${a.cls}${action === a.id ? ' active' : ''}`;
+    b.textContent = a.label;
+    b.onclick = () => { action = a.id; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderCategories() {
+  const bar = document.getElementById('categorybar');
+  bar.innerHTML = '';
+  CAT_ORDER.forEach(c => {
+    const b = document.createElement('button');
+    b.className = `btn-category${c === activeCat ? ' active' : ''}`;
+    b.textContent = c;
+    b.onclick = () => { activeCat = c; activeMat = CATS[c][0]; action = 'DRAW'; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderMaterials() {
+  const bar = document.getElementById('materialbar');
+  bar.innerHTML = '';
+  CATS[activeCat].forEach(id => {
+    const m = MAT[id];
+    const b = document.createElement('button');
+    b.className = `btn-mat${action === 'DRAW' && id === activeMat ? ' active' : ''}`;
+    b.style.background = m.hex;
+    b.style.color = textColorFor(m.hex);
+    b.textContent = m.name;
+    b.title = m.desc;
+    b.onclick = () => { activeMat = id; action = 'DRAW'; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderAll() {
+  renderCategories();
+  renderActions();
+  renderMaterials();
+  setInfo();
+}
+
+function updateStats() {
+  document.getElementById('st-fps').textContent = `${fps} fps`;
+  document.getElementById('st-pixels').textContent = `${pixelCount} pxls`;
+  document.getElementById('st-pop').textContent =
+    `🐇 Thỏ: ${tally[RABBIT]} · 🦊 Cáo: ${tally[FOX]} · 🪵 Gỗ: ${tally[WOOD]} · 🌿 Cỏ & lá: ${tally[GRASS] + tally[LEAF]}`;
+  document.getElementById('st-time').textContent = isDay ? '☀️ Ban ngày' : '🌙 Ban đêm';
+}
+
+// Nút điều khiển
+btnPause.onclick = () => {
+  isPaused = !isPaused;
+  btnPause.textContent = isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
+};
+const SPEEDS = [1, 2, 4];
+let speedIdx = 0;
+btnSpeed.onclick = () => {
+  speedIdx = (speedIdx + 1) % SPEEDS.length;
+  speed = SPEEDS[speedIdx];
+  btnSpeed.textContent = `⏩ Tốc độ x${speed}`;
+};
+btnDay.onclick = () => {
+  isDay = !isDay;
+  btnDay.textContent = isDay ? '☀️ Ngày' : '🌙 Đêm';
+  updateStats();
+};
+btnMinus.onclick = () => { brush = Math.max(1, brush - 1); brushVal.textContent = brush; };
+btnPlus.onclick  = () => { brush = Math.min(10, brush + 1); brushVal.textContent = brush; };
+btnClear.onclick = () => { world.fill(EMPTY); life.fill(0); setInfo('Đã xóa sạch khung vẽ.'); };
+btnDemo.onclick  = () => loadDemo();
+
+// =====================================================================
+// 10. HỆ SINH THÁI MẪU
+// =====================================================================
+function put(x, y, id) {
+  const i = y * W + x;
+  world[i] = id;
+  life[i] = LIFE0[id];
+}
+
+function loadDemo() {
+  world.fill(EMPTY);
+  life.fill(0);
+  isDay = true;
+  btnDay.textContent = '☀️ Ngày';
+
+  const soilTop = H - 16;
+
+  // Đất ở dưới, đá làm nền
+  for (let y = soilTop; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      world[y * W + x] = y >= H - 3 ? STONE : SOIL;
+    }
+  }
+
+  // Hai bức tường đá tạo thành hồ nước
+  for (let y = H - 30; y < soilTop; y++) {
+    for (const x of [150, 151, 152, 250, 251, 252]) world[y * W + x] = STONE;
+  }
+  // Nước trong hồ
+  for (let y = H - 19; y < soilTop; y++) {
+    for (let x = 153; x < 250; x++) world[y * W + x] = WATER;
+  }
+
+  // Cỏ mọc trên mặt đất, ngoài vùng hồ
+  for (let x = 0; x < W; x++) {
+    if (x >= 150 && x <= 252) continue;
+    if (Math.random() < 0.35) world[(soilTop - 1) * W + x] = GRASS;
+  }
+
+  // Hạt giống: một số gần nước (sẽ nảy mầm), một số xa nước (không nảy mầm)
+  for (const x of [60, 160, 200, 240, 330]) put(x, H - 24, SEED);
+
+  // Thỏ và cáo
+  for (const x of [40, 80, 110, 300, 330]) put(x, H - 22, RABBIT);
+  put(370, H - 22, FOX);
+
+  setInfo('Đã nạp hệ sinh thái mẫu: đất, hồ nước, cỏ, hạt giống, thỏ và cáo. Nhấn ▶️ để bắt đầu.');
+}
+
+// =====================================================================
+// 11. VÒNG LẶP CHÍNH
+// =====================================================================
+let lastT = 0, fpsCount = 0;
+function loop(t) {
+  if (mouseDown && mx >= 0) applyBrush();
+  if (!isPaused) {
+    for (let s = 0; s < speed; s++) simulate();
+  }
+  render();
+  fpsCount++;
+  if (t - lastT >= 1000) {
+    fps = fpsCount; fpsCount = 0; lastT = t;
+    updateStats();
+  }
+  requestAnimationFrame(loop);
+}
+
+// Khởi động
+renderAll();
+loadDemo();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
