@@ -106,10 +106,10 @@ if "search_jump" in st.session_state:
     item = st.session_state.pop("search_jump")
     st.session_state["che_do_sidebar"] = "📖 Học theo chuyên đề"
     st.session_state["mon_main"] = item["mon"]
-    if "lop" in item:
-        st.session_state["s_lop"] = item["lop"]
-    st.session_state["s_chuong"] = item["chuong"]
-    st.session_state["s_bai"] = item["bai"]
+    lop_jump = item.get("lop", "Lớp 7")
+    st.session_state[f"s_lop_{item['mon']}"] = lop_jump
+    st.session_state[f"s_chuong_{item['mon']}_{lop_jump}"] = item["chuong"]
+    st.session_state[f"s_bai_{item['mon']}_{lop_jump}_{item['chuong']}"] = item["bai"]
 
 # ==================== KHỞI TẠO LOCK & CACHE TOÀN CỤC ====================
 @st.cache_resource
@@ -584,22 +584,56 @@ def chuan_hoa_bai_hoc(du_lieu):
     return bai, canh_bao
 
 # ==================== NẠP DỮ LIỆU 5 MÔN HỌC ====================
+# Lỗi nạp file được ghi lại (không còn im lặng) và hiển thị trên app
+LOI_NAP_DU_LIEU = {}
+
+def kiem_tra_cau_truc_mon(ten_file, du_lieu):
+    """Kiểm tra cấu trúc Lớp → Chương → Bài → các khóa bài học."""
+    if ten_file in LOI_NAP_DU_LIEU:
+        return
+    if not isinstance(du_lieu, dict) or not du_lieu:
+        LOI_NAP_DU_LIEU[ten_file] = "Biến dữ liệu rỗng hoặc sai kiểu (cần là dict). Kiểm tra tên biến được export."
+        return
+    for lop, chuongs in du_lieu.items():
+        if not isinstance(chuongs, dict):
+            LOI_NAP_DU_LIEU[ten_file] = f"Mục '{lop}' phải là dict Chương → Bài."
+            return
+        for chuong, bais in chuongs.items():
+            if not isinstance(bais, dict):
+                LOI_NAP_DU_LIEU[ten_file] = f"'{chuong}' phải chứa dict các Bài."
+                return
+            for bai, nd in bais.items():
+                if not isinstance(nd, dict) or not any(
+                    k in nd for k in ("ly_thuyet", "cau_hoi", "bt_co_ban", "bt_nang_cao")
+                ):
+                    LOI_NAP_DU_LIEU[ten_file] = f"Bài '{bai}' thiếu các khóa ly_thuyet / cau_hoi / bt_co_ban / bt_nang_cao."
+                    return
+
 try:
     from data_toan import TOAN
-except ImportError:
+except Exception as e:
     TOAN = {}
+    LOI_NAP_DU_LIEU["data_toan.py"] = f"{type(e).__name__}: {e}"
 try:
     from data_vatly import VATLY
-except ImportError:
+except Exception as e:
     VATLY = {}
+    LOI_NAP_DU_LIEU["data_vatly.py"] = f"{type(e).__name__}: {e}"
 try:
     from data_hoa import HOA
-except ImportError:
+except Exception as e:
     HOA = {}
+    LOI_NAP_DU_LIEU["data_hoa.py"] = f"{type(e).__name__}: {e}"
 try:
     from data_anh import ANH, KIEN_THUC_NEN, TU_DIEN_OFFLINE, DS_TU_CUA_NGAY, TRA_TU_CACHE
-except ImportError:
+except Exception as e:
     ANH, KIEN_THUC_NEN, TU_DIEN_OFFLINE, DS_TU_CUA_NGAY, TRA_TU_CACHE = {}, {}, {}, [], {}
+    LOI_NAP_DU_LIEU["data_anh.py"] = f"{type(e).__name__}: {e}"
+
+kiem_tra_cau_truc_mon("data_toan.py", TOAN)
+kiem_tra_cau_truc_mon("data_vatly.py", VATLY)
+kiem_tra_cau_truc_mon("data_hoa.py", HOA)
+kiem_tra_cau_truc_mon("data_anh.py", ANH)
 
 VAN_DEFAULT = {
     "Lớp 7": {
@@ -846,8 +880,10 @@ try:
         VAN = VAN_EXT
     else:
         VAN = VAN_DEFAULT
-except ImportError:
+except Exception as e:
     VAN = VAN_DEFAULT
+    if not isinstance(e, ImportError):
+        LOI_NAP_DU_LIEU["data_van.py"] = f"{type(e).__name__}: {e}"
 
 DATABASE = {
     "📐 Môn Toán": TOAN,
@@ -1865,6 +1901,11 @@ du_lieu_bai_hien_tai = {}
 
 st.markdown(css_giao_dien_chung(), unsafe_allow_html=True)
 
+if LOI_NAP_DU_LIEU:
+    with st.expander("⚠️ Có file dữ liệu chưa nạp được (xem chi tiết)", expanded=True):
+        for ten_file, loi_file in LOI_NAP_DU_LIEU.items():
+            st.error(f"**{ten_file}** — {loi_file}")
+
 if che_do == "🏠 Trang chủ / Hướng dẫn":
     st.markdown(css_widget_theo_mon("home"), unsafe_allow_html=True)
     st.markdown(
@@ -2180,12 +2221,10 @@ elif che_do == "📖 Học theo chuyên đề":
     else:
         c_lop, c_chuong, c_bai = st.columns([1, 2, 2])
         ds_lop = list(lop_dict.keys())
-        giu_lua_chon_hop_le("s_lop", ds_lop)
-        lop = c_lop.selectbox("Khối:", ds_lop, key="s_lop")
+        lop = c_lop.selectbox("Khối:", ds_lop, key=f"s_lop_{mon}")
         chuong_dict = lop_dict[lop]
         ds_chuong = sap_xep_chuong(list(chuong_dict.keys()))
-        giu_lua_chon_hop_le("s_chuong", ds_chuong)
-        chuong = c_chuong.selectbox("Chương / Unit:", ds_chuong, key="s_chuong")
+        chuong = c_chuong.selectbox("Chương / Unit:", ds_chuong, key=f"s_chuong_{mon}_{lop}")
 
         bai_dict = chuong_dict[chuong]
         ds_bai = list(bai_dict.keys())
@@ -2193,8 +2232,7 @@ elif che_do == "📖 Học theo chuyên đề":
             st.info("📌 Chương này đang được cập nhật bài học.")
             bai_dang_hoc = chuong
         else:
-            giu_lua_chon_hop_le("s_bai", ds_bai)
-            bai = c_bai.selectbox("Bài học / Lesson:", ds_bai, key="s_bai")
+            bai = c_bai.selectbox("Bài học / Lesson:", ds_bai, key=f"s_bai_{mon}_{lop}_{chuong}")
 
             bai_dang_hoc = f"{chuong} - {bai}"
             du_lieu_bai_hien_tai = bai_dict[bai]
